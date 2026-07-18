@@ -2,12 +2,25 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
-
+const simpleGit = require('simple-git');
+const git = simpleGit();
 const app = express();
 app.use(express.json());
 app.use(cors());
 
 // --- Helpers ---
+async function commitAndPush(message) {
+  try {
+    // 添加所有变更（包括 JSON 文件）
+    await git.add('.');
+    await git.commit(message);
+    await git.push();
+    console.log(`✅ Git sync: ${message}`);
+  } catch (err) {
+    console.error('❌ Git sync failed:', err);
+    // 注意：即使 Git 同步失败，本地文件已保存，不影响数据持久化
+  }
+}
 function computeGoal(leftFoot, rightFoot, head) {
   const lf = parseInt(leftFoot) || 0;
   const rf = parseInt(rightFoot) || 0;
@@ -112,7 +125,8 @@ app.post("/add-stats", (req, res) => {
 
   data.push(newStat);
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-
+  commitAndPush(`Add stats for ${newStat.Contributor} (${new Date().toISOString()})`)
+    .catch(console.error);
   res.json({
     message: "✅ Stat added successfully",
     symbol: newStat.Symbol,
@@ -163,7 +177,8 @@ app.put("/modify-stats/:index", (req, res) => {
   // Save back
   data[index] = updatedRecord;
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-
+  commitAndPush(`Modify stats for ${contributor} (${new Date().toISOString()})`)
+    .catch(console.error);
   res.json({
     message: "✅ Stat modified successfully",
     updated: updatedRecord

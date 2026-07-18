@@ -2121,5 +2121,39 @@
     "OtherBodyParts": "",
     "Symbol": "",
     "Goal Contribution": 0
+  },
+  {
+    "Date": "9/30/2026",
+    "Contributor": "Ryan",
+    "Goal": 1,
+    "Assist": "20",
+    "Rating": "8.7",
+    "Location": "興華街西",
+    "Time": "9:30 PM",
+    "Error": "0",
+    "source": "馬哲",
+    "LeftFoot": "20",
+    "RightFoot": "20",
+    "Head": "1",
+    "OtherBodyParts": "0",
+    "Symbol": "⚽👟👟👟👟👟👟👟👟👟👟👟👟👟👟👟👟👟👟👟👟",
+    "Goal Contribution": 21
+  },
+  {
+    "Date": "10/30/2026",
+    "Contributor": "Ryan",
+    "Goal": 1,
+    "Assist": "4",
+    "Rating": "9.0",
+    "Location": "曾大屋",
+    "Time": "10:00 AM",
+    "Error": "0",
+    "source": "Barry",
+    "LeftFoot": "4",
+    "RightFoot": "2",
+    "Head": "1",
+    "OtherBodyParts": "",
+    "Symbol": "⚽👟👟👟👟",
+    "Goal Contribution": 5
   }
 ]
