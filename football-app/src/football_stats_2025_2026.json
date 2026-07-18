@@ -2142,18 +2142,20 @@
   {
     "Date": "10/30/2026",
     "Contributor": "Ryan",
-    "Goal": 1,
-    "Assist": "4",
-    "Rating": "9.0",
+    "Goal": 0,
+    "Assist": "",
+    "Rating": "8.0",
     "Location": "曾大屋",
     "Time": "10:00 AM",
     "Error": "0",
     "source": "Barry",
     "LeftFoot": "4",
     "RightFoot": "2",
-    "Head": "1",
+    "Head": "",
     "OtherBodyParts": "",
-    "Symbol": "⚽👟👟👟👟",
-    "Goal Contribution": 5
+    "Symbol": "",
+    "Goal Contribution": 0,
+    "Left Foot": "",
+    "Right Foot": ""
   }
 ]

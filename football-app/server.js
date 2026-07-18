@@ -177,14 +177,17 @@ app.put("/modify-stats/:index", (req, res) => {
   // Save back
   data[index] = updatedRecord;
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+
+  // 异步提交到 Git
+  const contributor = updatedRecord.Contributor || 'unknown';
   commitAndPush(`Modify stats for ${contributor} (${new Date().toISOString()})`)
     .catch(console.error);
+
   res.json({
     message: "✅ Stat modified successfully",
     updated: updatedRecord
   });
 });
-
 // --- GET /stats-history --- (unchanged)
 app.get("/stats-history", (req, res) => {
   const filePath = path.join(__dirname, "src", "football_stats_2025_2026.json");
