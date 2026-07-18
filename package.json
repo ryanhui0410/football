@@ -1,5 +1,9 @@
 {
   "dependencies": {
+    "simple-git": "^3.36.0",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
   }
 }
