@@ -38,6 +38,16 @@
     "PHY": 80,
     "overall": 87,
     "position": "AM",
+    "positionRatings": {
+      "RM": 85,
+      "LM": 85,
+      "AM": 87,
+      "SS": 83,
+      "LW": 81,
+      "RW": 81,
+      "CM": 81
+    },
+    "weakFoot": 3,
     "picture": ""
   },
   {
@@ -79,6 +89,14 @@
     "PHY": 79,
     "overall": 88,
     "position": "CF",
+    "positionRatings": {
+      "CF": 88,
+      "SS": 88,
+      "LW": 85,
+      "RW": 85,
+      "AM": 82
+    },
+    "weakFoot": 4,
     "picture": ""
   }
 ]

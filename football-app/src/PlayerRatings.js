@@ -59,6 +59,20 @@ function PlayerRatings() {
     setSelectedPlayer(null);
   };
 
+  const weakFootContainerStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '4px',
+    marginTop: '8px',
+    fontSize: '14px',
+  };
+
+  const starStyle = (filled) => ({
+    color: filled ? '#FFD700' : '#ccc',
+    fontSize: '18px',
+  });
+
   // ---- 样式 ----
   const containerStyle = {
     display: 'grid',
@@ -131,30 +145,33 @@ function PlayerRatings() {
     textAlign: "center",
   };
 
+  // ★ 修改点：增大 gap，增加左右内边距
   const statsGridStyle = {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "2px",
-    marginTop: "12px",
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '6px',           // 从 2px 改为 6px
+    marginTop: '12px',
   };
 
   const statItemStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    fontSize: "14px",
-    padding: "1px 0",
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    fontSize: '14px',
+    padding: '6px 10px',   // 增加左右内边距，让项不贴边
+    borderRadius: '4px',
+    backgroundColor: '#fafafa', // 轻微底色便于区分（可选，可删除）
   };
 
   const scoreBoxStyle = {
     backgroundColor: "#28a745",
     color: "#fff",
     borderRadius: "8px",
-    padding: "0 8px",
+    padding: "0 10px",    // 稍微加宽
     fontWeight: "bold",
     fontSize: "14px",
     lineHeight: "1.8",
-    minWidth: "28px",
+    minWidth: "32px",
     textAlign: "center",
   };
 
@@ -178,6 +195,7 @@ function PlayerRatings() {
           };
           const overall = profile.overall || main.PAC;
           const position = profile.position || 'POS';
+          const weakFoot = profile.weakFoot || 0;
 
           return (
             <div key={name} style={cardStyle} onClick={() => handleCardClick(name)}>
@@ -208,12 +226,22 @@ function PlayerRatings() {
                   </div>
                 ))}
               </div>
+
+              {weakFoot > 0 && (
+                <div style={weakFootContainerStyle}>
+                  <span style={{ fontWeight: 'bold', marginRight: '6px' }}>Weak Foot:</span>
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} style={starStyle(i < weakFoot)}>
+                      {i < weakFoot ? '★' : '☆'}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* 模态框组件（已抽离） */}
       {showModal && (
         <PlayerStatsModal
           selectedPlayer={selectedPlayer}

@@ -9,6 +9,21 @@ function ContributorDashboard({
   filterMonth,
   setFilterMonth,
 }) {
+  // 获取当前贡献者对象
+  const contributor = contributors.find(c => c.name === activeContributor);
+  let filteredMatches = contributor ? contributor.getSortedMatches() : [];
+
+  // 应用过滤器
+  filteredMatches = filteredMatches.filter(m => {
+    const dateObj = new Date(m.date);
+    const matchYearMonth = `${dateObj.getFullYear()}/${dateObj.getMonth() + 1}`;
+    const locationMatch = !filterLocation || m.location === filterLocation;
+    const monthMatch = !filterMonth || matchYearMonth === filterMonth;
+    return locationMatch && monthMatch;
+  });
+
+  // 显式按日期降序排序（最新的在前面）
+  filteredMatches.sort((a, b) => new Date(b.date) - new Date(a.date));
   return (
     <div>
       {/* Contributors and match display */}
