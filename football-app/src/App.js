@@ -17,11 +17,34 @@ class PlayerStats {
 }
 
 class Match {
-  constructor({ Date, Symbol, Rating, Location }) {
+  constructor({ 
+    Date, 
+    Symbol, 
+    Rating, 
+    Location,
+    // 新增字段
+    'Left Foot': leftFoot,      // 注意 JSON 中的字段名带空格
+    'Right Foot': rightFoot,
+    'Head': head,
+    'Other body parts': other,
+    'Assist': assist,
+    'Goal Contribution': goalContribution,
+    'source': source,
+    'Time': time,
+    // 如果还有其它字段（如 Contributor、Goal 等），也可一并加上
+  }) {
     this.date = Date;
     this.symbol = Symbol;
     this.rating = Rating;
     this.location = Location;
+    this.leftFoot = leftFoot || 0;
+    this.rightFoot = rightFoot || 0;
+    this.head = head || 0;
+    this.other = other || 0;
+    this.assist = assist || 0;
+    this.goalContribution = goalContribution || 0;
+    this.source = source || '';
+    this.time = time || '';
   }
 }
 
@@ -72,6 +95,7 @@ function App() {
   const [filterLocation, setFilterLocation] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
   const [summaryData, setSummaryData] = useState([]);
+  const [filterYear, setFilterYear] = useState("");
 
   // ===== 新增 toggleMenu =====
   const toggleMenu = () => setMenuOpen(!menuOpen);
@@ -175,6 +199,7 @@ function App() {
     setActiveContributor((prev) => (prev === name ? null : name));
     setFilterLocation("");
     setFilterMonth("");
+    setFilterYear("");
   };
 
   return (
@@ -231,6 +256,8 @@ function App() {
                         setFilterLocation={setFilterLocation}
                         filterMonth={filterMonth}
                         setFilterMonth={setFilterMonth}
+                        filterYear={filterYear}          // ← new
+                        setFilterYear={setFilterYear}    // ← new
                       />
                     )}
                     {activeView === "modify" && contributors.length > 0 && (
