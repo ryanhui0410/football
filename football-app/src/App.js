@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
-import PlayerStatsForm from "./PlayerStatsForm";
-import ContributorDashboard from "./ContributorDashboard";
-import StatsSummary from "./StatsSummary";
-import FrontPage from "./FrontPage";
-import ModifyDashboard from "./ModifyDashboard";
-import EditMatchPage from "./EditMatchPage";
-import PlayerRatings from "./PlayerRatings";
-import Sidebar from "./Sidebar";
-import MenuButton from "./MenuButton";
+import PlayerStatsForm from "./AddStats/PlayerStatsForm";
+import ContributorDashboard from "./DisplayStats/ContributorDashboard";
+import StatsSummary from "./StatsSummary/StatsSummary";
+import FrontPage from "./UI/FrontPage";
+import ModifyDashboard from "./EditStats/ModifyDashboard";
+import EditMatchPage from "./EditStats/EditMatchPage";
+import PlayerRatings from "./PlayerRatings/PlayerRatings";
+import Sidebar from "./UI/Sidebar";
+import MenuButton from "./UI/MenuButton";
 
 class PlayerStats {
   constructor(fields) {
@@ -22,8 +22,7 @@ class Match {
     Symbol, 
     Rating, 
     Location,
-    // 新增字段
-    'Left Foot': leftFoot,      // 注意 JSON 中的字段名带空格
+    'Left Foot': leftFoot,
     'Right Foot': rightFoot,
     'Head': head,
     'Other body parts': other,
@@ -31,7 +30,6 @@ class Match {
     'Goal Contribution': goalContribution,
     'source': source,
     'Time': time,
-    // 如果还有其它字段（如 Contributor、Goal 等），也可一并加上
   }) {
     this.date = Date;
     this.symbol = Symbol;
@@ -96,7 +94,7 @@ function App() {
   const [filterMonth, setFilterMonth] = useState("");
   const [summaryData, setSummaryData] = useState([]);
   const [filterYear, setFilterYear] = useState("");
-
+  
   // ===== 新增 toggleMenu =====
   const toggleMenu = () => setMenuOpen(!menuOpen);
 

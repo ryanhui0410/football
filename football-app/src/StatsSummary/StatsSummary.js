@@ -1,28 +1,24 @@
 import React, { useState } from "react";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import FormTrendGraph from "./FormTrendGraph";
+import StreakTracker from "./StreakTracker";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function StatsSummary({ stats }) {
   const [filterSeason, setFilterSeason] = useState("");
 
-  // 辅助函数：获取赛季标签 (Aug-Jul)
   const getSeasonLabel = (dateStr) => {
     const d = new Date(dateStr);
     const year = d.getFullYear();
-    const month = d.getMonth() + 1; // 1-12
-    if (month >= 8) {
-      return `${year}-${year + 1}`;
-    } else {
-      return `${year - 1}-${year}`;
-    }
+    const month = d.getMonth() + 1;
+    if (month >= 8) return `${year}-${year + 1}`;
+    else return `${year - 1}-${year}`;
   };
 
-  // 获取所有可用的赛季选项
   const allSeasons = [...new Set(stats.map(s => getSeasonLabel(s.Date)).filter(Boolean))].sort();
 
-  // 按赛季过滤数据
   const filteredStats = filterSeason
     ? stats.filter(s => getSeasonLabel(s.Date) === filterSeason)
     : stats;
@@ -42,26 +38,48 @@ function StatsSummary({ stats }) {
         assists: 0,
         errors: 0,
         locationStats: {},
+        matches: [], // store each match for form/streaks
       };
     }
 
     const entry = contributorMap[name];
-    entry.ratings.push(parseFloat(s.Rating) || 0);
-    entry.left += parseInt(s["Left Foot"] || 0);
-    entry.right += parseInt(s["Right Foot"] || 0);
-    entry.head += parseInt(s.Head || s["Head"] || 0);
-    entry.assists += parseInt(s.Assist || 0);
-    entry.errors += parseInt(s["Error?"] || 0);
+    const rating = parseFloat(s.Rating) || 0;
+    const left = parseInt(s["Left Foot"] || 0);
+    const right = parseInt(s["Right Foot"] || 0);
+    const head = parseInt(s.Head || s["Head"] || 0);
+    const assists = parseInt(s.Assist || 0);
+    const errors = parseInt(s["Error?"] || 0);
+    const date = s.Date;
 
+    entry.ratings.push(rating);
+    entry.left += left;
+    entry.right += right;
+    entry.head += head;
+    entry.assists += assists;
+    entry.errors += errors;
+
+    // Store match‑level data
+    entry.matches.push({
+      date,
+      rating,
+      goals: left + right + head,
+      assists,
+    });
+
+    // Location stats
     const location = s.Location?.trim() || "Unknown";
     if (!entry.locationStats[location]) {
       entry.locationStats[location] = { count: 0, goals: 0, assists: 0 };
     }
     const loc = entry.locationStats[location];
     loc.count += 1;
-    const goals = (parseInt(s["Left Foot"] || 0) + parseInt(s["Right Foot"] || 0) + parseInt(s.Head || s["Head"] || 0));
-    loc.goals += goals;
-    loc.assists += parseInt(s.Assist || 0);
+    loc.goals += left + right + head;
+    loc.assists += assists;
+  });
+
+  // Sort each player's matches chronologically
+  Object.values(contributorMap).forEach(entry => {
+    entry.matches.sort((a, b) => new Date(a.date) - new Date(b.date));
   });
 
   return (
@@ -69,7 +87,7 @@ function StatsSummary({ stats }) {
       <h2>Stats Summary</h2>
 
       <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
-        {/* 左侧赛季过滤器 */}
+        {/* Left filter panel */}
         <div
           style={{
             width: "200px",
@@ -102,7 +120,7 @@ function StatsSummary({ stats }) {
           )}
         </div>
 
-        {/* 右侧统计卡片 */}
+        {/* Cards grid */}
         <div
           style={{
             display: "flex",
@@ -159,12 +177,11 @@ function StatsSummary({ stats }) {
                 stats.errors === 0 ? "green" : stats.errors <= 3 ? "#ffb300" : "red",
             };
 
-            // 地点表格数据：过滤掉 Unknown
+            // Location table data
             const locationEntries = Object.entries(stats.locationStats)
               .filter(([loc]) => loc !== "Unknown")
               .sort((a, b) => a[0].localeCompare(b[0]));
 
-            // 计算每个地点的平均贡献，并找出最大值
             const locationData = locationEntries.map(([loc, data]) => {
               const avgGoals = data.count > 0 ? (data.goals / data.count) : 0;
               const avgAssists = data.count > 0 ? (data.assists / data.count) : 0;
@@ -172,14 +189,16 @@ function StatsSummary({ stats }) {
               return { loc, data, avgGoals, avgAssists, avgContrib };
             });
 
-            const maxContrib = locationData.length > 0 ? Math.max(...locationData.map(d => d.avgContrib)) : 0;
+            const maxContrib = locationData.length > 0
+              ? Math.max(...locationData.map(d => d.avgContrib))
+              : 0;
 
             return (
               <div
                 key={name}
                 style={{
                   flex: "1 1 calc(50% - 20px)",
-                  maxWidth: "280px",
+                  maxWidth: "300px",
                   border: "1px solid #ccc",
                   borderRadius: "8px",
                   padding: "15px",
@@ -189,15 +208,8 @@ function StatsSummary({ stats }) {
               >
                 <h3>{name}</h3>
 
-                {/* 原有统计汇总 */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
-                    marginBottom: "10px",
-                  }}
-                >
+                {/* Summary numbers */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "10px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ fontWeight: "bold" }}>Avg Rating:</span>
                     <span style={ratingStyle}>{avgRating.toFixed(2)}</span>
@@ -220,7 +232,7 @@ function StatsSummary({ stats }) {
                   </div>
                 </div>
 
-                {/* 饼图 */}
+                {/* Pie chart */}
                 {totalGoals > 0 ? (
                   <div style={{ height: "200px", width: "200px", margin: "10px auto 0" }}>
                     <Pie
@@ -236,7 +248,13 @@ function StatsSummary({ stats }) {
                   <p style={{ marginTop: "8px" }}>No goal source data</p>
                 )}
 
-                {/* 地点表格 */}
+                {/* Form Trend Graph */}
+                <FormTrendGraph matches={stats.matches} />
+
+                {/* Streak Tracker */}
+                <StreakTracker matches={stats.matches} />
+
+                {/* Location table */}
                 {locationData.length > 0 && (
                   <div style={{ marginTop: "10px", borderTop: "1px solid #ddd", paddingTop: "8px" }}>
                     <div style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "6px" }}>
@@ -258,9 +276,7 @@ function StatsSummary({ stats }) {
                           return (
                             <tr
                               key={loc}
-                              style={{
-                                backgroundColor: isMax ? "#e6f7ff" : "transparent",
-                              }}
+                              style={{ backgroundColor: isMax ? "#e6f7ff" : "transparent" }}
                             >
                               <td style={{ padding: "4px", border: "1px solid #ddd", textAlign: "left" }}>{loc}</td>
                               <td style={{ padding: "4px", border: "1px solid #ddd", textAlign: "center" }}>{data.count}</td>
