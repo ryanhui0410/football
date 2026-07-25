@@ -3,7 +3,7 @@ const fs = require("fs");
 const XLSX = require("xlsx");
 
 const sheetName = "2025-2026";
-const workbook = XLSX.readFile("../public/football stats.xlsx");
+const workbook = XLSX.readFile('../../../public/football stats.xlsx');
 const sheet = workbook.Sheets[sheetName];
 if (!sheet) {
   console.error(`Sheet "${sheetName}" not found`);
