@@ -1,88 +1,19 @@
 [
   {
-    "Date": "7/25/2026",
-    "Contributor": "Ryan",
-    "Symbol": "⚽⚽👟",
-    "Goal": 2,
-    "Assist": 1,
-    "Rating": 9.8,
-    "Location": "黃竹坑",
-    "Time": "9:30 AM",
-    "Goal Contribution": 3,
-    "source": "Barry",
-    "Left Foot": 0,
-    "Right Foot": 2,
-    "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
-  },
-  {
-    "Date": "7/25/2026",
-    "Contributor": "Darren",
-    "Symbol": "👟👟",
-    "Goal": 0,
-    "Assist": 2,
-    "Rating": 8.4,
-    "Location": "黃竹坑",
-    "Time": "9:30 AM",
-    "Goal Contribution": 2,
-    "source": "Barry",
-    "Left Foot": 0,
-    "Right Foot": 0,
-    "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
-  },
-  {
-    "Date": "7/19/2026",
-    "Contributor": "Ryan",
-    "Symbol": "⚽",
-    "Goal": 1,
-    "Assist": 0,
-    "Rating": 7.4,
-    "Location": "雲景道",
-    "Time": "4:30 PM",
-    "Goal Contribution": 1,
-    "source": "梁哥",
-    "Left Foot": 0,
-    "Right Foot": 1,
-    "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
-  },
-  {
-    "Date": "7/18/2026",
-    "Contributor": "Ryan",
-    "Symbol": "⚽⚽⚽",
-    "Goal": 3,
-    "Assist": 0,
-    "Rating": 9.7,
-    "Location": "跑馬地",
-    "Time": "11:30 AM",
-    "Goal Contribution": 3,
-    "source": "Barry",
-    "Left Foot": 1,
-    "Right Foot": 2,
-    "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
-  },
-  {
     "Date": "7/12/2026",
     "Contributor": "Ryan",
-    "Symbol": "⚽👟",
-    "Goal": 1,
-    "Assist": 1,
-    "Rating": 8.7,
+    "Symbol": "⚽⚽⚽⚽⚽⚽⚽⚽⚽⚽👟👟👟",
+    "Goal": 10,
+    "Assist": "3",
+    "Rating": "0.5",
     "Location": "雲景道",
     "Time": "4:30 PM",
-    "Goal Contribution": 2,
+    "Goal Contribution": 13,
     "source": "梁哥",
-    "Left Foot": 0,
-    "Right Foot": 1,
-    "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Left Foot": "5",
+    "Right Foot": "5",
+    "Head": "",
+    "Other body parts": 0
   },
   {
     "Date": "7/12/2026",
@@ -98,8 +29,7 @@
     "Left Foot": 1,
     "Right Foot": 1,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "7/9/2026",
@@ -116,8 +46,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "7/9/2026",
@@ -133,8 +62,7 @@
     "Left Foot": 2,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "7/5/2026",
@@ -150,8 +78,7 @@
     "Left Foot": 0,
     "Right Foot": 4,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "7/5/2026",
@@ -167,8 +94,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "7/1/2026",
@@ -184,8 +110,7 @@
     "Left Foot": 1,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "7/1/2026",
@@ -201,8 +126,7 @@
     "Left Foot": 1,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "6/21/2026",
@@ -218,8 +142,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "6/21/2026",
@@ -235,8 +158,7 @@
     "Left Foot": 3,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "6/19/2026",
@@ -252,25 +174,23 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "6/19/2026",
     "Contributor": "Darren",
     "Symbol": "⚽",
     "Goal": 1,
-    "Assist": 0,
+    "Assist": "20",
     "Rating": 8.8,
     "Location": "跑馬地",
     "Time": "9:30 AM",
     "Goal Contribution": 1,
     "source": "Barry",
-    "Left Foot": 1,
-    "Right Foot": 0,
+    "Left Foot": "20",
+    "Right Foot": "20",
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "6/11/2026",
@@ -286,8 +206,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "6/11/2026",
@@ -303,8 +222,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "6/4/2026",
@@ -320,8 +238,7 @@
     "Left Foot": 1,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "6/4/2026",
@@ -337,8 +254,7 @@
     "Left Foot": 0,
     "Right Foot": 3,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "5/31/2026",
@@ -354,8 +270,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "5/31/2026",
@@ -371,8 +286,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "5/24/2026",
@@ -388,8 +302,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "5/24/2026",
@@ -405,8 +318,7 @@
     "Left Foot": 1,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "5/22/2026",
@@ -422,8 +334,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "5/17/2026",
@@ -439,8 +350,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "5/17/2026",
@@ -456,8 +366,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "5/12/2026",
@@ -473,8 +382,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "5/10/2026",
@@ -490,8 +398,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "5/10/2026",
@@ -507,8 +414,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "5/10/2026",
@@ -524,8 +430,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "4/26/2026",
@@ -541,8 +446,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "4/26/2026",
@@ -558,8 +462,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "4/19/2026",
@@ -575,8 +478,7 @@
     "Left Foot": 2,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "4/19/2026",
@@ -592,8 +494,7 @@
     "Left Foot": 2,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "4/12/2026",
@@ -609,8 +510,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "4/12/2026",
@@ -626,8 +526,7 @@
     "Left Foot": 0,
     "Right Foot": 3,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "4/7/2026",
@@ -643,8 +542,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "4/7/2026",
@@ -660,8 +558,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "4/1/2026",
@@ -677,8 +574,7 @@
     "Left Foot": 1,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "4/1/2026",
@@ -694,8 +590,7 @@
     "Left Foot": 1,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/29/2026",
@@ -711,8 +606,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/29/2026",
@@ -728,8 +622,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/28/2026",
@@ -745,8 +638,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/26/2026",
@@ -762,8 +654,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/22/2026",
@@ -779,8 +670,7 @@
     "Left Foot": 1,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/22/2026",
@@ -796,8 +686,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/16/2026",
@@ -814,8 +703,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/16/2026",
@@ -831,8 +719,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/14/2026",
@@ -848,8 +735,7 @@
     "Left Foot": 2,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/14/2026",
@@ -865,8 +751,7 @@
     "Left Foot": 1,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/9/2026",
@@ -882,8 +767,7 @@
     "Left Foot": 1,
     "Right Foot": 1,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/9/2026",
@@ -899,8 +783,7 @@
     "Left Foot": 1,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/8/2026",
@@ -916,8 +799,7 @@
     "Left Foot": 0,
     "Right Foot": 3,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/8/2026",
@@ -933,8 +815,7 @@
     "Left Foot": 0,
     "Right Foot": 3,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/1/2026",
@@ -950,8 +831,7 @@
     "Left Foot": 1,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "3/1/2026",
@@ -967,8 +847,7 @@
     "Left Foot": 0,
     "Right Foot": 4,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "2/22/2026",
@@ -984,8 +863,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "2/22/2026",
@@ -1001,8 +879,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "2/19/2026",
@@ -1018,8 +895,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "2/19/2026",
@@ -1035,8 +911,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "2/15/2026",
@@ -1052,8 +927,7 @@
     "Left Foot": 1,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "2/15/2026",
@@ -1069,8 +943,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "2/15/2026",
@@ -1086,8 +959,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "2/4/2026",
@@ -1103,8 +975,7 @@
     "Left Foot": 1,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "2/4/2026",
@@ -1120,8 +991,7 @@
     "Left Foot": 1,
     "Right Foot": 6,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "2/1/2026",
@@ -1137,8 +1007,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "2/1/2026",
@@ -1154,8 +1023,7 @@
     "Left Foot": 1,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/27/2026",
@@ -1171,8 +1039,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/27/2026",
@@ -1188,8 +1055,7 @@
     "Left Foot": 0,
     "Right Foot": 3,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/25/2026",
@@ -1205,8 +1071,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/17/2026",
@@ -1214,33 +1079,37 @@
     "Symbol": "⚽👟",
     "Goal": 1,
     "Assist": 1,
-    "Rating": 9.2,
+    "Rating": "0.5",
     "Location": "馬仔坑",
     "Time": "10:45 AM",
     "Goal Contribution": 2,
     "source": "Barry",
-    "Left Foot": 1,
-    "Right Foot": 0,
-    "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Left Foot": "20",
+    "Right Foot": "30",
+    "Head": "20",
+    "Other body parts": 0
   },
   {
     "Date": "1/17/2026",
     "Contributor": "Darren",
     "Symbol": "⚽⚽",
-    "Goal": 2,
-    "Assist": 0,
-    "Rating": 8.8,
+    "Goal": "20",
+    "Assist": "20",
+    "Rating": "7.5",
     "Location": "馬仔坑",
     "Time": "10:45 AM",
     "Goal Contribution": 2,
     "source": "Barry",
-    "Left Foot": 1,
-    "Right Foot": 1,
-    "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Left Foot": "6",
+    "Right Foot": "7",
+    "Head": "2",
+    "Other body parts": "0",
+    "date": "2026-07-31",
+    "symbol": "⚽👞",
+    "rating": "9.8",
+    "location": "",
+    "index": 68,
+    "contributorName": "Ryan"
   },
   {
     "Date": "1/14/2026",
@@ -1256,8 +1125,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/14/2026",
@@ -1273,8 +1141,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 2,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/11/2026",
@@ -1290,8 +1157,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/11/2026",
@@ -1307,8 +1173,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/10/2026",
@@ -1324,8 +1189,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/10/2026",
@@ -1341,8 +1205,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/4/2026",
@@ -1358,8 +1221,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/4/2026",
@@ -1375,8 +1237,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/1/2026",
@@ -1392,8 +1253,7 @@
     "Left Foot": 1,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/1/2026",
@@ -1409,8 +1269,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "1/1/2026",
@@ -1426,8 +1285,7 @@
     "Left Foot": 1,
     "Right Foot": 3,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "12/21/2025",
@@ -1443,8 +1301,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "12/21/2025",
@@ -1460,8 +1317,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "12/17/2025",
@@ -1477,8 +1333,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "12/17/2025",
@@ -1494,8 +1349,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "12/7/2025",
@@ -1511,8 +1365,7 @@
     "Left Foot": 1,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "12/7/2025",
@@ -1528,8 +1381,7 @@
     "Left Foot": 1,
     "Right Foot": 5,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "11/30/2025",
@@ -1545,8 +1397,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "11/30/2025",
@@ -1562,8 +1413,7 @@
     "Left Foot": 3,
     "Right Foot": 1,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "11/16/2025",
@@ -1579,8 +1429,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "11/16/2025",
@@ -1596,8 +1445,7 @@
     "Left Foot": 1,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "11/14/2025",
@@ -1613,8 +1461,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "11/14/2025",
@@ -1630,8 +1477,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "11/9/2025",
@@ -1647,8 +1493,7 @@
     "Left Foot": 0,
     "Right Foot": 4,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "11/9/2025",
@@ -1664,8 +1509,7 @@
     "Left Foot": 2,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/29/2025",
@@ -1681,8 +1525,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/29/2025",
@@ -1698,8 +1541,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/29/2025",
@@ -1715,8 +1557,7 @@
     "Left Foot": 1,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/26/2025",
@@ -1732,8 +1573,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/26/2025",
@@ -1749,8 +1589,7 @@
     "Left Foot": 2,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/14/2025",
@@ -1766,8 +1605,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/14/2025",
@@ -1783,8 +1621,7 @@
     "Left Foot": 3,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/12/2025",
@@ -1800,8 +1637,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 2,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/9/2025",
@@ -1817,8 +1653,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/9/2025",
@@ -1834,8 +1669,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/7/2025",
@@ -1851,8 +1685,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/7/2025",
@@ -1868,8 +1701,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/5/2025",
@@ -1885,8 +1717,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/5/2025",
@@ -1902,8 +1733,7 @@
     "Left Foot": 1,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/1/2025",
@@ -1919,8 +1749,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "10/1/2025",
@@ -1936,8 +1765,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "9/22/2025",
@@ -1953,8 +1781,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "9/22/2025",
@@ -1970,8 +1797,7 @@
     "Left Foot": 1,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "9/21/2025",
@@ -1987,8 +1813,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "9/21/2025",
@@ -2004,8 +1829,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "9/14/2025",
@@ -2021,8 +1845,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "9/14/2025",
@@ -2038,8 +1861,7 @@
     "Left Foot": 1,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "9/2/2025",
@@ -2055,8 +1877,7 @@
     "Left Foot": 1,
     "Right Foot": 3,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "9/2/2025",
@@ -2072,8 +1893,7 @@
     "Left Foot": 0,
     "Right Foot": 3,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "8/31/2025",
@@ -2089,8 +1909,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "8/31/2025",
@@ -2106,8 +1925,7 @@
     "Left Foot": 1,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "8/24/2025",
@@ -2123,8 +1941,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "8/24/2025",
@@ -2140,8 +1957,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "8/12/2025",
@@ -2158,8 +1974,7 @@
     "Left Foot": 0,
     "Right Foot": 2,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "8/12/2025",
@@ -2175,8 +1990,7 @@
     "Left Foot": 1,
     "Right Foot": 2,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "8/10/2025",
@@ -2192,8 +2006,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "8/10/2025",
@@ -2209,8 +2022,7 @@
     "Left Foot": 1,
     "Right Foot": 1,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "8/5/2025",
@@ -2226,8 +2038,7 @@
     "Left Foot": 0,
     "Right Foot": 0,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "8/5/2025",
@@ -2243,8 +2054,7 @@
     "Left Foot": 0,
     "Right Foot": 1,
     "Head": 1,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
   {
     "Date": "8/3/2025",
@@ -2252,16 +2062,15 @@
     "Symbol": "⚽⚽⚽⚽⚽👟👟👟👟",
     "Goal": 5,
     "Assist": 4,
-    "Rating": 10,
+    "Rating": "1.1",
     "Location": "雲景道",
     "Time": "4:00 PM",
     "Goal Contribution": 9,
     "source": "梁哥",
-    "Left Foot": 1,
-    "Right Foot": 4,
-    "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Left Foot": "9",
+    "Right Foot": "9",
+    "Head": "",
+    "Other body parts": 0
   },
   {
     "Date": "8/3/2025",
@@ -2277,9 +2086,76 @@
     "Left Foot": 0,
     "Right Foot": 5,
     "Head": 0,
-    "Other body parts": 0,
-    "Season": "2025-2026"
+    "Other body parts": 0
   },
-  {},
-  {}
+  {
+    "Date": "7/31/2026",
+    "Contributor": "Ryan",
+    "Goal": 8,
+    "Assist": "2",
+    "Rating": "8.7",
+    "Location": "黃竹坑",
+    "Time": "9:00 PM",
+    "Error": "0",
+    "source": "馬哲",
+    "LeftFoot": "6",
+    "RightFoot": "5",
+    "Head": "8",
+    "OtherBodyParts": "",
+    "Symbol": "⚽⚽⚽⚽⚽⚽⚽⚽👟👟",
+    "Goal Contribution": 10
+  },
+  {
+    "Date": "8/31/2026",
+    "Contributor": "Ryan",
+    "Goal": 0,
+    "Assist": "",
+    "Rating": "",
+    "Location": "",
+    "Time": "",
+    "Error": "",
+    "source": "",
+    "LeftFoot": "",
+    "RightFoot": "",
+    "Head": "",
+    "OtherBodyParts": "",
+    "Symbol": "",
+    "Goal Contribution": 0
+  },
+  {
+    "Date": "9/30/2026",
+    "Contributor": "Ryan",
+    "Goal": 1,
+    "Assist": "20",
+    "Rating": "8.7",
+    "Location": "興華街西",
+    "Time": "9:30 PM",
+    "Error": "0",
+    "source": "馬哲",
+    "LeftFoot": "20",
+    "RightFoot": "20",
+    "Head": "1",
+    "OtherBodyParts": "0",
+    "Symbol": "⚽👟👟👟👟👟👟👟👟👟👟👟👟👟👟👟👟👟👟👟👟",
+    "Goal Contribution": 21
+  },
+  {
+    "Date": "10/30/2026",
+    "Contributor": "Ryan",
+    "Goal": 0,
+    "Assist": "",
+    "Rating": "8.0",
+    "Location": "曾大屋",
+    "Time": "10:00 AM",
+    "Error": "0",
+    "source": "Barry",
+    "LeftFoot": "4",
+    "RightFoot": "2",
+    "Head": "",
+    "OtherBodyParts": "",
+    "Symbol": "",
+    "Goal Contribution": 0,
+    "Left Foot": "",
+    "Right Foot": ""
+  }
 ]

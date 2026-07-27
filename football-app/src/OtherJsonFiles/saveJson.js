@@ -1,9 +1,11 @@
 // saveJson.js
 const fs = require("fs");
 const XLSX = require("xlsx");
-
+const path = require("path");
 const sheetName = "2025-2026";
-const workbook = XLSX.readFile('../../../public/football stats.xlsx');
+const inputPath = path.join(__dirname, "..", "..", "public", "football stats.xlsx");
+const outputPath = path.join(__dirname, "..", "football_stats_2025_2026.json");
+const workbook = XLSX.readFile(inputPath);
 const sheet = workbook.Sheets[sheetName];
 if (!sheet) {
   console.error(`Sheet "${sheetName}" not found`);
