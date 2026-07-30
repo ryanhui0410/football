@@ -1,162 +1,132 @@
 import React from "react";
 import "./PlayerStatsForm.css";
 
+// ---------- Scoreboard stepper (replaces number inputs) ----------
+function Stepper({ label, name, value, onChange, min = 0, max = 99 }) {
+  const current = parseFloat(value) || 0;
+
+  const adjust = (dir) => {
+    const next = Math.min(max, Math.max(min, current + dir));
+    onChange({ target: { name, value: String(next) } }); // same shape as handleChange expects
+  };
+
+  return (
+    <div className="stepper">
+      <span className="stepper-label">{label}</span>
+      <div className="stepper-controls">
+        <button type="button" className="step-btn" onClick={() => adjust(-1)} disabled={current <= min}>−</button>
+        <input
+          type="text"
+          inputMode="numeric"
+          className="step-value"
+          name={name}
+          value={value}
+          onChange={onChange}
+          autoComplete="off"
+        />
+        <button type="button" className="step-btn" onClick={() => adjust(1)} disabled={current >= max}>+</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Rating slider ----------
+function RatingSlider({ label, name, value, onChange }) {
+  const num = parseFloat(value) || 0;
+  return (
+    <div className="rating-block">
+      <div className="rating-head">
+        <span className="stepper-label">{label}</span>
+        <span className="rating-badge">{num.toFixed(1)}</span>
+      </div>
+      <input
+        type="range"
+        className="rating-slider"
+        name={name}
+        min="0"
+        max="10"
+        step="0.1"
+        value={num}
+        onChange={onChange}
+        style={{ "--fill": `${num * 10}%` }}
+      />
+      <div className="rating-scale"><span>0</span><span>5</span><span>10</span></div>
+    </div>
+  );
+}
+
 function PlayerStatsForm({ formData, handleChange, handleSubmit, onCancel, history = {} }) {
   const { contributors = [], locations = [], times = [], sources = [] } = history;
 
+  const infoFields = [
+    { label: "Date (MM/DD/YYYY)", name: "Date", placeholder: "e.g. 7/12/2026", pattern: "\\d{1,2}/\\d{1,2}/\\d{4}", title: "Enter date in MM/DD/YYYY format" },
+    { label: "Contributor", name: "Contributor", list: "contributors", options: contributors },
+    { label: "Location", name: "Location", list: "locations", options: locations },
+    { label: "Time", name: "Time", list: "times", options: times },
+    { label: "Source", name: "source", list: "sources", options: sources },
+    { label: "Error", name: "Error" },
+  ];
+
+  const statFields = [
+    { label: "Goal", name: "Goal" },
+    { label: "Assist", name: "Assist" },
+    { label: "Left Foot", name: "LeftFoot" },
+    { label: "Right Foot", name: "RightFoot" },
+    { label: "Head", name: "Head" },
+    { label: "Other Body Parts", name: "OtherBodyParts" },
+  ];
+
   return (
     <form onSubmit={handleSubmit} className="form-container">
-      {/* Date – now a text input */}
-      <div className="field-box">
-        <label>
-          Date (MM/DD/YYYY):
-          <input
-            type="text"
-            name="Date"
-            value={formData.Date}
-            onChange={handleChange}
-            placeholder="e.g. 7/12/2026"
-            pattern="\d{1,2}/\d{1,2}/\d{4}"
-            title="Enter date in MM/DD/YYYY format"
-          />
-        </label>
+      <div className="form-header">
+        <span className="form-kicker">MATCH DAY</span>
+        <h2 className="form-title">Add Player Stats</h2>
       </div>
 
-      {/* Contributor – unchanged (with datalist) */}
-      <div className="field-box">
-        <label>
-          Contributor:
-          <input
-            list="contributors"
-            name="Contributor"
-            value={formData.Contributor}
-            onChange={handleChange}
-            autoComplete="off"
-          />
-          <datalist id="contributors">
-            {contributors.map(c => <option key={c} value={c} />)}
-          </datalist>
-        </label>
-      </div>
+      {/* ---- Match info ---- */}
+      <section className="form-section">
+        <h3 className="section-title">Match Info</h3>
+        <div className="info-grid">
+          {infoFields.map((f) => (
+            <div className="field-box" key={f.name}>
+              <label className="info-label">
+                {f.label}
+                <input
+                  type="text"
+                  name={f.name}
+                  value={formData[f.name]}
+                  onChange={handleChange}
+                  autoComplete="off"
+                  {...(f.placeholder && { placeholder: f.placeholder })}
+                  {...(f.pattern && { pattern: f.pattern })}
+                  {...(f.title && { title: f.title })}
+                  {...(f.list && { list: f.list })}
+                />
+              </label>
+              {f.options && (
+                <datalist id={f.list}>
+                  {f.options.map((o) => <option key={o} value={o} />)}
+                </datalist>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
 
-      {/* Goal – number */}
-      <div className="field-box">
-        <label>
-          Goal:
-          <input type="number" name="Goal" value={formData.Goal} onChange={handleChange} />
-        </label>
-      </div>
+      {/* ---- Scoreboard ---- */}
+      <section className="form-section">
+        <h3 className="section-title">Scoreboard</h3>
+        <div className="stat-grid">
+          {statFields.map((f) => (
+            <Stepper key={f.name} {...f} value={formData[f.name]} onChange={handleChange} />
+          ))}
+        </div>
+        <RatingSlider label="Rating" name="Rating" value={formData.Rating} onChange={handleChange} />
+      </section>
 
-      {/* Assist – number */}
-      <div className="field-box">
-        <label>
-          Assist:
-          <input type="number" name="Assist" value={formData.Assist} onChange={handleChange} />
-        </label>
-      </div>
-
-      {/* Rating – number (can be decimal) */}
-      <div className="field-box">
-        <label>
-          Rating:
-          <input type="number" step="0.1" name="Rating" value={formData.Rating} onChange={handleChange} />
-        </label>
-      </div>
-
-      {/* Location – text (with datalist) */}
-      <div className="field-box">
-        <label>
-          Location:
-          <input
-            list="locations"
-            name="Location"
-            value={formData.Location}
-            onChange={handleChange}
-            autoComplete="off"
-          />
-          <datalist id="locations">
-            {locations.map(l => <option key={l} value={l} />)}
-          </datalist>
-        </label>
-      </div>
-
-      {/* Time – text (with datalist) */}
-      <div className="field-box">
-        <label>
-          Time:
-          <input
-            list="times"
-            name="Time"
-            value={formData.Time}
-            onChange={handleChange}
-            autoComplete="off"
-          />
-          <datalist id="times">
-            {times.map(t => <option key={t} value={t} />)}
-          </datalist>
-        </label>
-      </div>
-
-      {/* Error – text (could be a note) */}
-      <div className="field-box">
-        <label>
-          Error:
-          <input type="text" name="Error" value={formData.Error} onChange={handleChange} />
-        </label>
-      </div>
-
-      {/* Source – text (with datalist) */}
-      <div className="field-box">
-        <label>
-          Source:
-          <input
-            list="sources"
-            name="source"   // note: lowercase 's' – matches JSON field 'source'
-            value={formData.source}
-            onChange={handleChange}
-            autoComplete="off"
-          />
-          <datalist id="sources">
-            {sources.map(s => <option key={s} value={s} />)}
-          </datalist>
-        </label>
-      </div>
-
-      {/* LeftFoot – number */}
-      <div className="field-box">
-        <label>
-          Left Foot:
-          <input type="number" name="LeftFoot" value={formData.LeftFoot} onChange={handleChange} />
-        </label>
-      </div>
-
-      {/* RightFoot – number */}
-      <div className="field-box">
-        <label>
-          Right Foot:
-          <input type="number" name="RightFoot" value={formData.RightFoot} onChange={handleChange} />
-        </label>
-      </div>
-
-      {/* Head – number */}
-      <div className="field-box">
-        <label>
-          Head:
-          <input type="number" name="Head" value={formData.Head} onChange={handleChange} />
-        </label>
-      </div>
-
-      {/* OtherBodyParts – number */}
-      <div className="field-box">
-        <label>
-          Other Body Parts:
-          <input type="number" name="OtherBodyParts" value={formData.OtherBodyParts} onChange={handleChange} />
-        </label>
-      </div>
-
-      <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-        <button type="submit">Save</button>
-        <button type="button" onClick={onCancel}>Cancel</button>
+      <div className="form-actions">
+        <button type="submit" className="btn-save">Save Stats</button>
+        <button type="button" className="btn-cancel" onClick={onCancel}>Cancel</button>
       </div>
     </form>
   );

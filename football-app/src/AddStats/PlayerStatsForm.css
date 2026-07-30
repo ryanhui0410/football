@@ -1,71 +1,239 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap');
+
+/* ============ Container – night-match pitch card ============ */
 .form-container {
-  max-width: 600px;
-  margin: 30px auto;
-  padding: 25px;
-  background-color: #f9f9f9;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 34px 38px 38px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 4px solid #f2c14e;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.028) 0 90px, transparent 90px 180px),
+    linear-gradient(160deg, #0d5a3e 0%, #083a29 75%);
+  box-shadow: 0 24px 60px rgba(3, 25, 17, 0.45);
+  font-family: 'Barlow', sans-serif;
+  color: #eef4ee;
 }
 
-.field-box {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+/* ============ Header ============ */
+.form-kicker {
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  color: #f2c14e;
+}
+.form-title {
+  margin: 6px 0 0;
+  font-family: 'Oswald', sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.form-container label {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;              /* ← space between ":" and the input */
+/* ============ Sections ============ */
+.form-section { margin-top: 30px; }
+.section-title {
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.25);
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
   font-weight: 600;
-  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(238, 244, 238, 0.72);
 }
 
-.form-container input {
-  width: 540px;
-  max-width: 100%;
+/* ============ Match info inputs ============ */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+.info-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: rgba(238, 244, 238, 0.8);
+}
+.info-label input {
+  width: 100%;
+  margin-top: 6px;
   padding: 10px 12px;
-  /* margin-top: 6px;  ← remove this */
-  border: 1px solid #ccc;
   border-radius: 8px;
-  font-size: 0.95rem;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font-family: 'Barlow', sans-serif;
+  font-size: 15px;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
-
-.form-container input:focus {
-  border-color: #2196F3;
-  box-shadow: 0 0 5px rgba(33,150,243,0.4);
+.info-label input::placeholder { color: rgba(238, 244, 238, 0.35); }
+.info-label input:focus {
   outline: none;
+  border-color: #f2c14e;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(242, 193, 78, 0.18);
 }
 
-.form-container button {
-  padding: 10px 20px;
-  margin: 10px 8px 0 0;
+/* ============ Scoreboard steppers ============ */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+}
+.stepper {
+  padding: 16px 10px 14px;
+  text-align: center;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(4, 32, 22, 0.55);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.stepper:hover {
+  transform: translateY(-3px);
+  border-color: rgba(242, 193, 78, 0.55);
+}
+.stepper-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(238, 244, 238, 0.7);
+}
+.stepper-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.step-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+.step-btn:hover:not(:disabled) { background: #f2c14e; color: #083a29; }
+.step-btn:active:not(:disabled) { transform: scale(0.88); }
+.step-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+.step-value {
+  width: 52px;
+  padding: 2px 0;
+  text-align: center;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 27px;
+  font-weight: 600;
+  transition: border-color 0.2s;
+}
+.step-value:focus { outline: none; border-bottom-color: #f2c14e; }
+
+/* ============ Rating slider ============ */
+.rating-block {
+  margin-top: 20px;
+  padding: 18px 20px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(4, 32, 22, 0.55);
+}
+.rating-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.rating-badge {
+  padding: 2px 16px;
+  border-radius: 6px;
+  background: #f2c14e;
+  color: #083a29;
+  font-family: 'Oswald', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+}
+.rating-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #f2c14e var(--fill, 0%), rgba(255,255,255,0.16) var(--fill, 0%));
+  cursor: pointer;
+}
+.rating-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #083a29;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s;
+}
+.rating-slider::-webkit-slider-thumb:hover { transform: scale(1.18); }
+.rating-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #083a29;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.rating-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(238, 244, 238, 0.45);
+}
+
+/* ============ Action buttons ============ */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
+.btn-save {
+  padding: 12px 32px;
   border: none;
   border-radius: 8px;
-  font-weight: bold;
+  background: #f2c14e;
+  color: #083a29;
+  font-family: 'Oswald', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
-
-.form-container button[type="submit"] {
-  background-color: #4CAF50;
-  color: #fff;
+.btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(242, 193, 78, 0.35);
 }
-
-.form-container button[type="submit"]:hover {
-  background-color: #45a049;
+.btn-save:active { transform: translateY(0); }
+.btn-cancel {
+  padding: 12px 26px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+  color: #eef4ee;
+  font-family: 'Barlow', sans-serif;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s;
 }
-
-.form-container button[type="button"] {
-  background-color: #f44336;
-  color: #fff;
-}
-
-.form-container button[type="button"]:hover {
-  background-color: #d32f2f;
-}
+.btn-cancel:hover { background: rgba(255, 255, 255, 0.08); }
