@@ -104,6 +104,7 @@ app.post('/player-attributes', (req, res) => {
 });
 // --- POST /add-stats ---
 app.post("/add-stats", (req, res) => {
+  console.log("📥 Received body:", JSON.stringify(req.body)); 
   const newStat = req.body;
   const filePath = path.join(__dirname, "src", "football_stats_2025_2026.json");
 

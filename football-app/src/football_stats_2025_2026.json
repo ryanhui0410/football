@@ -2280,12 +2280,10 @@
     "Other body parts": 0,
     "Season": "2025-2026"
   },
-  {},
-  {},
   {
     "Date": "7/29/2026",
     "Contributor": "Darren",
-    "Goal": 0,
+    "Goal": "2",
     "Assist": "1",
     "Rating": "9.5",
     "Location": "維園",
@@ -2298,5 +2296,22 @@
     "OtherBodyParts": "0",
     "Symbol": "👟",
     "Goal Contribution": 1
+  },
+  {
+    "Date": "7/29/2026",
+    "Contributor": "Ryan",
+    "Goal": 0,
+    "Assist": "0",
+    "Rating": "8.5",
+    "Location": "維園",
+    "Time": "10:30 PM",
+    "Error": "0",
+    "source": "QC friends",
+    "LeftFoot": "0",
+    "RightFoot": "2",
+    "Head": "0",
+    "OtherBodyParts": "0",
+    "Symbol": "",
+    "Goal Contribution": 0
   }
 ]

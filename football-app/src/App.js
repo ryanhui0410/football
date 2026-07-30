@@ -134,6 +134,7 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newStats = new PlayerStats(formData);
+    console.log("📤 Sending:", JSON.stringify(newStats)); 
     await fetch("http://localhost:5000/add-stats", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
