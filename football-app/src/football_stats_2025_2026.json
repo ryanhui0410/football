@@ -2300,18 +2300,18 @@
   {
     "Date": "7/29/2026",
     "Contributor": "Ryan",
-    "Goal": 0,
-    "Assist": "0",
-    "Rating": "8.5",
+    "Goal": 2,
+    "Assist": 0,
+    "Rating": 8.4,
     "Location": "維園",
     "Time": "10:30 PM",
-    "Error": "0",
+    "Error": 0,
     "source": "QC friends",
-    "LeftFoot": "0",
-    "RightFoot": "2",
-    "Head": "0",
-    "OtherBodyParts": "0",
-    "Symbol": "",
-    "Goal Contribution": 0
+    "LeftFoot": 0,
+    "RightFoot": 2,
+    "Head": 0,
+    "OtherBodyParts": 0,
+    "Symbol": "⚽⚽",
+    "Goal Contribution": 2
   }
 ]
