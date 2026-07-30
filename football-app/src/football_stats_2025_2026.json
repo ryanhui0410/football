@@ -2283,18 +2283,18 @@
   {
     "Date": "7/29/2026",
     "Contributor": "Darren",
+    "Symbol": "⚽⚽👟",
     "Goal": 2,
     "Assist": 1,
     "Rating": 9.5,
     "Location": "維園",
     "Time": "10:30 PM",
-    "Error": 0,
+    "Goal Contribution": 3,
     "source": "QC friends",
-    "LeftFoot": 1,
-    "RightFoot": 1,
+    "Left Foot": 1,
+    "Right Foot": 1,
     "Head": 0,
-    "OtherBodyParts": 0,
-    "Symbol": "⚽⚽👟",
-    "Goal Contribution": 3
+    "Other body parts": 0,
+    "Season": "2025-2026"
   }
 ]

@@ -21,7 +21,6 @@ async function commitAndPush(message) {
   }
 }
 
-// ✅ Single version – parseFloat, camelCase keys
 function computeGoal(leftFoot, rightFoot, head) {
   return (parseFloat(leftFoot) || 0)
        + (parseFloat(rightFoot) || 0)
@@ -31,7 +30,7 @@ function computeGoal(leftFoot, rightFoot, head) {
 function computeSymbol(goal, assist) {
   const g = parseInt(goal) || 0;
   const a = parseInt(assist) || 0;
-  const ball = String.fromCodePoint(0x26bd); // ⚽
+  const ball = String.fromCodePoint(0x26bd);  // ⚽
   const shoe = String.fromCodePoint(0x1f45f); // 👟
   return ball.repeat(g) + shoe.repeat(a);
 }
@@ -40,21 +39,50 @@ function computeGoalContribution(goal, assist) {
   return (parseInt(goal) || 0) + (parseInt(assist) || 0);
 }
 
-// ✅ Convert string fields → numbers
-function toNumbers(stat) {
-  const numFields = [
-    "Goal", "Assist", "Rating", "LeftFoot", "RightFoot",
-    "Head", "OtherBodyParts", "Goal Contribution", "Error",
-  ];
-  numFields.forEach((field) => {
-    if (stat[field] !== undefined && stat[field] !== "") {
-      stat[field] = parseFloat(stat[field]) || 0;
-    }
-  });
-  return stat;
+// ✅ Season: Aug–Jul cycle
+function computeSeason(dateStr) {
+  if (!dateStr) return "";
+  const parts = dateStr.split("/");
+  const month = parseInt(parts[0]);
+  const year  = parseInt(parts[2]);
+  const startYear = month >= 8 ? year : year - 1;
+  return `${startYear}-${startYear + 1}`;
 }
 
-// ✅ Shared helper to read the stats JSON
+// ✅ Accept BOTH camelCase (from form) and spaced (from old data)
+//    Output ALWAYS in the standard spaced format
+function formatStat(raw) {
+  const leftFoot  = raw["Left Foot"]       ?? raw.LeftFoot       ?? 0;
+  const rightFoot = raw["Right Foot"]      ?? raw.RightFoot      ?? 0;
+  const head      = raw.Head               ?? 0;
+  const other     = raw["Other body parts"] ?? raw.OtherBodyParts ?? 0;
+  const assist    = raw.Assist             ?? 0;
+  const rating    = raw.Rating             ?? 0;
+
+  const goal = computeGoal(leftFoot, rightFoot, head);
+
+  // ✅ Fixed field order matching 8/3/2025 format
+  return {
+    Date:              raw.Date,
+    Contributor:       raw.Contributor,
+    Symbol:            computeSymbol(goal, assist),
+    Goal:              parseFloat(goal) || 0,
+    Assist:            parseFloat(assist) || 0,
+    Rating:            parseFloat(rating) || 0,
+    Location:          raw.Location,
+    Time:              raw.Time,
+    "Goal Contribution": computeGoalContribution(goal, assist),
+    source:            raw.source,
+    "Left Foot":       parseFloat(leftFoot) || 0,
+    "Right Foot":      parseFloat(rightFoot) || 0,
+    Head:              parseFloat(head) || 0,
+    "Other body parts": parseFloat(other) || 0,
+    Season:            computeSeason(raw.Date),
+  };
+}
+
+// ===================== Stats file I/O =====================
+
 const STATS_PATH = path.join(__dirname, "src", "football_stats_2025_2026.json");
 
 function readStats() {
@@ -128,27 +156,16 @@ app.post("/player-attributes", (req, res) => {
 // ===================== POST /add-stats =====================
 
 app.post("/add-stats", (req, res) => {
-  const newStat = req.body;
+  const raw = req.body;
 
-  if (!newStat || !newStat.Contributor) {
+  if (!raw || !raw.Contributor) {
     return res.status(400).json({ message: "❌ Missing contributor" });
   }
 
-  // ✅ Read existing data FIRST
   const data = readStats();
 
-  // 1. Compute Goal (camelCase keys)
-  const goal = computeGoal(newStat.LeftFoot, newStat.RightFoot, newStat.Head);
-  newStat.Goal = goal;
-
-  // 2. Compute Symbol
-  newStat.Symbol = computeSymbol(goal, newStat.Assist);
-
-  // 3. Compute Goal Contribution
-  newStat["Goal Contribution"] = computeGoalContribution(goal, newStat.Assist);
-
-  // 4. Convert strings → numbers
-  toNumbers(newStat);
+  // ✅ Normalize → standard format with Season
+  const newStat = formatStat(raw);
 
   data.push(newStat);
   writeStats(data);
@@ -160,6 +177,7 @@ app.post("/add-stats", (req, res) => {
   res.json({
     message: "✅ Stat added successfully",
     symbol: newStat.Symbol,
+    season: newStat.Season,
     totalRecords: data.length,
   });
 });
@@ -180,21 +198,16 @@ app.put("/modify-stats/:index", (req, res) => {
     return res.status(400).json({ message: "Invalid index" });
   }
 
-  const updatedRecord = { ...data[index], ...req.body };
-
-  const goal = computeGoal(updatedRecord.LeftFoot, updatedRecord.RightFoot, updatedRecord.Head);
-  updatedRecord.Goal = goal;
-  updatedRecord.Symbol = computeSymbol(goal, updatedRecord.Assist);
-  updatedRecord["Goal Contribution"] = computeGoalContribution(goal, updatedRecord.Assist);
-  toNumbers(updatedRecord);
+  // Merge old record with incoming updates, then normalize
+  const merged = { ...data[index], ...req.body };
+  const updatedRecord = formatStat(merged);
 
   data[index] = updatedRecord;
   writeStats(data);
 
-  const contributor = updatedRecord.Contributor || "unknown";
-  commitAndPush(`Modify stats for ${contributor} (${new Date().toISOString()})`).catch(
-    console.error
-  );
+  commitAndPush(
+    `Modify stats for ${updatedRecord.Contributor} (${new Date().toISOString()})`
+  ).catch(console.error);
 
   res.json({ message: "✅ Stat modified successfully", updated: updatedRecord });
 });
@@ -205,9 +218,9 @@ app.get("/stats-history", (req, res) => {
   const data = readStats();
   res.json({
     contributors: [...new Set(data.map((d) => d.Contributor).filter(Boolean))],
-    locations: [...new Set(data.map((d) => d.Location).filter(Boolean))],
-    times: [...new Set(data.map((d) => d.Time).filter(Boolean))],
-    sources: [...new Set(data.map((d) => d.source).filter(Boolean))],
+    locations:    [...new Set(data.map((d) => d.Location).filter(Boolean))],
+    times:        [...new Set(data.map((d) => d.Time).filter(Boolean))],
+    sources:      [...new Set(data.map((d) => d.source).filter(Boolean))],
   });
 });
 
