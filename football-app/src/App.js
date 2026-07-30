@@ -201,79 +201,83 @@ function App() {
   };
 
   return (
-    <div>
-      <MenuButton menuOpen={menuOpen} toggleMenu={toggleMenu} />
-      <Sidebar
-        menuOpen={menuOpen}
-        handleHomeClick={handleHomeClick}
-        handleAddStatsClick={handleAddStatsClick}
-        handleModifyStatsClick={handleModifyStatsClick}
-        handleDisplayStatsClick={handleDisplayStatsClick}
-        handlePlayerRatingsClick={handlePlayerRatingsClick}
-        handleStatsSummaryClick={handleStatsSummaryClick}
-      />
+    <div style={{ position: 'relative', minHeight: '100vh' }}>
 
-      <div
-        style={{
-          paddingLeft: menuOpen ? "280px" : "70px",
-          paddingTop: "80px",
-          paddingRight: "20px",
-          transition: "padding-left 0.4s ease",
-          minHeight: "100vh",
-          boxSizing: "border-box",
-        }}
-      >
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                {showSplash ? (
-                  <FrontPage />
-                ) : (
-                  <>
-                    {activeView === "add" && showForm && (
-                      <PlayerStatsForm
-                        formData={formData}
-                        handleChange={handleChange}
-                        handleSubmit={handleSubmit}
-                        onCancel={() => {
-                          setShowForm(false);
-                          setActiveView(null);
-                        }}
-                        history={history}
-                      />
-                    )}
-                    {activeView === "ratings" && <PlayerRatings />}
-                    {activeView === "display" && contributors.length > 0 && (
-                      <ContributorDashboard
-                        contributors={contributors}
-                        activeContributor={activeContributor}
-                        toggleContributor={toggleContributor}
-                        filterLocation={filterLocation}
-                        setFilterLocation={setFilterLocation}
-                        filterMonth={filterMonth}
-                        setFilterMonth={setFilterMonth}
-                        filterYear={filterYear}          // ← new
-                        setFilterYear={setFilterYear}    // ← new
-                      />
-                    )}
-                    {activeView === "modify" && contributors.length > 0 && (
-                      <ModifyDashboard
-                        contributors={contributors}
-                        onSave={handleModifyStatsClick}
-                      />
-                    )}
-                    {activeView === "summary" && (
-                      <StatsSummary stats={summaryData} />
-                    )}
-                  </>
-                )}
-              </>
-            }
-          />
-          <Route path="/edit/:index" element={<EditMatchPage />} />
-        </Routes>
+      {/* ===== Content ===== */}
+      <div style={{ position: 'relative', zIndex: 2 }}>
+        <MenuButton menuOpen={menuOpen} toggleMenu={toggleMenu} />
+        <Sidebar
+          menuOpen={menuOpen}
+          handleHomeClick={handleHomeClick}
+          handleAddStatsClick={handleAddStatsClick}
+          handleModifyStatsClick={handleModifyStatsClick}
+          handleDisplayStatsClick={handleDisplayStatsClick}
+          handlePlayerRatingsClick={handlePlayerRatingsClick}
+          handleStatsSummaryClick={handleStatsSummaryClick}
+        />
+
+        <div
+          style={{
+            paddingLeft: menuOpen ? "280px" : "70px",
+            paddingTop: "80px",
+            paddingRight: "20px",
+            transition: "padding-left 0.4s ease",
+            minHeight: "100vh",
+            boxSizing: "border-box",
+          }}
+        >
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  {showSplash ? (
+                    <FrontPage />
+                  ) : (
+                    <>
+                      {activeView === "add" && showForm && (
+                        <PlayerStatsForm
+                          formData={formData}
+                          handleChange={handleChange}
+                          handleSubmit={handleSubmit}
+                          onCancel={() => {
+                            setShowForm(false);
+                            setActiveView(null);
+                          }}
+                          history={history}
+                        />
+                      )}
+                      {activeView === "ratings" && <PlayerRatings />}
+                      {activeView === "display" && contributors.length > 0 && (
+                        <ContributorDashboard
+                          contributors={contributors}
+                          activeContributor={activeContributor}
+                          toggleContributor={toggleContributor}
+                          filterLocation={filterLocation}
+                          setFilterLocation={setFilterLocation}
+                          filterMonth={filterMonth}
+                          setFilterMonth={setFilterMonth}
+                          filterYear={filterYear}
+                          setFilterYear={setFilterYear}
+                        />
+                      )}
+                      {activeView === "modify" && contributors.length > 0 && (
+                        <ModifyDashboard
+                          contributors={contributors}
+                          onSave={handleModifyStatsClick}
+                        />
+                      )}
+                      {activeView === "summary" && (
+                        <StatsSummary stats={summaryData} />
+                      )}
+                    </>
+                  )}
+                </>
+              }
+            />
+            <Route path="/edit/:index" element={<EditMatchPage />} />
+          </Routes>
+        </div>
       </div>
     </div>
   );

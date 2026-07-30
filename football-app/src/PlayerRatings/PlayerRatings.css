@@ -303,3 +303,132 @@
   min-width: 24px;
   text-align: center;
 }
+/* ===== Preferred Foot ===== */
+.pr-pref-foot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.pr-pref-foot-label {
+  font-weight: bold;
+  color: #555;
+}
+
+.pr-pref-foot-value {
+  font-weight: bold;
+  color: #333;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0 10px;
+  line-height: 1.8;
+  font-size: 13px;
+}
+
+/* ===== Gold Card Enhancements ===== */
+
+/* Animated glow pulse */
+.pr-card.gold {
+  animation: goldGlow 2.5s ease-in-out infinite;
+  transform: scale(1.02);
+}
+
+@keyframes goldGlow {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.25),
+                0 0 8px rgba(212, 175, 55, 0.1);
+  }
+  50% {
+    box-shadow: 0 8px 28px rgba(212, 175, 55, 0.45),
+                0 0 20px rgba(212, 175, 55, 0.25);
+  }
+}
+
+.pr-card.gold:hover {
+  animation: none;
+  box-shadow: 0 12px 32px rgba(212, 175, 55, 0.5),
+              0 0 24px rgba(212, 175, 55, 0.3);
+}
+
+/* Gradient background instead of flat */
+.pr-card.gold {
+  background: linear-gradient(
+    145deg,
+    #fffdf5 0%,
+    #fff8e1 40%,
+    #fffdf5 60%,
+    #fef3c7 100%
+  );
+}
+
+/* Shimmer sweep effect */
+.pr-card.gold::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(212, 175, 55, 0.12),
+    transparent
+  );
+  animation: shimmer 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0%   { left: -100%; }
+  50%  { left: 150%; }
+  100% { left: 150%; }
+}
+
+/* Gold accent bar gets a gradient too */
+.gold .pr-accent-bar {
+  background: linear-gradient(90deg, #d4af37, #f5d76e, #d4af37);
+  opacity: 0.9;
+  height: 6px;
+}
+
+/* Gold corners slightly more visible */
+.gold .pr-corner {
+  opacity: 0.5;
+}
+
+/* Gold name gets a subtle text shadow */
+.gold .pr-name {
+  text-shadow: 0 1px 3px rgba(212, 175, 55, 0.3);
+}
+
+/* Gold overall box gets a gradient */
+.gold .pr-overall-box {
+  background: linear-gradient(135deg, #d4af37, #c5981e);
+  box-shadow: 0 3px 10px rgba(212, 175, 55, 0.5);
+}
+
+/* Gold score boxes get gradient */
+.gold .pr-score-box {
+  background: linear-gradient(135deg, #d4af37, #c5981e);
+}
+
+/* ===== Elite Badge ===== */
+.pr-elite-badge {
+  position: absolute;
+  top: 14px;
+  right: -30px;
+  background: linear-gradient(135deg, #d4af37, #f5d76e);
+  color: #5a3e00;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 4px 40px;
+  transform: rotate(45deg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  letter-spacing: 1px;
+  z-index: 1;
+}

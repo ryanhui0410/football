@@ -92,12 +92,19 @@ function PlayerRatings() {
   if (loading) return <div>Loading...</div>;
 
   const names = profiles
-    .map(p => p.Contributor)
-    .filter(Boolean)
-    .filter(name => {
-      if (activeFilters.length === 0) return true;
-      return activeFilters.some(group => FILTER_GROUPS[group]?.includes(name));
-    });
+  .map(p => p.Contributor)
+  .filter(Boolean)
+  .filter(name => {
+    if (activeFilters.length === 0) return true;
+    return activeFilters.some(group => FILTER_GROUPS[group]?.includes(name));
+  })
+  .sort((a, b) => {
+    const pa = getProfile(a);
+    const pb = getProfile(b);
+    const oa = pa.overall || pa.PAC || 0;
+    const ob = pb.overall || pb.PAC || 0;
+    return ob - oa; // highest rated first
+  });
 
   return (
     <div className="pr-page">
@@ -183,7 +190,15 @@ function PlayerRatings() {
                   </div>
                 ))}
               </div>
-
+              {/* Preferred Foot */}
+              {profile.preferredFoot && (
+                <div className="pr-pref-foot">
+                  <span className="pr-pref-foot-label">Preferred Foot:</span>
+                  <span className="pr-pref-foot-value">
+                    {profile.preferredFoot === 'Left' ? '🦶 L' : '🦶 R'}
+                  </span>
+                </div>
+              )}
               {weakFoot > 0 && (
                 <div className="pr-weak-foot">
                   <span className="pr-weak-foot-label">Weak Foot:</span>

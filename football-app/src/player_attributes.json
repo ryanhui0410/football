@@ -48,6 +48,7 @@
       "CM": 81
     },
     "weakFoot": 3,
+    "preferredFoot": "Right",
     "picture": ""
   },
   {
@@ -97,6 +98,7 @@
       "AM": 82
     },
     "weakFoot": 4,
+    "preferredFoot": "Right",
     "picture": ""
   },
   {
@@ -145,6 +147,7 @@
       "AM": 74
     },
     "weakFoot": 2,
+    "preferredFoot": "Right",
     "picture": ""
   },
   {
@@ -194,6 +197,7 @@
       "CB": 75
     },
     "weakFoot": 2,
+    "preferredFoot": "Right",
     "picture": ""
   },
   {
@@ -241,6 +245,7 @@
       "LB": 69
     },
     "weakFoot": 1,
+    "preferredFoot": "Right",
     "picture": ""
   },
   {
@@ -288,6 +293,7 @@
       "CF": 73
     },
     "weakFoot": 1,
+    "preferredFoot": "Right",
     "picture": ""
   },
   {
@@ -335,6 +341,7 @@
       "LB": 72
     },
     "weakFoot": 2,
+    "preferredFoot": "Right",
     "picture": ""
   },
   {
@@ -384,6 +391,7 @@
       "CM": 82
     },
     "weakFoot": 4,
+    "preferredFoot": "Left",
     "picture": ""
   },
     {
@@ -431,6 +439,7 @@
       "LB": 60
     },
     "weakFoot": 2,
+    "preferredFoot": "Left",
     "picture": ""
   },
     {
@@ -479,6 +488,7 @@
       "CF": 71
     },
     "weakFoot": 2,
+    "preferredFoot": "Right",
     "picture": ""
   },
   {
@@ -525,6 +535,7 @@
       "LM": 66
     },
     "weakFoot": 1,
+    "preferredFoot": "Right",
     "picture": ""
   },
   {
@@ -571,6 +582,7 @@
       "RB": 68
     },
     "weakFoot": 2,
+    "preferredFoot": "Right",
     "picture": ""
   },
     {
@@ -616,6 +628,7 @@
       "LB": 64
     },
     "weakFoot": 3,
+    "preferredFoot": "Right",
     "picture": ""
   },
     {
@@ -664,6 +677,7 @@
       "DM": 68
     },
     "weakFoot": 3,
+    "preferredFoot": "Right",
     "picture": ""
   }
   

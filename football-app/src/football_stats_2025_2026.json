@@ -2281,5 +2281,22 @@
     "Season": "2025-2026"
   },
   {},
-  {}
+  {},
+  {
+    "Date": "7/29/2026",
+    "Contributor": "Darren",
+    "Goal": 0,
+    "Assist": "1",
+    "Rating": "9.5",
+    "Location": "維園",
+    "Time": "10:30 PM",
+    "Error": "0",
+    "source": "QC friends",
+    "LeftFoot": "1",
+    "RightFoot": "1",
+    "Head": "0",
+    "OtherBodyParts": "0",
+    "Symbol": "👟",
+    "Goal Contribution": 1
+  }
 ]

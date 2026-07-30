@@ -17,18 +17,22 @@
 }
 
 .form-container label {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;              /* ← space between ":" and the input */
   font-weight: 600;
   color: #333;
 }
 
 .form-container input {
-  width: 100%;
+  width: 540px;
+  max-width: 100%;
   padding: 10px 12px;
-  margin-top: 6px;
+  /* margin-top: 6px;  ← remove this */
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 0.95rem;
+  box-sizing: border-box;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
