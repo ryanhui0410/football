@@ -2301,17 +2301,19 @@
     "Date": "7/29/2026",
     "Contributor": "Ryan",
     "Goal": 2,
-    "Assist": 0,
-    "Rating": 8.4,
+    "Assist": "",
+    "Rating": 8.5,
     "Location": "維園",
     "Time": "10:30 PM",
     "Error": 0,
     "source": "QC friends",
     "LeftFoot": 0,
     "RightFoot": 2,
-    "Head": 0,
+    "Head": "",
     "OtherBodyParts": 0,
     "Symbol": "⚽⚽",
-    "Goal Contribution": 2
+    "Goal Contribution": 2,
+    "Left Foot": "",
+    "Right Foot": ""
   }
 ]
