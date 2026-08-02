@@ -59,7 +59,7 @@ function formatStat(raw) {
   const assist    = raw.Assist             ?? 0;
   const rating    = raw.Rating             ?? 0;
 
-  const goal = computeGoal(leftFoot, rightFoot, head);
+  const goal = computeGoal(leftFoot, rightFoot, head, other);
 
   // ✅ Fixed field order matching 8/3/2025 format
   return {
@@ -78,6 +78,8 @@ function formatStat(raw) {
     Head:              parseFloat(head) || 0,
     "Other body parts": parseFloat(other) || 0,
     Season:            computeSeason(raw.Date),
+    "Match result":    raw["Match result"] ?? raw.MatchResult ?? "",   // ← new
+    "Win/Loss?":       raw["Win/Loss?"]    ?? raw.WinLoss    ?? "",   // ← new
   };
 }
 
@@ -107,6 +109,13 @@ function readProfiles() {
 
 function writeProfiles(profiles) {
   fs.writeFileSync(PROFILES_PATH, JSON.stringify(profiles, null, 2));
+}
+
+function computeGoal(leftFoot, rightFoot, head, other) {
+  return (parseFloat(leftFoot) || 0)
+       + (parseFloat(rightFoot) || 0)
+       + (parseFloat(head) || 0)
+       + (parseFloat(other) || 0);
 }
 
 app.get("/contributor-profiles", (req, res) => {

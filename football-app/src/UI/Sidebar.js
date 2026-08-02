@@ -8,6 +8,7 @@ function Sidebar({
   handleDisplayStatsClick,
   handlePlayerRatingsClick,
   handleStatsSummaryClick,
+  handleCalendarClick,                 // ← add to props
 }) {
   return (
     <div
@@ -26,12 +27,13 @@ function Sidebar({
       }}
     >
       {[
-        { label: "🏠 Home", handler: handleHomeClick, color: "#607D8B", hover: "#455A64" },
-        { label: "Add Stats", handler: handleAddStatsClick, color: "#4CAF50", hover: "#45a049" },
-        { label: "Modify Stats", handler: handleModifyStatsClick, color: "#9C27B0", hover: "#7B1FA2" },
-        { label: "Display Stats", handler: handleDisplayStatsClick, color: "#2196F3", hover: "#0b7dda" },
-        { label: "Player Ratings", handler: handlePlayerRatingsClick, color: "#E91E63", hover: "#C2185B" },
-        { label: "Stats Summary", handler: handleStatsSummaryClick, color: "#FF9800", hover: "#e68900" },
+        { label: "🏠 Home",          handler: handleHomeClick,          color: "#607D8B", hover: "#455A64" },
+        { label: "Add Stats",        handler: handleAddStatsClick,      color: "#4CAF50", hover: "#45a049" },
+        { label: "Modify Stats",     handler: handleModifyStatsClick,   color: "#9C27B0", hover: "#7B1FA2" },
+        { label: "Display Stats",    handler: handleDisplayStatsClick,  color: "#2196F3", hover: "#0b7dda" },
+        { label: "Player Ratings",   handler: handlePlayerRatingsClick, color: "#E91E63", hover: "#C2185B" },
+        { label: "Stats Summary",    handler: handleStatsSummaryClick,  color: "#FF9800", hover: "#e68900" },
+        { label: "📅 Calendar Match", handler: handleCalendarClick,     color: "#009688", hover: "#00796B" },  // ← NEW (bottom)
       ].map((item, idx) => (
         <button
           key={idx}

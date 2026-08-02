@@ -237,3 +237,138 @@
   transition: background 0.15s;
 }
 .btn-cancel:hover { background: rgba(255, 255, 255, 0.08); }
+/* ============ Tally check banner ============ */
+.tally-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 13px 16px;
+  border-radius: 8px;
+  border: 1px solid;
+  font-size: 14px;
+  line-height: 1.5;
+  animation: tallyIn 0.25s ease;
+}
+.tally-bar strong {
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+.tally-bar.ok {
+  border-color: rgba(126, 217, 87, 0.4);
+  background: rgba(126, 217, 87, 0.08);
+  color: #a8e08a;
+}
+.tally-bar.error {
+  border-color: rgba(229, 72, 77, 0.55);
+  background: rgba(229, 72, 77, 0.12);
+  color: #ff9d9f;
+  animation: tallyIn 0.25s ease, tallyPulse 1.6s ease-in-out infinite;
+}
+.tally-icon {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(126, 217, 87, 0.2);
+  font-weight: 700;
+}
+.red-card {
+  flex-shrink: 0;
+  width: 18px;
+  height: 26px;
+  border-radius: 3px;
+  background: #e5484d;
+  transform: rotate(-8deg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+@keyframes tallyIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes tallyPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(229, 72, 77, 0.35); }
+  50%      { box-shadow: 0 0 0 7px rgba(229, 72, 77, 0); }
+}
+
+/* Disabled save button while tally is off */
+.btn-save:disabled {
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(238, 244, 238, 0.4);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+/* ============ Match Outcome ============ */
+.outcome-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 560px) {
+  .outcome-grid { grid-template-columns: 1fr; }
+}
+
+.scoreline,
+.result-toggle {
+  padding: 16px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(4, 32, 22, 0.55);
+}
+
+/* Scoreline */
+.scoreline-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 12px;
+}
+.score-side { text-align: center; }
+.score-tag {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.score-tag.us   { background: rgba(126, 217, 87, 0.18); color: #a8e08a; }
+.score-tag.them { background: rgba(255, 255, 255, 0.1);  color: rgba(238, 244, 238, 0.7); }
+.score-dash {
+  font-family: 'Oswald', sans-serif;
+  font-size: 28px;
+  color: rgba(238, 244, 238, 0.5);
+}
+
+/* Win / Loss toggle */
+.result-options {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.result-btn {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(238, 244, 238, 0.75);
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: transform 0.18s, background 0.18s, box-shadow 0.18s;
+}
+.result-btn:hover { transform: translateY(-2px); }
+.result-btn.win.active  { background: #4caf50; border-color: #4caf50; color: #06281a; box-shadow: 0 6px 16px rgba(76, 175, 80, 0.35); }
+.result-btn.draw.active { background: #f2c14e; border-color: #f2c14e; color: #4a3600; box-shadow: 0 6px 16px rgba(242, 193, 78, 0.35); }
+.result-btn.loss.active { background: #e5484d; border-color: #e5484d; color: #2a0607; box-shadow: 0 6px 16px rgba(229, 72, 77, 0.35); }

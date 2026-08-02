@@ -9,6 +9,7 @@ import EditMatchPage from "./EditStats/EditMatchPage";
 import PlayerRatings from "./PlayerRatings/PlayerRatings";
 import Sidebar from "./UI/Sidebar";
 import MenuButton from "./UI/MenuButton";
+import MatchCalendar from "./CalendarMatch/MatchCalendar";
 
 class PlayerStats {
   constructor(fields) {
@@ -79,6 +80,8 @@ function App() {
     RightFoot: "",
     Head: "",
     OtherBodyParts: "",
+    MatchResult: "",   // ← new
+    WinLoss: "",       // ← new
   });
   const [history, setHistory] = useState({
     contributors: [],
@@ -106,7 +109,15 @@ function App() {
     setActiveView(null);
     setMenuOpen(false);
   };
-
+  const handleCalendarClick = async () => {
+    setShowSplash(false);
+    const res = await fetch("http://localhost:5000/stats");
+    const data = await res.json();
+    setSummaryData(data);      // reuse summaryData to hold the raw stats
+    setContributors([]);
+    setShowForm(false);
+    setActiveView("calendar");
+  };
   const handlePlayerRatingsClick = () => {
     setShowSplash(false);
     setContributors([]);
@@ -215,6 +226,7 @@ function App() {
           handleDisplayStatsClick={handleDisplayStatsClick}
           handlePlayerRatingsClick={handlePlayerRatingsClick}
           handleStatsSummaryClick={handleStatsSummaryClick}
+          handleCalendarClick={handleCalendarClick}   // ← new
         />
 
         <div
@@ -270,6 +282,9 @@ function App() {
                       )}
                       {activeView === "summary" && (
                         <StatsSummary stats={summaryData} />
+                      )}
+                      {activeView === "calendar" && (
+                        <MatchCalendar stats={summaryData} />
                       )}
                     </>
                   )}

@@ -2278,7 +2278,9 @@
     "Right Foot": 5,
     "Head": 0,
     "Other body parts": 0,
-    "Season": "2025-2026"
+    "Season": "2025-2026",
+    "Match result": "4-2",
+    "Win/Loss?": "Win"
   },
   {
     "Date": "7/29/2026",
@@ -2295,23 +2297,8 @@
     "Right Foot": 1,
     "Head": 0,
     "Other body parts": 0,
-    "Season": "2025-2026"
-  },
-  {
-    "Date": "8/3/2026",
-    "Contributor": "Ryan",
-    "Symbol": "⚽⚽⚽⚽⚽⚽⚽⚽👟👟👟👟",
-    "Goal": 8,
-    "Assist": 4,
-    "Rating": 8.7,
-    "Location": "維園",
-    "Time": "8:00 PM",
-    "Goal Contribution": 12,
-    "source": "QC friends",
-    "Left Foot": 3,
-    "Right Foot": 5,
-    "Head": 0,
-    "Other body parts": 0,
-    "Season": "2026-2027"
+    "Season": "2025-2026",
+    "Match result": "4-2",
+    "Win/Loss?": "Win"
   }
 ]
