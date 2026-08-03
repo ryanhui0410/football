@@ -1,0 +1,203 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap');
+
+.md-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Barlow', sans-serif;
+  color: #eef4ee;
+}
+
+.md-contributor-section {
+  margin-bottom: 48px;
+}
+
+.md-contributor-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(242, 193, 78, 0.4);
+}
+
+.md-contributor-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+  color: #f2c14e;
+}
+
+.md-match-count {
+  font-size: 14px;
+  font-weight: 500;
+  color: #5e6961; /* Darker grey for the "X Matches" text */
+  letter-spacing: 0.05em;
+}
+
+.md-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.md-th {
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #5e6961; /* Darker grey for table headers */
+  text-align: left;
+  padding: 0 16px 12px;
+}
+
+.md-th.center { text-align: center; }
+
+.md-row {
+  background: rgba(4, 32, 22, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.md-row:hover {
+  background: rgba(10, 45, 32, 0.85);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  border-color: rgba(242, 193, 78, 0.3);
+}
+
+.md-td {
+  padding: 18px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  vertical-align: middle;
+  background: transparent;
+}
+
+.md-td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+.md-td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+
+.md-date {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.md-location {
+  font-size: 14px;
+  color: rgba(238, 244, 238, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.md-symbols {
+  font-size: 26px;
+  letter-spacing: 4px;
+  line-height: 1;
+  text-align: center;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.md-symbols.empty {
+  font-size: 14px;
+  color: rgba(238, 244, 238, 0.4);
+  letter-spacing: normal;
+  font-family: 'Barlow', sans-serif;
+}
+
+.md-stat-box { display: flex; gap: 20px; justify-content: center; }
+.md-stat { text-align: center; }
+
+.md-stat-val {
+  font-family: 'Oswald', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+}
+
+.md-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(238, 244, 238, 0.5);
+  margin-top: 6px;
+}
+
+.md-rating {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 46px;
+  padding: 8px 12px;
+  background: rgba(242, 193, 78, 0.15);
+  border: 1px solid rgba(242, 193, 78, 0.5);
+  border-radius: 8px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #f2c14e;
+  box-shadow: 0 4px 10px rgba(242, 193, 78, 0.1);
+}
+
+.md-edit-btn {
+  padding: 10px 22px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  color: #eef4ee;
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.md-edit-btn:hover {
+  background: #f2c14e;
+  border-color: #f2c14e;
+  color: #083a29;
+  box-shadow: 0 6px 16px rgba(242, 193, 78, 0.25);
+}
+
+/* Responsive Mobile View */
+@media (max-width: 768px) {
+  .md-table, .md-thead, .md-tbody, .md-th, .md-td, .md-row { display: block; }
+  .md-thead { display: none; }
+  
+  .md-row {
+    margin-bottom: 20px;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+  
+  .md-td { padding: 0; border: none !important; border-radius: 0 !important; }
+  
+    .md-td::before {
+    content: attr(data-label);
+    display: block;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #5e6961; /* Darker grey for mobile labels */
+    margin-bottom: 8px;
+    }
+  
+  .md-symbols { text-align: left; }
+  .md-stat-box { justify-content: flex-start; }
+}

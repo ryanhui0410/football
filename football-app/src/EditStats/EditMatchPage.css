@@ -1,0 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap');
+
+.em-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 30px 34px 34px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 4px solid #f2c14e;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.028) 0 90px, transparent 90px 180px),
+    linear-gradient(160deg, #0d5a3e 0%, #083a29 75%);
+  box-shadow: 0 24px 60px rgba(3, 25, 17, 0.45);
+  font-family: 'Barlow', sans-serif;
+  color: #eef4ee;
+}
+
+/* ---- Header ---- */
+.em-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.em-kicker {
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  color: #f2c14e;
+}
+.em-player {
+  margin: 6px 0 0;
+  font-family: 'Oswald', sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.em-date-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.em-date-day {
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+}
+.em-season {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: rgba(238, 244, 238, 0.6);
+}
+
+/* ---- Scoreline + result ---- */
+.em-result-strip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+.em-scoreline {
+  font-family: 'Oswald', sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.em-wl {
+  padding: 4px 14px;
+  border-radius: 6px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.em-wl.win  { background: rgba(126, 217, 87, 0.2); color: #a8e08a; }
+.em-wl.draw { background: rgba(255, 255, 255, 0.14); color: #ddd; }
+.em-wl.loss { background: rgba(229, 72, 77, 0.2); color: #ff9d9f; }
+
+/* ---- Cards ---- */
+.em-card {
+  margin-top: 22px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(4, 32, 22, 0.55);
+}
+.em-card.em-contrib { border-color: rgba(242, 193, 78, 0.4); }
+.em-card-title {
+  margin: 0 0 14px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(238, 244, 238, 0.7);
+}
+
+/* ---- Goal contributions hero ---- */
+.em-icons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 46px;
+  margin-bottom: 16px;
+}
+.em-icon {
+  font-size: 34px;
+  line-height: 1;
+  animation: iconPop 0.4s ease backwards;
+}
+.em-icon.empty {
+  font-size: 15px;
+  color: rgba(238, 244, 238, 0.4);
+  font-family: 'Barlow', sans-serif;
+}
+@keyframes iconPop {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.em-contrib-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.em-stat {
+  text-align: center;
+  padding: 12px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.em-stat.highlight {
+  background: rgba(242, 193, 78, 0.14);
+  border-color: rgba(242, 193, 78, 0.4);
+}
+.em-stat-num {
+  display: block;
+  font-family: 'Oswald', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+.em-stat.highlight .em-stat-num { color: #f2c14e; }
+.em-stat-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(238, 244, 238, 0.6);
+}
+
+/* ---- Scoring breakdown ---- */
+.em-breakdown {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.em-chip {
+  text-align: center;
+  padding: 12px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.em-chip-val {
+  display: block;
+  font-family: 'Oswald', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+}
+.em-chip-label {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(238, 244, 238, 0.6);
+}
+
+/* ---- Match details ---- */
+.em-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+.em-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.em-detail-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(238, 244, 238, 0.55);
+}
+.em-detail-val {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+.em-rating { color: #f2c14e; }
+
+/* ---- Actions ---- */
+.em-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 26px;
+}
+.em-btn {
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.em-btn.save { border: none; background: #f2c14e; color: #083a29; }
+.em-btn.save:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(242, 193, 78, 0.35); }
+.em-btn.cancel { border: 1px solid rgba(255, 255, 255, 0.3); background: transparent; color: #eef4ee; }
+.em-btn.cancel:hover { background: rgba(255, 255, 255, 0.08); }
+
+/* ---- Loading ---- */
+.em-loading {
+  max-width: 760px;
+  margin: 60px auto;
+  text-align: center;
+  font-family: 'Barlow', sans-serif;
+  color: #eef4ee;
+}
+.em-ball {
+  font-size: 44px;
+  animation: bounce 0.9s ease-in-out infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-14px); }
+}
+
+@media (max-width: 560px) {
+  .em-wrap { padding: 22px 18px; }
+  .em-player { font-size: 32px; }
+  .em-scoreline { font-size: 26px; }
+  .em-breakdown { grid-template-columns: repeat(2, 1fr); }
+}

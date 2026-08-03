@@ -66,7 +66,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
-  const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState({
     Date: "",
     Contributor: "",
     Goal: "",
@@ -80,8 +80,9 @@ function App() {
     RightFoot: "",
     Head: "",
     OtherBodyParts: "",
-    MatchResult: "",   // ← new
-    WinLoss: "",       // ← new
+    MatchResult: "",
+    WinLoss: "",
+    AssistTo: "",        // ← just add this one line
   });
   const [history, setHistory] = useState({
     contributors: [],
@@ -97,7 +98,6 @@ function App() {
   const [filterMonth, setFilterMonth] = useState("");
   const [summaryData, setSummaryData] = useState([]);
   const [filterYear, setFilterYear] = useState("");
-  
   // ===== 新增 toggleMenu =====
   const toggleMenu = () => setMenuOpen(!menuOpen);
 

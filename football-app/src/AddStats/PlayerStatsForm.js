@@ -133,13 +133,18 @@ function PlayerStatsForm({ formData, handleChange, handleSubmit, onCancel, histo
   // ---- Goal tally validation: Goal = LF + RF + Head + Other ----
   const n = (v) => parseFloat(v) || 0;
   const goal      = n(formData.Goal);
+  const assist    = n(formData.Assist);   // ← ADD THIS LINE
   const leftFoot  = n(formData.LeftFoot);
   const rightFoot = n(formData.RightFoot);
   const head      = n(formData.Head);
   const other     = n(formData.OtherBodyParts);
   const bodyTotal = leftFoot + rightFoot + head + other;
   const tallyOk   = goal === bodyTotal;
-
+    // ---- Assist-to detail (Ryan ↔ Darren only) ----
+  const contributor = (formData.Contributor || "").trim();
+  const cLower = contributor.toLowerCase();
+  const assistRecipient = cLower === "ryan" ? "Darren" : cLower === "darren" ? "Ryan" : "";
+  const showAssistTo = assistRecipient !== "" && assist > 0;
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!tallyOk) return; // 🚫 block save until tally balances
@@ -235,7 +240,27 @@ function PlayerStatsForm({ formData, handleChange, handleSubmit, onCancel, histo
           </div>
         )}
       </section>
-
+            {/* ---- Assist detail (only for Ryan/Darren with assists) ---- */}
+      {showAssistTo && (
+        <section className="form-section">
+          <h3 className="section-title">Assist Detail</h3>
+          <div className="assist-to-grid">
+            <Stepper
+              label={`No. of assist to ${assistRecipient}`}
+              name="AssistTo"
+              value={formData.AssistTo}
+              onChange={handleChange}
+              min={0}
+              max={assist}
+            />
+            <div className="assist-to-note">
+              <span className="assist-to-hint">
+                {contributor} had <strong>{assist}</strong> assist{assist !== 1 ? "s" : ""} — how many went to <strong>{assistRecipient}</strong>?
+              </span>
+            </div>
+          </div>
+        </section>
+      )}
       <div className="form-actions">
         <button type="submit" className="btn-save" disabled={!tallyOk}>Save Stats</button>
         <button type="button" className="btn-cancel" onClick={onCancel}>Cancel</button>

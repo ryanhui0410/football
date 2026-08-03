@@ -58,7 +58,10 @@ function formatStat(raw) {
   const other     = raw["Other body parts"] ?? raw.OtherBodyParts ?? 0;
   const assist    = raw.Assist             ?? 0;
   const rating    = raw.Rating             ?? 0;
-
+    // Assist-to recipient (Ryan ↔ Darren), saved only when meaningful
+  const cName = (raw.Contributor || "").trim().toLowerCase();
+  const assistRecipient = cName === "ryan" ? "Darren" : cName === "darren" ? "Ryan" : "";
+  const assistToCount = assistRecipient ? (parseFloat(raw.AssistTo) || 0) : 0;
   const goal = computeGoal(leftFoot, rightFoot, head, other);
 
   // ✅ Fixed field order matching 8/3/2025 format
@@ -80,6 +83,8 @@ function formatStat(raw) {
     Season:            computeSeason(raw.Date),
     "Match result":    raw["Match result"] ?? raw.MatchResult ?? "",   // ← new
     "Win/Loss?":       raw["Win/Loss?"]    ?? raw.WinLoss    ?? "",   // ← new
+    "Assist to":       assistToCount > 0 ? assistRecipient : "",
+    "Assist to count": assistToCount,
   };
 }
 

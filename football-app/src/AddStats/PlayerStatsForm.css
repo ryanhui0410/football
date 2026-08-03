@@ -372,3 +372,31 @@
 .result-btn.win.active  { background: #4caf50; border-color: #4caf50; color: #06281a; box-shadow: 0 6px 16px rgba(76, 175, 80, 0.35); }
 .result-btn.draw.active { background: #f2c14e; border-color: #f2c14e; color: #4a3600; box-shadow: 0 6px 16px rgba(242, 193, 78, 0.35); }
 .result-btn.loss.active { background: #e5484d; border-color: #e5484d; color: #2a0607; box-shadow: 0 6px 16px rgba(229, 72, 77, 0.35); }
+/* ============ Assist-to detail ============ */
+.assist-to-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: stretch;
+}
+.assist-to-grid .stepper { min-width: 190px; }
+.assist-to-note {
+  display: flex;
+  align-items: center;
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(4, 32, 22, 0.55);
+}
+.assist-to-hint {
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(238, 244, 238, 0.85);
+}
+.assist-to-hint strong {
+  font-family: 'Oswald', sans-serif;
+  color: #f2c14e;
+}
+@media (max-width: 560px) {
+  .assist-to-grid { grid-template-columns: 1fr; }
+}
