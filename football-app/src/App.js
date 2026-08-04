@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import PlayerStatsForm from "./AddStats/PlayerStatsForm";
-import ContributorDashboard from "./DisplayStats/ContributorDashboard";
 import StatsSummary from "./StatsSummary/StatsSummary";
 import FrontPage from "./UI/FrontPage";
 import ModifyDashboard from "./EditStats/ModifyDashboard";
@@ -19,18 +18,13 @@ class PlayerStats {
 
 class Match {
   constructor({ 
-    Date, 
-    Symbol, 
-    Rating, 
-    Location,
-    'Left Foot': leftFoot,
-    'Right Foot': rightFoot,
-    'Head': head,
-    'Other body parts': other,
-    'Assist': assist,
-    'Goal Contribution': goalContribution,
-    'source': source,
-    'Time': time,
+    Date, Symbol, Rating, Location,
+    'Left Foot': leftFoot, 'Right Foot': rightFoot, 'Head': head, 'Other body parts': other,
+    'Assist': assist, 'Goal Contribution': goalContribution, 'Goal': goal,
+    'Match result': matchResult, 'Win/Loss?': winLoss, 'Season': season,
+    'source': source, 'Time': time,
+    'Assist to': assistTo,             // ← Add this
+    'Assist to count': assistToCount   // ← Add this
   }) {
     this.date = Date;
     this.symbol = Symbol;
@@ -42,8 +36,14 @@ class Match {
     this.other = other || 0;
     this.assist = assist || 0;
     this.goalContribution = goalContribution || 0;
+    this.goal = goal || 0;
+    this.matchResult = matchResult || '';
+    this.winLoss = winLoss || '';
+    this.season = season || '';
     this.source = source || '';
     this.time = time || '';
+    this.assistTo = assistTo || '';           // ← Add this
+    this.assistToCount = assistToCount || 0;  // ← Add this
   }
 }
 
@@ -261,19 +261,6 @@ function App() {
                         />
                       )}
                       {activeView === "ratings" && <PlayerRatings />}
-                      {activeView === "display" && contributors.length > 0 && (
-                        <ContributorDashboard
-                          contributors={contributors}
-                          activeContributor={activeContributor}
-                          toggleContributor={toggleContributor}
-                          filterLocation={filterLocation}
-                          setFilterLocation={setFilterLocation}
-                          filterMonth={filterMonth}
-                          setFilterMonth={setFilterMonth}
-                          filterYear={filterYear}
-                          setFilterYear={setFilterYear}
-                        />
-                      )}
                       {activeView === "modify" && contributors.length > 0 && (
                         <ModifyDashboard
                           contributors={contributors}

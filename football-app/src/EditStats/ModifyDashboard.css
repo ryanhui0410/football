@@ -200,4 +200,162 @@
   
   .md-symbols { text-align: left; }
   .md-stat-box { justify-content: flex-start; }
+  /* Action Buttons Container */
+.md-action-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  position: relative; /* Needed for dropdown positioning */
+}
+
+/* Compare Button */
+.md-compare-btn {
+  padding: 8px 12px;
+  background: rgba(242, 193, 78, 0.15);
+  border: 1px solid rgba(242, 193, 78, 0.5);
+  border-radius: 8px;
+  color: #f2c14e;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.md-compare-btn:hover {
+  background: #f2c14e;
+  color: #083a29;
+  box-shadow: 0 4px 12px rgba(242, 193, 78, 0.3);
+}
+
+/* Compare Dropdown */
+.md-compare-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: #0d5a3e;
+  border: 1px solid rgba(242, 193, 78, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  min-width: 140px;
+  overflow: hidden;
+}
+
+.md-compare-option {
+  padding: 10px 16px;
+  color: #eef4ee;
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: left;
+}
+
+.md-compare-option:last-child {
+  border-bottom: none;
+}
+
+.md-compare-option:hover {
+  background: rgba(242, 193, 78, 0.2);
+  color: #f2c14e;
+}
+.md-result-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.md-score {
+  font-family: 'Oswald', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.05em;
+}
+.md-outcome {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+.md-outcome.win { background: rgba(126, 217, 87, 0.2); color: #a8e08a; }
+.md-outcome.draw { background: rgba(255, 255, 255, 0.14); color: #ddd; }
+.md-outcome.loss { background: rgba(229, 72, 77, 0.2); color: #ff9d9f; }
+}
+/* Filter Bar */
+.md-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding: 16px 24px;
+  background: rgba(4, 32, 22, 0.6);
+  border: 1px solid rgba(242, 193, 78, 0.15);
+  border-radius: 12px;
+  flex-wrap: wrap;
+  backdrop-filter: blur(4px);
+}
+
+.md-filter-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #e2e8e4; /* Lighter grey label */
+}
+
+.md-filter-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.md-pill {
+  padding: 8px 22px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+  color: #eef4ee;
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.md-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.md-pill.active {
+  background: #f2c14e;
+  color: #083a29;
+  border-color: #f2c14e;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(242, 193, 78, 0.35);
+}
+/* 1. Ensure table cells with the 'center' class are actually centered */
+.md-td.center {
+  text-align: center;
+}
+
+/* 2. Force the result box to take full width and center its contents perfectly */
+.md-result-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%; /* This is the key to fixing the deviation! */
+  gap: 6px;
 }

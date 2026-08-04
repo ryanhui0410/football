@@ -93,11 +93,31 @@ function MatchCalendar({ stats = [] }) {
           const dayMatches = matchesByDay[key] || [];
           const has = dayMatches.length > 0;
 
-          return (
+                    return (
             <div key={key} className={`cal-cell ${has ? "has-match" : ""}`}>
               <span className="cal-day-num">{day}</span>
-              {has && <span className="cal-badge">{dayMatches.length}</span>}
+              
+              {/* NEW: Inline Match Events */}
+              {has && (
+                <div className="cal-events">
+                  {dayMatches.map((m, idx) => {
+                    const wl = String(m["Win/Loss?"] || "").toLowerCase();
+                    return (
+                      <div key={idx} className={`cal-event ${wl}`}>
+                        <div className="cal-event-top">
+                          <span className="cal-event-name">{m.Contributor}</span>
+                          {m.Symbol && <span className="cal-event-symbol">{m.Symbol}</span>}
+                        </div>
+                        {m["Match result"] && (
+                          <div className="cal-event-score">{m["Match result"]}</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
+              {/* Keep the tooltip for extra details like Location/Time */}
               {has && (
                 <div className="cal-tooltip">
                   <div className="cal-tt-date">{viewMonth + 1}/{day}/{viewYear}</div>
