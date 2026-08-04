@@ -3,6 +3,7 @@ import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import FormTrendGraph from "./FormTrendGraph";
 import StreakTracker from "./StreakTracker";
+import "./StatsSummary.css"; // Import the new CSS
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -31,14 +32,8 @@ function StatsSummary({ stats }) {
 
     if (!contributorMap[name]) {
       contributorMap[name] = {
-        ratings: [],
-        left: 0,
-        right: 0,
-        head: 0,
-        assists: 0,
-        errors: 0,
-        locationStats: {},
-        matches: [], // store each match for form/streaks
+        ratings: [], left: 0, right: 0, head: 0, assists: 0, errors: 0, wins: 0,
+        locationStats: {}, matches: [], 
       };
     }
 
@@ -49,7 +44,7 @@ function StatsSummary({ stats }) {
     const head = parseInt(s.Head || s["Head"] || 0);
     const assists = parseInt(s.Assist || 0);
     const errors = parseInt(s["Error?"] || 0);
-    const date = s.Date;
+    const wl = s["Win/Loss?"] || s.WinLoss || "";
 
     entry.ratings.push(rating);
     entry.left += left;
@@ -57,235 +52,167 @@ function StatsSummary({ stats }) {
     entry.head += head;
     entry.assists += assists;
     entry.errors += errors;
+    if (wl.toLowerCase() === "win") entry.wins += 1;
 
-    // Store match‑level data
-    entry.matches.push({
-      date,
-      rating,
-      goals: left + right + head,
-      assists,
-    });
+    entry.matches.push({ date: s.Date, rating, goals: left + right + head, assists });
 
-    // Location stats
     const location = s.Location?.trim() || "Unknown";
-    if (!entry.locationStats[location]) {
-      entry.locationStats[location] = { count: 0, goals: 0, assists: 0 };
-    }
+    if (!entry.locationStats[location]) entry.locationStats[location] = { count: 0, goals: 0, assists: 0 };
     const loc = entry.locationStats[location];
     loc.count += 1;
     loc.goals += left + right + head;
     loc.assists += assists;
   });
 
-  // Sort each player's matches chronologically
   Object.values(contributorMap).forEach(entry => {
     entry.matches.sort((a, b) => new Date(a.date) - new Date(b.date));
   });
 
   return (
-    <div style={{ textAlign: "center", marginTop: "20px" }}>
-      <h2>Stats Summary</h2>
+    <div className="stats-summary-wrap">
+      <h2 className="stats-header">Stats Summary</h2>
 
-      <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
-        {/* Left filter panel */}
-        <div
-          style={{
-            width: "200px",
-            padding: "15px",
-            border: "1px solid #ccc",
-            borderRadius: "8px",
-            backgroundColor: "#f0f0f0",
-            height: "fit-content",
-            textAlign: "left",
-          }}
-        >
-          <h3 style={{ marginTop: 0, marginBottom: "10px" }}>Filters</h3>
-          <label style={{ display: "block", fontWeight: "bold", marginBottom: "5px" }}>
-            Season:
-          </label>
-          <select
-            value={filterSeason}
-            onChange={(e) => setFilterSeason(e.target.value)}
-            style={{ width: "100%", padding: "6px", borderRadius: "4px", border: "1px solid #ccc" }}
-          >
+      <div className="stats-layout">
+        {/* Filter Panel */}
+        <div className="filter-panel">
+          <h3 className="filter-title">Filters</h3>
+          <label className="filter-label">Season:</label>
+          <select value={filterSeason} onChange={(e) => setFilterSeason(e.target.value)} className="filter-select">
             <option value="">All Seasons</option>
-            {allSeasons.map(season => (
-              <option key={season} value={season}>{season}</option>
-            ))}
+            {allSeasons.map(season => <option key={season} value={season}>{season}</option>)}
           </select>
           {filterSeason && (
-            <div style={{ marginTop: "10px", fontSize: "12px", color: "#666" }}>
+            <div className="filter-active">
               Showing: <strong>{filterSeason}</strong> season
             </div>
           )}
         </div>
 
-        {/* Cards grid */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            gap: "20px",
-            flex: 1,
-          }}
-        >
+        {/* Cards Grid */}
+        <div className="cards-grid">
           {Object.entries(contributorMap).map(([name, stats]) => {
-            const avgRating =
-              stats.ratings.reduce((sum, r) => sum + r, 0) /
-              (stats.ratings.length || 1);
-
+            const avgRating = stats.ratings.reduce((sum, r) => sum + r, 0) / (stats.ratings.length || 1);
             const totalGoals = stats.left + stats.right + stats.head;
-            const percentages =
-              totalGoals > 0
-                ? [
-                    ((stats.left / totalGoals) * 100).toFixed(1),
-                    ((stats.right / totalGoals) * 100).toFixed(1),
-                    ((stats.head / totalGoals) * 100).toFixed(1),
-                  ]
-                : [0, 0, 0];
+            
+            const percentages = totalGoals > 0 ? [
+              ((stats.left / totalGoals) * 100).toFixed(1),
+              ((stats.right / totalGoals) * 100).toFixed(1),
+              ((stats.head / totalGoals) * 100).toFixed(1),
+            ] : [0, 0, 0];
 
             const data = {
-              labels: [
-                `Left Foot (${percentages[0]}%)`,
-                `Right Foot (${percentages[1]}%)`,
-                `Head (${percentages[2]}%)`,
-              ],
-              datasets: [
-                {
-                  data: [stats.left, stats.right, stats.head],
-                  backgroundColor: ["#4CAF50", "#2196F3", "#FFC107"],
-                },
-              ],
+              labels: [`Left Foot (${percentages[0]}%)`, `Right Foot (${percentages[1]}%)`, `Head (${percentages[2]}%)`],
+              datasets: [{
+                data: [stats.left, stats.right, stats.head],
+                backgroundColor: ["#4CAF50", "#2196F3", "#FFC107"],
+                borderColor: "#1e293b",
+                borderWidth: 2
+              }],
             };
 
-            const ratingStyle = {
-              padding: "4px 8px",
-              borderRadius: "8px",
-              fontWeight: "bold",
-              color: "#fff",
-              backgroundColor:
-                avgRating < 6 ? "red" : avgRating <= 8 ? "lightgreen" : "green",
-            };
+            const totalMatches = stats.ratings.length;
+            const winRate = totalMatches > 0 ? ((stats.wins || 0) / totalMatches) * 100 : 0;
 
-            const errorStyle = {
-              padding: "4px 8px",
-              borderRadius: "8px",
-              fontWeight: "bold",
-              color: "#fff",
-              backgroundColor:
-                stats.errors === 0 ? "green" : stats.errors <= 3 ? "#ffb300" : "red",
-            };
+            const ratingClass = avgRating < 6 ? "low" : avgRating <= 8 ? "mid" : "high";
+            const errorClass = stats.errors === 0 ? "none" : stats.errors <= 3 ? "low" : "high";
+            const winRateClass = winRate >= 50 ? "high" : winRate > 0 ? "mid" : "low";
 
-            // Location table data
-            const locationEntries = Object.entries(stats.locationStats)
-              .filter(([loc]) => loc !== "Unknown")
-              .sort((a, b) => a[0].localeCompare(b[0]));
-
+            const locationEntries = Object.entries(stats.locationStats).filter(([loc]) => loc !== "Unknown").sort((a, b) => a[0].localeCompare(b[0]));
             const locationData = locationEntries.map(([loc, data]) => {
               const avgGoals = data.count > 0 ? (data.goals / data.count) : 0;
               const avgAssists = data.count > 0 ? (data.assists / data.count) : 0;
               const avgContrib = data.count > 0 ? ((data.goals + data.assists) / data.count) : 0;
               return { loc, data, avgGoals, avgAssists, avgContrib };
             });
-
-            const maxContrib = locationData.length > 0
-              ? Math.max(...locationData.map(d => d.avgContrib))
-              : 0;
+            const maxContrib = locationData.length > 0 ? Math.max(...locationData.map(d => d.avgContrib)) : 0;
 
             return (
-              <div
-                key={name}
-                style={{
-                  flex: "1 1 calc(50% - 20px)",
-                  maxWidth: "300px",
-                  border: "1px solid #ccc",
-                  borderRadius: "8px",
-                  padding: "15px",
-                  backgroundColor: "#f9f9f9",
-                  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-                }}
-              >
-                <h3>{name}</h3>
+              <div key={name} className="player-card">
+                <h3 className="player-name">{name}</h3>
 
-                {/* Summary numbers */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "10px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontWeight: "bold" }}>Avg Rating:</span>
-                    <span style={ratingStyle}>{avgRating.toFixed(2)}</span>
+                <div className="summary-list">
+                  <div className="summary-row">
+                    <span className="summary-label">Avg Rating</span>
+                    <span className={`badge badge-rating-${ratingClass}`}>{avgRating.toFixed(2)}</span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontWeight: "bold" }}>Total Goals:</span>
-                    <span>{totalGoals}</span>
+                  <div className="summary-row">
+                    <span className="summary-label">Total Goals</span>
+                    <span className="plain-value">{totalGoals}</span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontWeight: "bold" }}>Matches:</span>
-                    <span>{stats.ratings.length}</span>
+                  <div className="summary-row">
+                    <span className="summary-label">Matches</span>
+                    <span className="plain-value">{totalMatches}</span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontWeight: "bold" }}>Assists:</span>
-                    <span>{stats.assists}</span>
+                  <div className="summary-row">
+                    <span className="summary-label">Assists</span>
+                    <span className="plain-value">{stats.assists}</span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontWeight: "bold" }}>Errors:</span>
-                    <span style={errorStyle}>{stats.errors}</span>
+                  <div className="summary-row">
+                    <span className="summary-label">Win Rate</span>
+                    <span className={`badge badge-winrate-${winRateClass}`}>{winRate.toFixed(1)}%</span>
+                  </div>
+                  <div className="summary-row">
+                    <span className="summary-label">Errors</span>
+                    <span className={`badge badge-error-${errorClass}`}>{stats.errors}</span>
                   </div>
                 </div>
 
-                {/* Pie chart */}
-                {totalGoals > 0 ? (
-                  <div style={{ height: "200px", width: "200px", margin: "10px auto 0" }}>
+                                {totalGoals > 0 ? (
+                  <div className="chart-container">
                     <Pie
-                      data={data}
+                      data={{
+                        ...data,
+                        datasets: [{
+                          ...data.datasets[0],
+                          borderColor: "#ffffff", // ✅ White borders between slices
+                          borderWidth: 3
+                        }]
+                      }}
                       options={{
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { position: "bottom" } },
+                        plugins: { 
+                          legend: { 
+                            position: "bottom",
+                            labels: { 
+                              color: "#475569", // ✅ Darker text for light background
+                              font: { family: "'Barlow', sans-serif", size: 12 } 
+                            }
+                          } 
+                        },
                       }}
                     />
                   </div>
                 ) : (
-                  <p style={{ marginTop: "8px" }}>No goal source data</p>
+                  <p className="no-data">No goal source data</p>
                 )}
 
-                {/* Form Trend Graph */}
                 <FormTrendGraph matches={stats.matches} />
-
-                {/* Streak Tracker */}
                 <StreakTracker matches={stats.matches} />
 
-                {/* Location table */}
                 {locationData.length > 0 && (
-                  <div style={{ marginTop: "10px", borderTop: "1px solid #ddd", paddingTop: "8px" }}>
-                    <div style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "6px" }}>
-                      📍 地点表现
-                    </div>
-                    <table style={{ width: "100%", fontSize: "12px", borderCollapse: "collapse" }}>
+                  <div className="location-section">
+                    <div className="location-title">📍 地点表现</div>
+                    <table className="location-table">
                       <thead>
-                        <tr style={{ backgroundColor: "#eee" }}>
-                          <th style={{ padding: "4px", border: "1px solid #ddd", textAlign: "left" }}>Location</th>
-                          <th style={{ padding: "4px", border: "1px solid #ddd", textAlign: "center" }}>Matches</th>
-                          <th style={{ padding: "4px", border: "1px solid #ddd", textAlign: "center" }}>Avg Goals</th>
-                          <th style={{ padding: "4px", border: "1px solid #ddd", textAlign: "center" }}>Avg Assists</th>
-                          <th style={{ padding: "4px", border: "1px solid #ddd", textAlign: "center" }}>Avg Contrib</th>
+                        <tr>
+                          <th>Location</th>
+                          <th>Matches</th>
+                          <th>Avg Goals</th>
+                          <th>Avg Assists</th>
+                          <th>Avg Contrib</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {locationData.map(({ loc, data, avgGoals, avgAssists, avgContrib }) => {
-                          const isMax = avgContrib === maxContrib && maxContrib > 0;
-                          return (
-                            <tr
-                              key={loc}
-                              style={{ backgroundColor: isMax ? "#e6f7ff" : "transparent" }}
-                            >
-                              <td style={{ padding: "4px", border: "1px solid #ddd", textAlign: "left" }}>{loc}</td>
-                              <td style={{ padding: "4px", border: "1px solid #ddd", textAlign: "center" }}>{data.count}</td>
-                              <td style={{ padding: "4px", border: "1px solid #ddd", textAlign: "center" }}>{avgGoals.toFixed(2)}</td>
-                              <td style={{ padding: "4px", border: "1px solid #ddd", textAlign: "center" }}>{avgAssists.toFixed(2)}</td>
-                              <td style={{ padding: "4px", border: "1px solid #ddd", textAlign: "center" }}>{avgContrib.toFixed(2)}</td>
-                            </tr>
-                          );
-                        })}
+                        {locationData.map(({ loc, data, avgGoals, avgAssists, avgContrib }) => (
+                          <tr key={loc} className={avgContrib === maxContrib && maxContrib > 0 ? "highlight" : ""}>
+                            <td>{loc}</td>
+                            <td>{data.count}</td>
+                            <td>{avgGoals.toFixed(2)}</td>
+                            <td>{avgAssists.toFixed(2)}</td>
+                            <td>{avgContrib.toFixed(2)}</td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>

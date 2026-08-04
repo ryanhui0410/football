@@ -1,0 +1,274 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap');
+
+.stats-summary-wrap {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: 'Barlow', sans-serif;
+  background-color: #eef4fb; /* Soft light blue background */
+  color: #1e293b; /* Dark slate text */
+  min-height: 100vh;
+}
+
+.stats-header {
+  font-family: 'Oswald', sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+  margin-bottom: 40px;
+  color: #0f172a; /* Deep navy header */
+}
+
+.stats-layout {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+/* ================= Filter Panel ================= */
+.filter-panel {
+  width: 260px;
+  min-width: 260px;
+  padding: 24px;
+  background: #ffffff; /* Crisp white panel */
+  border: 1px solid #dbeafe; /* Light blue border */
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(14, 165, 233, 0.05);
+  position: sticky;
+  top: 20px;
+}
+
+.filter-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #1d4ed8; /* Vibrant blue title */
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #bfdbfe;
+}
+
+.filter-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #475569; /* Medium slate label */
+  margin-bottom: 8px;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #0f172a;
+  font-family: 'Barlow', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.filter-select:hover, .filter-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.filter-active {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #475569;
+  background: #eff6ff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #3b82f6;
+}
+.filter-active strong { color: #1d4ed8; }
+
+/* ================= Cards Grid ================= */
+.cards-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 24px;
+}
+
+.player-card {
+  background: #ffffff; /* Clean white cards */
+  border: 1px solid #e2e8f0;
+  border-top: 4px solid #2563eb; /* Blue accent top border */
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.06);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.player-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(14, 165, 233, 0.12);
+  border-top-color: #10b981; /* Changes to emerald green on hover */
+}
+
+.player-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 20px 0;
+  color: #0f172a;
+}
+
+/* ================= Summary Numbers ================= */
+.summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+  background: #f8fafc; /* Very light grey/blue inner box */
+  border: 1px solid #e2e8f0;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  letter-spacing: 0.02em;
+}
+
+.plain-value {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.badge {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #fff;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* Rating Badges */
+.badge-rating-low { background: #ef4444; }
+.badge-rating-mid { background: #10b981; }
+.badge-rating-high { background: #059669; }
+
+/* Error Badges */
+.badge-error-none { background: #10b981; }
+.badge-error-low { background: #f59e0b; }
+.badge-error-high { background: #ef4444; }
+
+/* Win Rate Badges */
+.badge-winrate-high { background: #10b981; }
+.badge-winrate-mid { background: #f59e0b; }
+.badge-winrate-low { background: #ef4444; }
+
+/* ================= Chart & Graphs ================= */
+.chart-container {
+  height: 220px;
+  width: 220px;
+  margin: 16px auto;
+}
+
+.no-data {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+  font-style: italic;
+  margin: 24px 0;
+}
+
+/* ================= Location Table ================= */
+.location-section {
+  margin-top: 24px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 20px;
+}
+
+.location-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #1d4ed8; /* Vibrant blue */
+  margin-bottom: 12px;
+}
+
+.location-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.location-table th {
+  padding: 10px 8px;
+  background: #eff6ff; /* Light blue header */
+  color: #1e40af;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 11px;
+  text-align: center;
+  border-bottom: 2px solid #bfdbfe;
+}
+
+.location-table th:first-child {
+  text-align: left;
+  padding-left: 12px;
+}
+
+.location-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: center;
+  color: #334155;
+}
+
+.location-table td:first-child {
+  text-align: left;
+  padding-left: 12px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.location-table tr:last-child td { border-bottom: none; }
+
+.location-table tr.highlight {
+  background: #ecfdf5; /* Light emerald highlight row */
+}
+.location-table tr.highlight td {
+  color: #047857;
+  font-weight: 700;
+}
+
+/* ================= Responsive ================= */
+@media (max-width: 1024px) {
+  .stats-layout { flex-direction: column; }
+  .filter-panel { width: 100%; min-width: unset; position: static; }
+  .cards-grid { grid-template-columns: 1fr; }
+}

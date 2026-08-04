@@ -16,16 +16,40 @@ function EditMatchPage() {
     fetchData();
   }, [index]);
 
-  const handleSave = async () => {
+    const handleSave = async () => {
+    // 1. Calculate the Win/Loss outcome based on the current "Match result" input
+    const resultStr = formData["Match result"] || "";
+    const calculatedWL = calculateWinLoss(resultStr);
+
+    // 2. Send the updated data to the server
     await fetch(`http://localhost:5000/modify-stats/${index}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({
+        ...formData,                     // Spread all existing form fields
+        "Win/Loss?": calculatedWL        // Overwrite "Win/Loss?" with our calculated value
+      }),
     });
+    
     alert("✅ Stat updated!");
     navigate("/modify");
   };
-
+  // Helper function to calculate Win/Loss/Draw based on "X-Y" score format
+  function calculateWinLoss(resultStr) {
+    if (!resultStr) return "";
+    const parts = resultStr.split("-");
+    if (parts.length === 2) {
+      const score1 = parseInt(parts[0], 10);
+      const score2 = parseInt(parts[1], 10);
+      
+      if (!isNaN(score1) && !isNaN(score2)) {
+        if (score1 > score2) return "Win";
+        if (score1 === score2) return "Draw";
+        if (score1 < score2) return "Lose";
+      }
+    }
+    return ""; // Returns empty if the format isn't recognized (e.g. "TBD")
+  }
   const handleCancel = () => navigate("/modify");
 
   if (!formData) {
