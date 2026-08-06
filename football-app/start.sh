@@ -6,7 +6,7 @@ echo "=========================================="
 echo "     Starting Football Stats App..."
 echo "=========================================="
 
-# Cleanup: kill backend when script exits
+# Cleanup: kill backend when script exits (Ctrl+C)
 cleanup() {
     if [ -n "$BACKEND_PID" ]; then
         echo ""
@@ -18,7 +18,7 @@ trap cleanup EXIT
 
 # ── Step 1: Pull latest code from GitHub ──
 echo ""
-echo "[1/4] Pulling latest code from GitHub..."
+echo "[1/4] 🔄 Pulling latest code from GitHub..."
 git pull origin main
 if [ $? -ne 0 ]; then
     echo ""
@@ -27,14 +27,25 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# ── Step 2: Install / update dependencies ──
+# ── Step 2: Check & Install Dependencies ──
 echo ""
-echo "[2/4] Checking dependencies..."
-npm install
+echo "[2/4] 📦 Checking dependencies..."
+if [ ! -d "node_modules" ]; then
+    echo "   -> First time setup detected! Installing all packages..."
+    npm install
+else
+    echo "   -> Verifying and updating packages..."
+    npm install --silent
+fi
+
+if [ $? -ne 0 ]; then
+    echo "❌ Dependency installation failed!"
+    exit 1
+fi
 
 # ── Step 3: Start Backend (Port 5000) ──
 echo ""
-echo "[3/4] Starting Backend Server..."
+echo "[3/4] 🚀 Starting Backend Server..."
 node server.js &
 BACKEND_PID=$!
 
@@ -42,5 +53,5 @@ sleep 2
 
 # ── Step 4: Start Frontend (Port 3000) ──
 echo ""
-echo "[4/4] Starting Frontend App..."
+echo "[4/4] 🎨 Starting Frontend App..."
 npm start
