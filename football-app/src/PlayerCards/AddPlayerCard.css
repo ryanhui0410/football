@@ -1,0 +1,304 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap');
+
+.apc-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  font-family: 'Barlow', sans-serif;
+  color: #eef4ee;
+}
+
+.apc-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 30px;
+  color: #f2c14e;
+}
+
+.apc-msg {
+  text-align: center;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  background: rgba(242, 193, 78, 0.15);
+  border: 1px solid rgba(242, 193, 78, 0.4);
+}
+
+/* ── Card sections ── */
+.apc-card {
+  background: rgba(4, 32, 22, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.apc-section-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(238, 244, 238, 0.6);
+  margin: 0 0 18px;
+}
+
+/* ── Grids ── */
+.apc-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.apc-field label {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(238, 244, 238, 0.5);
+  margin-bottom: 6px;
+}
+
+.apc-field input,
+.apc-field select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #eef4ee;
+  font-family: 'Barlow', sans-serif;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.apc-field input:focus,
+.apc-field select:focus {
+  outline: none;
+  border-color: #f2c14e;
+}
+
+/* ── Picture preview ── */
+.apc-pic-preview {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.apc-pic-preview img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #f2c14e;
+}
+
+/* ── EA fields ── */
+.apc-ea-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.apc-ea-header .apc-section-title { margin: 0; }
+
+.apc-auto-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(242, 193, 78, 0.5);
+  background: rgba(242, 193, 78, 0.15);
+  color: #f2c14e;
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.apc-auto-btn:hover {
+  background: #f2c14e;
+  color: #083a29;
+}
+
+.apc-ea-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.apc-ea-field {
+  text-align: center;
+}
+
+.apc-ea-label {
+  display: block;
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #f2c14e;
+  margin-bottom: 6px;
+}
+
+.apc-ea-field input {
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  border-radius: 8px;
+  border: 1px solid rgba(242, 193, 78, 0.3);
+  background: rgba(242, 193, 78, 0.08);
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  box-sizing: border-box;
+}
+
+/* ── Detailed stats ── */
+.apc-cat-block {
+  margin-bottom: 20px;
+}
+
+.apc-cat-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #f2c14e;
+  margin: 0 0 10px;
+}
+
+.apc-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.apc-stat-field label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(238, 244, 238, 0.5);
+  margin-bottom: 4px;
+}
+
+.apc-stat-field input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #eef4ee;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* ── Position ratings ── */
+.apc-pos-add {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.apc-pos-add select,
+.apc-pos-add input {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #eef4ee;
+  font-size: 14px;
+}
+
+.apc-pos-add input { width: 100px; }
+
+.apc-pos-add button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #f2c14e;
+  color: #083a29;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.apc-pos-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.apc-pos-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.apc-pos-name {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  color: #f2c14e;
+}
+
+.apc-pos-rating {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.apc-pos-item button {
+  background: none;
+  border: none;
+  color: #ff6b6b;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+}
+
+/* ── Submit ── */
+.apc-actions {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.apc-save-btn {
+  padding: 14px 40px;
+  border-radius: 10px;
+  border: none;
+  background: #f2c14e;
+  color: #083a29;
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.apc-save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(242, 193, 78, 0.35);
+}
+
+.apc-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .apc-grid-2 { grid-template-columns: 1fr; }
+  .apc-ea-grid { grid-template-columns: repeat(3, 1fr); }
+  .apc-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}

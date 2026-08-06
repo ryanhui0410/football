@@ -5,7 +5,9 @@ const cors = require("cors");
 const simpleGit = require("simple-git");
 const git = simpleGit();
 const app = express();
-app.use(express.json());
+// Increase the JSON payload limit to 10 Megabytes to allow base64 images
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cors());
 
 // ===================== Helpers =====================
@@ -21,11 +23,6 @@ async function commitAndPush(message) {
   }
 }
 
-function computeGoal(leftFoot, rightFoot, head) {
-  return (parseFloat(leftFoot) || 0)
-       + (parseFloat(rightFoot) || 0)
-       + (parseFloat(head) || 0);
-}
 
 function computeSymbol(goal, assist) {
   const g = parseInt(goal) || 0;
@@ -136,35 +133,71 @@ app.post("/contributor-profile", (req, res) => {
   res.json({ message: "Profile updated", updated: profiles[name] });
 });
 
-// ===================== Player Attributes =====================
+// ===================== Player Attributes (FIFA Cards) =====================
 
 const ATTR_PATH = path.join(__dirname, "src", "player_attributes.json");
 
-app.get("/player-attributes", (req, res) => {
-  if (!fs.existsSync(ATTR_PATH)) return res.json([]);
+function readAttributes() {
+  if (!fs.existsSync(ATTR_PATH)) return [];
   const content = fs.readFileSync(ATTR_PATH, "utf8");
-  res.json(JSON.parse(content));
+  return content.trim() ? JSON.parse(content) : [];
+}
+
+function writeAttributes(data) {
+  fs.writeFileSync(ATTR_PATH, JSON.stringify(data, null, 2));
+}
+
+app.get("/player-attributes", (req, res) => {
+  res.json(readAttributes());
 });
 
 app.post("/player-attributes", (req, res) => {
-  const { contributor, updates } = req.body;
-  if (!contributor) return res.status(400).json({ error: "Missing contributor" });
-
-  let data = [];
-  if (fs.existsSync(ATTR_PATH)) {
-    const content = fs.readFileSync(ATTR_PATH, "utf8");
-    if (content.trim()) data = JSON.parse(content);
+  const card = req.body;
+  
+  if (!card || !card.Contributor) {
+    return res.status(400).json({ error: "Missing Contributor name" });
   }
 
-  const index = data.findIndex((item) => item.Contributor === contributor);
+  const data = readAttributes();
+  // Find if the player already exists by name
+  const index = data.findIndex((item) => item.Contributor === card.Contributor);
+
   if (index === -1) {
-    data.push({ Contributor: contributor, ...updates });
+    // New player -> add to array
+    data.push(card);
   } else {
-    data[index] = { ...data[index], ...updates };
+    // Existing player -> merge updates
+    data[index] = { ...data[index], ...card };
   }
 
-  fs.writeFileSync(ATTR_PATH, JSON.stringify(data, null, 2));
-  res.json({ message: "Updated", updated: data.find((i) => i.Contributor === contributor) });
+  writeAttributes(data);
+
+  // ✅ Auto-sync to GitHub
+  commitAndPush(
+    `Update player card: ${card.Contributor} (${new Date().toISOString()})`
+  ).catch(console.error);
+
+  res.json({ 
+    message: "✅ Player card saved successfully", 
+    updated: index === -1 ? card : data[index] 
+  });
+});
+
+// Optional: Delete endpoint if you ever want to remove a card
+app.delete("/player-attributes/:name", (req, res) => {
+  const name = req.params.name;
+  let data = readAttributes();
+  const initialLength = data.length;
+  data = data.filter((c) => c.Contributor !== name);
+  
+  if (data.length === initialLength) {
+    return res.status(404).json({ error: "Player not found" });
+  }
+
+  writeAttributes(data);
+  commitAndPush(`Delete player card: ${name}`).catch(console.error);
+
+  res.json({ message: "Player card deleted" });
 });
 
 // ===================== POST /add-stats =====================

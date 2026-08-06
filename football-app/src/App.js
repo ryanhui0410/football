@@ -9,6 +9,7 @@ import PlayerRatings from "./PlayerRatings/PlayerRatings";
 import Sidebar from "./UI/Sidebar";
 import MenuButton from "./UI/MenuButton";
 import MatchCalendar from "./CalendarMatch/MatchCalendar";
+import AddPlayerCard from "./PlayerCards/AddPlayerCard";
 
 class PlayerStats {
   constructor(fields) {
@@ -154,7 +155,14 @@ function App() {
     alert("✅ Stat saved successfully!");
     setShowForm(false);
   };
-
+  const handleAddPlayerCardClick = () => {
+    setShowSplash(false);
+    setContributors([]);
+    setSummaryData([]);
+    setShowForm(false);
+    setActiveView("addPlayerCard");
+    setMenuOpen(false);
+  };
   const handleDisplayStatsClick = async () => {
     setShowSplash(false);
     const res = await fetch("http://localhost:5000/stats");
@@ -226,7 +234,8 @@ function App() {
           handleDisplayStatsClick={handleDisplayStatsClick}
           handlePlayerRatingsClick={handlePlayerRatingsClick}
           handleStatsSummaryClick={handleStatsSummaryClick}
-          handleCalendarClick={handleCalendarClick}   // ← new
+          handleCalendarClick={handleCalendarClick}
+          handleAddPlayerCardClick={handleAddPlayerCardClick}   // ← NEW
         />
 
         <div
@@ -273,6 +282,7 @@ function App() {
                       {activeView === "calendar" && (
                         <MatchCalendar stats={summaryData} />
                       )}
+                      {activeView === "addPlayerCard" && <AddPlayerCard />}
                     </>
                   )}
                 </>
