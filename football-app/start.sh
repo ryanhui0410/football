@@ -1,5 +1,18 @@
 #!/bin/bash
+#!/bin/bash
 
+# --- ADD THESE LINES TO FIX "COMMAND NOT FOUND" ---
+# 1. Check common Mac installation paths (Homebrew Intel & Apple Silicon)
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+# 2. If you use NVM (Node Version Manager), load it:
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# --------------------------------------------------
+
+
+echo "=========================================="
+# ... (rest of your script stays exactly the same) ...
 cd "$(dirname "$0")"
 
 echo "=========================================="
