@@ -23,10 +23,11 @@ const STAT_CATEGORIES = {
   PHY: ["Jumping", "Stamina", "Strength", "Aggression"],
 };
 
+// ✅ UPDATED: Only the 13 requested positions
 const ALL_POSITIONS = [
-  "GK", "CB", "RB", "LB", "RWB", "LWB",
-  "CDM", "CM", "CAM", "RM", "LM",
-  "RW", "LW", "RF", "LF", "CF", "ST",
+  "LW", "CF", "SS", "RW",
+  "LM", "AM", "CM", "DM", "RM",
+  "LB", "CB", "GK", "RB",
 ];
 
 // Build initial empty form
@@ -35,7 +36,7 @@ const buildEmptyForm = () => {
     Contributor: "",
     picture: "",
     overall: "",
-    position: "CB",
+    position: "CB", // Default to CB which is in the new list
     weakFoot: 3,
     preferredFoot: "Right",
     PAC: "", SHO: "", PAS: "", DRI: "", DEF: "", PHY: "",
@@ -49,7 +50,7 @@ const buildEmptyForm = () => {
 function AddPlayerCard() {
   const [formData, setFormData] = useState(buildEmptyForm());
   const [positionRatings, setPositionRatings] = useState([]);
-  const [newPos, setNewPos] = useState("RB");
+  const [newPos, setNewPos] = useState("RB"); // Default to RB which is in the new list
   const [newPosRating, setNewPosRating] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -154,14 +155,18 @@ function AddPlayerCard() {
     };
 
     try {
-        const res = await fetch("http://localhost:5000/player-attributes", { // ← Ensure this URL is correct
+      const res = await fetch("http://localhost:5000/player-attributes", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Save failed");
       setMessage("✅ Player card saved successfully!");
-    } catch {
+      
+      // Optional: Reset form after successful save
+      // setFormData(buildEmptyForm());
+      // setPositionRatings([]);
+    } catch (err) {
       setMessage("❌ Failed to save. Check that the server is running.");
     } finally {
       setSaving(false);

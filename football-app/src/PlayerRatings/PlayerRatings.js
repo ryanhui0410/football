@@ -3,7 +3,7 @@ import PlayerStatsModal from "./PlayerStatsModal";
 import "./PlayerRatings.css";
 
 const FILTER_GROUPS = {
-  Barry: ['Lu', 'Nick', 'Jacob', '普巴', 'Chris', '局長', 'Eugene', '大嚿', 'Barry', 'Chun'],
+  Barry: ['Lu', 'Nick', 'Jacob', '普巴', 'Chris', '局長', 'Eugene', '大嚿', 'Barry', 'Chun', '子睿', 'Steve', 'Eugene', 'Alex', 'hong'],
   'The Bros': ['Ryan', 'Darren'],
   馬哲: ['Tony', '馬俊翔'],
 };
@@ -230,10 +230,12 @@ function PlayerRatings() {
       </div>
 
       {showModal && (
-        <PlayerStatsModal
-          selectedPlayer={selectedPlayer}
-          onClose={closeModal}
-          profiles={profiles}
+        // Pass the fetch function down as onUpdate
+        <PlayerStatsModal 
+          selectedPlayer={selectedPlayer} 
+          onClose={() => setSelectedPlayer(null)} 
+          profiles={profiles} 
+          // onUpdate={fetchProfiles} // ← Add this!
         />
       )}
     </div>

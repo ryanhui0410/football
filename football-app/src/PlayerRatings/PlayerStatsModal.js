@@ -119,26 +119,17 @@ const CompareModal = ({ player1, player2, onClose, profiles }) => {
     <div className="psm-overlay" onClick={onClose}>
       <div className="cmp-content" onClick={(e) => e.stopPropagation()}>
         <button className="psm-close" onClick={onClose}>✕</button>
-
-        <div className="cmp-title">
-          <h2>⚔️ Player Comparison</h2>
-        </div>
-
+        <div className="cmp-title"><h2>⚔️ Player Comparison</h2></div>
         <div className="cmp-header">
           <div className="cmp-header-name p1">{player1}</div>
           <div className="cmp-header-vs">VS</div>
           <div className="cmp-header-name p2">{player2}</div>
         </div>
-
         {renderCompareRow('overall', true)}
-
         <div className="cmp-section">
           <div className="cmp-section-title">─── Main Attributes ───</div>
-          {['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'].map((attr) =>
-            renderCompareRow(attr)
-          )}
+          {['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'].map((attr) => renderCompareRow(attr))}
         </div>
-
         {Object.entries(subAttrGroups).map(([group, attrs]) => (
           <div key={group} className="cmp-section">
             <div className="cmp-section-title">─── {group} Details ───</div>
@@ -151,21 +142,87 @@ const CompareModal = ({ player1, player2, onClose, profiles }) => {
 };
 
 // ---- 主模态框组件 ----
-const PlayerStatsModal = ({ selectedPlayer, onClose, profiles }) => {
+const PlayerStatsModal = ({ selectedPlayer, onClose, profiles, onUpdate }) => {
   const [compareMode, setCompareMode] = useState(false);
   const [comparePlayer, setComparePlayer] = useState('');
   const [showCompareModal, setShowCompareModal] = useState(false);
+  
+  // ✏️ Edit Mode States
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [newPos, setNewPos] = useState('');
+  const [newPosRating, setNewPosRating] = useState('');
 
   if (!selectedPlayer) return null;
 
-  const profile =
-    profiles.find((p) => p.Contributor === selectedPlayer) || {
-      Contributor: selectedPlayer,
-    };
+  const profile = profiles.find((p) => p.Contributor === selectedPlayer) || { Contributor: selectedPlayer };
+  const otherPlayers = profiles.filter((p) => p.Contributor !== selectedPlayer).map((p) => p.Contributor);
 
-  const otherPlayers = profiles
-    .filter((p) => p.Contributor !== selectedPlayer)
-    .map((p) => p.Contributor);
+  // --- Edit Handlers ---
+  const startEditing = () => {
+    const cloned = JSON.parse(JSON.stringify(profile));
+    if (!cloned.positionRatings) cloned.positionRatings = {};
+    setEditData(cloned);
+    setIsEditing(true);
+  };
+
+  const handleEditChange = (field, value) => {
+    setEditData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handlePosRatingChange = (pos, value) => {
+    setEditData(prev => ({
+      ...prev,
+      positionRatings: { ...prev.positionRatings, [pos]: Number(value) }
+    }));
+  };
+
+  const removePosRating = (pos) => {
+    setEditData(prev => {
+      const updated = { ...prev.positionRatings };
+      delete updated[pos];
+      return { ...prev, positionRatings: updated };
+    });
+  };
+
+  const addPosRating = () => {
+    if (!newPos.trim() || !newPosRating) return;
+    handlePosRatingChange(newPos.trim().toUpperCase(), Number(newPosRating));
+    setNewPos('');
+    setNewPosRating('');
+  };
+
+  const handlePictureUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 500 * 1024) {
+      alert("⚠️ Image too large! Please use an image under 500 KB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => handleEditChange('picture', reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleSave = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/player-attributes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editData),
+      });
+      if (res.ok) {
+        alert("✅ Player stats updated successfully!");
+        setIsEditing(false);
+        if (onUpdate) onUpdate(); // Tell parent to refetch profiles
+        else onClose();
+      } else {
+        alert("❌ Failed to save.");
+      }
+    } catch (err) {
+      alert("❌ Error saving.");
+    }
+  };
 
   return (
     <>
@@ -174,81 +231,124 @@ const PlayerStatsModal = ({ selectedPlayer, onClose, profiles }) => {
           <button className="psm-close" onClick={onClose}>✕</button>
           <div className="psm-title">{selectedPlayer}</div>
 
-          {/* Compare section */}
-          <div className="psm-compare-section">
-            <button
-              className="psm-compare-toggle"
-              onClick={() => setCompareMode(!compareMode)}
-            >
+          {/* Action Buttons */}
+          <div className="psm-header-actions">
+            {!isEditing && (
+              <button className="psm-edit-toggle" onClick={startEditing}>✏️ Edit Stats</button>
+            )}
+            <button className="psm-compare-toggle" onClick={() => setCompareMode(!compareMode)}>
               {compareMode ? '🔽 Hide Compare' : '⚔️ Compare Player'}
             </button>
-            {compareMode && (
-              <div className="psm-compare-row">
-                <select
-                  className="psm-compare-select"
-                  value={comparePlayer}
-                  onChange={(e) => setComparePlayer(e.target.value)}
-                >
-                  <option value="">Select player...</option>
-                  {otherPlayers.map((name) => (
-                    <option key={name} value={name}>{name}</option>
-                  ))}
-                </select>
-                <button
-                  className="psm-compare-btn"
-                  onClick={() => comparePlayer && setShowCompareModal(true)}
-                  disabled={!comparePlayer}
-                >
-                  Compare
-                </button>
-              </div>
-            )}
           </div>
 
-          {/* Attribute grid */}
-          <div className="psm-grid">
-            {Object.entries(subAttrGroups).map(([group, attrs]) => (
-              <div key={group} className="psm-group">
-                <div className="psm-group-title">
-                  <span>{group}</span>
-                  <span className="psm-group-score">{profile[group] ?? 0}</span>
+          {isEditing ? (
+            /* ================= EDIT MODE ================= */
+            <div className="psm-edit-form">
+              <div className="psm-edit-section">
+                <h3>Basic Info</h3>
+                <div className="psm-edit-grid cols-2">
+                  <label>Overall: <input type="number" value={editData.overall || 0} onChange={e => handleEditChange('overall', Number(e.target.value))} /></label>
+                  <label>Position: <input type="text" value={editData.position || ''} onChange={e => handleEditChange('position', e.target.value)} /></label>
+                  <label>Preferred Foot: 
+                    <select value={editData.preferredFoot || 'Right'} onChange={e => handleEditChange('preferredFoot', e.target.value)}>
+                      <option>Right</option><option>Left</option>
+                    </select>
+                  </label>
+                  <label>Weak Foot: 
+                    <select value={editData.weakFoot || 3} onChange={e => handleEditChange('weakFoot', Number(e.target.value))}>
+                      {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </label>
+                  <label className="psm-file-label">Profile Picture: <input type="file" accept="image/*" onChange={handlePictureUpload} /></label>
                 </div>
-                {attrs.map((attr) => {
-                  const value = profile[attr] ?? 0;
-                  const color = getColor(value);
-                  return (
-                    <div key={attr} className="psm-sub-item">
-                      <span className="psm-sub-label">{attr}</span>
-                      <div className="psm-bar-container">
-                        <div
-                          className="psm-bar-fill"
-                          style={{
-                            width: `${Math.min(Math.max(value, 0), 100)}%`,
-                            backgroundColor: color,
-                          }}
-                        />
-                      </div>
-                      <span className="psm-sub-value" style={{ color }}>
-                        {value}
-                      </span>
-                    </div>
-                  );
-                })}
               </div>
-            ))}
-          </div>
 
-          <PositionCourt positionRatings={profile.positionRatings} />
+              <div className="psm-edit-section">
+                <h3>Main Attributes</h3>
+                <div className="psm-edit-grid cols-6">
+                  {['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'].map(attr => (
+                    <label key={attr}>{attr}: <input type="number" value={editData[attr] || 0} onChange={e => handleEditChange(attr, Number(e.target.value))} /></label>
+                  ))}
+                </div>
+              </div>
+
+              {Object.entries(subAttrGroups).map(([group, attrs]) => (
+                <div className="psm-edit-section" key={group}>
+                  <h3>{group} Details</h3>
+                  <div className="psm-edit-grid cols-3">
+                    {attrs.map(attr => (
+                      <label key={attr}>{attr}: <input type="number" value={editData[attr] || 0} onChange={e => handleEditChange(attr, Number(e.target.value))} /></label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              <div className="psm-edit-section">
+                <h3>Position Ratings</h3>
+                <div className="psm-edit-grid cols-4">
+                  {editData.positionRatings && Object.entries(editData.positionRatings).map(([pos, rating]) => (
+                    <div key={pos} className="psm-pos-edit-item">
+                      <label>{pos}: <input type="number" value={rating} onChange={e => handlePosRatingChange(pos, e.target.value)} /></label>
+                      <button className="psm-remove-pos" onClick={() => removePosRating(pos)}>✕</button>
+                    </div>
+                  ))}
+                </div>
+                <div className="psm-add-pos">
+                  <input type="text" placeholder="Pos (e.g. ST)" value={newPos} onChange={e => setNewPos(e.target.value)} />
+                  <input type="number" placeholder="Rating" value={newPosRating} onChange={e => setNewPosRating(e.target.value)} />
+                  <button onClick={addPosRating}>+ Add</button>
+                </div>
+              </div>
+
+              <div className="psm-edit-actions">
+                <button className="psm-save-btn" onClick={handleSave}>💾 Save Changes</button>
+                <button className="psm-cancel-btn" onClick={() => setIsEditing(false)}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            /* ================= VIEW MODE ================= */
+            <>
+              {compareMode && (
+                <div className="psm-compare-row">
+                  <select className="psm-compare-select" value={comparePlayer} onChange={(e) => setComparePlayer(e.target.value)}>
+                    <option value="">Select player...</option>
+                    {otherPlayers.map((name) => <option key={name} value={name}>{name}</option>)}
+                  </select>
+                  <button className="psm-compare-btn" onClick={() => comparePlayer && setShowCompareModal(true)} disabled={!comparePlayer}>Compare</button>
+                </div>
+              )}
+
+              <div className="psm-grid">
+                {Object.entries(subAttrGroups).map(([group, attrs]) => (
+                  <div key={group} className="psm-group">
+                    <div className="psm-group-title">
+                      <span>{group}</span>
+                      <span className="psm-group-score">{profile[group] ?? 0}</span>
+                    </div>
+                    {attrs.map((attr) => {
+                      const value = profile[attr] ?? 0;
+                      const color = getColor(value);
+                      return (
+                        <div key={attr} className="psm-sub-item">
+                          <span className="psm-sub-label">{attr}</span>
+                          <div className="psm-bar-container">
+                            <div className="psm-bar-fill" style={{ width: `${Math.min(Math.max(value, 0), 100)}%`, backgroundColor: color }} />
+                          </div>
+                          <span className="psm-sub-value" style={{ color }}>{value}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+              <PositionCourt positionRatings={profile.positionRatings} />
+            </>
+          )}
         </div>
       </div>
 
       {showCompareModal && comparePlayer && (
-        <CompareModal
-          player1={selectedPlayer}
-          player2={comparePlayer}
-          onClose={() => setShowCompareModal(false)}
-          profiles={profiles}
-        />
+        <CompareModal player1={selectedPlayer} player2={comparePlayer} onClose={() => setShowCompareModal(false)} profiles={profiles} />
       )}
     </>
   );

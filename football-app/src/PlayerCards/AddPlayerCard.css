@@ -5,7 +5,9 @@
   margin: 0 auto;
   padding: 30px 20px;
   font-family: 'Barlow', sans-serif;
-  color: #eef4ee;
+  color: #0f172a; /* Dark navy text for high readability */
+  background-color: #eef4fb; /* Light blue background */
+  min-height: 100vh;
 }
 
 .apc-title {
@@ -15,7 +17,7 @@
   text-transform: uppercase;
   text-align: center;
   margin-bottom: 30px;
-  color: #f2c14e;
+  color: #1e3a8a; /* Deep blue for the main title */
 }
 
 .apc-msg {
@@ -24,17 +26,19 @@
   border-radius: 8px;
   margin-bottom: 20px;
   font-weight: 600;
-  background: rgba(242, 193, 78, 0.15);
-  border: 1px solid rgba(242, 193, 78, 0.4);
+  background: #dbeafe; /* Light blue message box */
+  border: 1px solid #93c5fd;
+  color: #1e3a8a;
 }
 
 /* ── Card sections ── */
 .apc-card {
-  background: rgba(4, 32, 22, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff; /* Clean white cards */
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02); /* Subtle shadow for depth */
 }
 
 .apc-section-title {
@@ -43,7 +47,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  color: rgba(238, 244, 238, 0.6);
+  color: #64748b; /* Slate grey for subtitles */
   margin: 0 0 18px;
 }
 
@@ -59,8 +63,9 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: rgba(238, 244, 238, 0.5);
+  color: #475569; /* Darker grey for labels */
   margin-bottom: 6px;
+  font-weight: 600;
 }
 
 .apc-field input,
@@ -68,9 +73,9 @@
   width: 100%;
   padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.06);
-  color: #eef4ee;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc; /* Very light grey/blue for inputs */
+  color: #0f172a;
   font-family: 'Barlow', sans-serif;
   font-size: 15px;
   box-sizing: border-box;
@@ -79,7 +84,8 @@
 .apc-field input:focus,
 .apc-field select:focus {
   outline: none;
-  border-color: #f2c14e;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 /* ── Picture preview ── */
@@ -93,7 +99,8 @@
   height: 120px;
   object-fit: cover;
   border-radius: 50%;
-  border: 3px solid #f2c14e;
+  border: 4px solid #3b82f6; /* Blue border instead of gold */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 /* ── EA fields ── */
@@ -109,9 +116,9 @@
 .apc-auto-btn {
   padding: 8px 18px;
   border-radius: 8px;
-  border: 1px solid rgba(242, 193, 78, 0.5);
-  background: rgba(242, 193, 78, 0.15);
-  color: #f2c14e;
+  border: 1px solid #3b82f6;
+  background: #eff6ff;
+  color: #1d4ed8;
   font-family: 'Oswald', sans-serif;
   font-size: 13px;
   font-weight: 600;
@@ -120,8 +127,8 @@
 }
 
 .apc-auto-btn:hover {
-  background: #f2c14e;
-  color: #083a29;
+  background: #3b82f6;
+  color: #ffffff;
 }
 
 .apc-ea-grid {
@@ -140,7 +147,7 @@
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.1em;
-  color: #f2c14e;
+  color: #1d4ed8; /* Vibrant blue */
   margin-bottom: 6px;
 }
 
@@ -149,9 +156,9 @@
   padding: 10px;
   text-align: center;
   border-radius: 8px;
-  border: 1px solid rgba(242, 193, 78, 0.3);
-  background: rgba(242, 193, 78, 0.08);
-  color: #fff;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1e3a8a;
   font-family: 'Oswald', sans-serif;
   font-size: 22px;
   font-weight: 700;
@@ -167,8 +174,11 @@
   font-family: 'Oswald', sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: #f2c14e;
+  color: #1d4ed8; /* Vibrant blue */
   margin: 0 0 10px;
+  border-bottom: 2px solid #dbeafe;
+  padding-bottom: 4px;
+  display: inline-block;
 }
 
 .apc-stats-grid {
@@ -182,17 +192,18 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(238, 244, 238, 0.5);
+  color: #64748b;
   margin-bottom: 4px;
+  font-weight: 600;
 }
 
 .apc-stat-field input {
   width: 100%;
   padding: 8px 12px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: #eef4ee;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #0f172a;
   font-size: 14px;
   box-sizing: border-box;
 }
@@ -208,9 +219,9 @@
 .apc-pos-add input {
   padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.06);
-  color: #eef4ee;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #0f172a;
   font-size: 14px;
 }
 
@@ -220,11 +231,16 @@
   padding: 10px 20px;
   border-radius: 8px;
   border: none;
-  background: #f2c14e;
-  color: #083a29;
+  background: #2563eb; /* Primary blue button */
+  color: #ffffff;
   font-family: 'Oswald', sans-serif;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.apc-pos-add button:hover {
+  background: #1d4ed8;
 }
 
 .apc-pos-list {
@@ -239,44 +255,45 @@
   gap: 8px;
   padding: 8px 14px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
 }
 
 .apc-pos-name {
   font-family: 'Oswald', sans-serif;
   font-weight: 600;
-  color: #f2c14e;
+  color: #1d4ed8;
 }
 
 .apc-pos-rating {
   font-family: 'Oswald', sans-serif;
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: #0f172a;
 }
 
 .apc-pos-item button {
   background: none;
   border: none;
-  color: #ff6b6b;
+  color: #ef4444; /* Red for delete */
   cursor: pointer;
   font-size: 14px;
   padding: 0 4px;
+  font-weight: bold;
 }
 
 /* ── Submit ── */
 .apc-actions {
   text-align: center;
-  margin-top: 10px;
+  margin-top: 24px;
 }
 
 .apc-save-btn {
   padding: 14px 40px;
   border-radius: 10px;
   border: none;
-  background: #f2c14e;
-  color: #083a29;
+  background: #10b981; /* Emerald green for success/save */
+  color: #ffffff;
   font-family: 'Oswald', sans-serif;
   font-size: 16px;
   font-weight: 700;
@@ -288,7 +305,8 @@
 
 .apc-save-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(242, 193, 78, 0.35);
+  background: #059669;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
 }
 
 .apc-save-btn:disabled {
