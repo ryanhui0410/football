@@ -379,6 +379,7 @@
 .cmp-section {
   margin-bottom: 15px;
 }
+
 /* --- Header Actions --- */
 .psm-header-actions {
   display: flex;
@@ -401,24 +402,31 @@
 }
 .psm-edit-toggle:hover { background: #1976D2; }
 
-/* --- Edit Form Layout --- */
+/* ========================================= */
+/* ===== EDIT MODE (LIGHT BLUE THEME) ====== */
+/* ========================================= */
+
 .psm-edit-form {
-  padding: 10px 0;
+  padding: 20px;
   max-height: 65vh;
   overflow-y: auto;
   padding-right: 10px;
+  background-color: #eef4fb; /* Light blue background for the edit form */
+  border-radius: 12px;
+  border: 1px solid #dbeafe;
+  margin-top: 10px;
 }
 
 .psm-edit-section {
   margin-bottom: 24px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid #cbd5e1; /* Darker border for light blue bg */
   padding-bottom: 16px;
 }
 
 .psm-edit-section h3 {
   font-family: 'Oswald', sans-serif;
   font-size: 16px;
-  color: #f2c14e;
+  color: #1e3a8a; /* Dark blue instead of gold */
   margin: 0 0 12px 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -437,18 +445,19 @@
   display: flex;
   flex-direction: column;
   font-size: 12px;
-  color: #ccc;
+  color: #334155; /* Dark slate text */
   gap: 6px;
   font-family: 'Barlow', sans-serif;
+  font-weight: 600;
 }
 
 .psm-edit-grid input, 
 .psm-edit-grid select {
   padding: 8px 10px;
   border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.05);
-  color: #fff;
+  border: 1px solid #cbd5e1;
+  background: #ffffff; /* White input background */
+  color: #0f172a; /* Dark navy text */
   font-size: 14px;
   font-family: 'Barlow', sans-serif;
 }
@@ -456,13 +465,14 @@
 .psm-edit-grid input:focus, 
 .psm-edit-grid select:focus {
   outline: none;
-  border-color: #f2c14e;
-  background: rgba(255,255,255,0.1);
+  border-color: #2563eb;
+  background: #ffffff;
 }
 
 .psm-file-label input[type="file"] {
   padding: 6px;
   font-size: 12px;
+  color: #0f172a;
 }
 
 /* --- Position Ratings Edit --- */
@@ -474,7 +484,7 @@
 .psm-pos-edit-item label { flex: 1; }
 
 .psm-remove-pos {
-  background: #ff4444;
+  background: #ef4444;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -493,14 +503,14 @@
 .psm-add-pos input {
   padding: 8px;
   border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.05);
-  color: #fff;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
   width: 80px;
 }
 .psm-add-pos button {
   padding: 8px 16px;
-  background: #4CAF50;
+  background: #2563eb;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -515,13 +525,13 @@
   justify-content: center;
   margin-top: 24px;
   padding-top: 16px;
-  border-top: 2px solid rgba(242, 193, 78, 0.3);
+  border-top: 2px solid #bfdbfe;
 }
 
 .psm-save-btn {
   padding: 10px 28px;
-  background: #f2c14e;
-  color: #083a29;
+  background: #10b981; /* Green for save */
+  color: #ffffff;
   border: none;
   border-radius: 8px;
   font-weight: bold;
@@ -535,9 +545,9 @@
 
 .psm-cancel-btn {
   padding: 10px 28px;
-  background: transparent;
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.3);
+  background: #ffffff;
+  color: #334155; /* Dark text */
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   cursor: pointer;
   font-family: 'Oswald', sans-serif;

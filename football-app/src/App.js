@@ -254,7 +254,12 @@ function App() {
               element={
                 <>
                   {showSplash ? (
-                    <FrontPage />
+                    <FrontPage 
+                      onNavigate={(view) => {
+                        if (view === 'display') handleStatsSummaryClick();
+                        if (view === 'calendar') handleCalendarClick();
+                      }} 
+                    />
                   ) : (
                     <>
                       {activeView === "add" && showForm && (
