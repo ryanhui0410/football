@@ -152,35 +152,61 @@ app.get("/player-attributes", (req, res) => {
 });
 
 app.post("/player-attributes", (req, res) => {
-  const card = req.body;
-  
-  if (!card || !card.Contributor) {
-    return res.status(400).json({ error: "Missing Contributor name" });
+  try {
+    const card = req.body;
+    console.log(`\n📥 [PLAYER CARD] Received payload for: ${card.Contributor}`);
+
+    if (!card || !card.Contributor) {
+      console.error("❌ Missing Contributor name in payload");
+      return res.status(400).json({ error: "Missing Contributor name" });
+    }
+
+    // 1. Ensure the 'src' directory actually exists before trying to write
+    const srcDir = path.dirname(ATTR_PATH);
+    if (!fs.existsSync(srcDir)) {
+      console.log("📁 Creating 'src' directory...");
+      fs.mkdirSync(srcDir, { recursive: true });
+    }
+
+    // 2. Read existing data
+    const data = readAttributes();
+    
+    // 3. Find if the player already exists by name
+    const index = data.findIndex((item) => item.Contributor === card.Contributor);
+
+    if (index === -1) {
+      // New player -> add to array
+      data.push(card);
+      console.log(`➕ Added NEW player: ${card.Contributor}`);
+    } else {
+      // Existing player -> merge updates
+      data[index] = { ...data[index], ...card };
+      console.log(`🔄 UPDATED existing player: ${card.Contributor}`);
+    }
+
+    // 4. Write to file
+    writeAttributes(data);
+    console.log(`💾 Successfully saved to ${ATTR_PATH}`);
+
+    // 5. Auto-sync to GitHub (non-blocking)
+    commitAndPush(
+      `Update player card: ${card.Contributor} (${new Date().toISOString()})`
+    ).catch(err => console.error("⚠️ Git push failed (but file was saved locally):", err.message));
+
+    // 6. Send success response to frontend
+    res.json({ 
+      message: "✅ Player card saved successfully", 
+      updated: index === -1 ? card : data[index] 
+    });
+
+  } catch (error) {
+    // This catches ANY unexpected crashes (like permission errors or JSON parsing issues)
+    console.error("❌ CRITICAL ERROR saving player card:", error);
+    res.status(500).json({ 
+      error: "Failed to save player card", 
+      details: error.message 
+    });
   }
-
-  const data = readAttributes();
-  // Find if the player already exists by name
-  const index = data.findIndex((item) => item.Contributor === card.Contributor);
-
-  if (index === -1) {
-    // New player -> add to array
-    data.push(card);
-  } else {
-    // Existing player -> merge updates
-    data[index] = { ...data[index], ...card };
-  }
-
-  writeAttributes(data);
-
-  // ✅ Auto-sync to GitHub
-  commitAndPush(
-    `Update player card: ${card.Contributor} (${new Date().toISOString()})`
-  ).catch(console.error);
-
-  res.json({ 
-    message: "✅ Player card saved successfully", 
-    updated: index === -1 ? card : data[index] 
-  });
 });
 
 // Optional: Delete endpoint if you ever want to remove a card
