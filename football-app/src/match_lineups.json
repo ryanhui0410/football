@@ -43,5 +43,38 @@
         }
       }
     }
+  },
+  {
+    "date": "8/9/2026",
+    "location": "傑志",
+    "time": "10:30 AM",
+    "teamA": {
+      "formation": "4-3-3",
+      "players": {
+        "FWD1": {
+          "Contributor": "Tony",
+          "picture": "",
+          "position": "LB",
+          "rating": 6.7
+        }
+      }
+    },
+    "teamB": {
+      "formation": "4-4-2",
+      "players": {
+        "MID2": {
+          "Contributor": "Ryan",
+          "picture": "",
+          "position": "AM",
+          "rating": 6.7
+        },
+        "MID1": {
+          "Contributor": "Darren",
+          "picture": "",
+          "position": "CF",
+          "rating": 10
+        }
+      }
+    }
   }
 ]
