@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./MatchLineup.css";
 
-// Formation coordinates (Left side X: 8% to 44%)
 const FORMATIONS = {
   "4-3-3": {
     GK: [{ x: 8, y: 50 }],
@@ -29,7 +28,8 @@ const FORMATIONS = {
   }
 };
 
-function MatchLineup({ matchData }) {
+function MatchLineup({ matchData, layout = "horizontal" }) {
+  const isVertical = layout === "vertical";
   const [allPlayers, setAllPlayers] = useState([]);
   const [teamAFormation, setTeamAFormation] = useState("4-3-3");
   const [teamBFormation, setTeamBFormation] = useState("4-4-2");
@@ -73,7 +73,6 @@ function MatchLineup({ matchData }) {
       alert("Please enter a valid rating between 0 and 10.");
       return;
     }
-    
     const setter = team === "A" ? setTeamAPlayers : setTeamBPlayers;
     setter(prev => ({ ...prev, [slotId]: { ...player, rating } }));
     setRatingModal(null);
@@ -96,6 +95,8 @@ function MatchLineup({ matchData }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           date: matchData.Date,
+          location: matchData.Location,
+          time: matchData.Time,
           teamA: { formation: teamAFormation, players: teamAPlayers },
           teamB: { formation: teamBFormation, players: teamBPlayers }
         })
@@ -108,6 +109,22 @@ function MatchLineup({ matchData }) {
     }
   };
 
+  // ✨ NEW: Smart coordinate mapping for Vertical vs Horizontal pitches
+  const getSlotPosition = (pos, team, isVert) => {
+    if (!isVert) {
+      const x = team === "A" ? pos.x : 100 - pos.x;
+      return { left: `${x}%`, top: `${pos.y}%` };
+    } else {
+      if (team === "A") {
+        // Team A at bottom, attacking UP
+        return { left: `${pos.y}%`, top: `${100 - pos.x}%` };
+      } else {
+        // Team B at top, attacking DOWN
+        return { left: `${100 - pos.y}%`, top: `${pos.x}%` };
+      }
+    }
+  };
+
   const renderSlots = (formation, team, playersObj) => {
     const coords = FORMATIONS[formation];
     const slots = [];
@@ -115,16 +132,13 @@ function MatchLineup({ matchData }) {
     Object.entries(coords).forEach(([line, positions]) => {
       positions.forEach((pos, idx) => {
         const slotId = `${line}${idx}`;
-        // Mirror X coordinate for Team B (Right Side)
-        const x = team === "A" ? pos.x : 100 - pos.x; 
-        const y = pos.y;
         const player = playersObj[slotId];
 
         slots.push(
           <div 
             key={`${team}-${slotId}`}
             className={`pitch-slot ${player ? "filled" : ""}`}
-            style={{ left: `${x}%`, top: `${y}%` }}
+            style={getSlotPosition(pos, team, isVertical)}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, team, slotId)}
@@ -148,52 +162,64 @@ function MatchLineup({ matchData }) {
     return slots;
   };
 
+  const PlayerPoolComponent = (
+    <div className={`player-pool ${isVertical ? "vertical-pool" : ""}`}>
+      <h3>{isVertical ? "Squad" : "Available Players (Drag to Pitch)"}</h3>
+      <div className={`pool-grid ${isVertical ? "vertical-grid" : ""}`}>
+        {allPlayers.map(p => (
+          <div 
+            key={p.Contributor} 
+            className="pool-card" 
+            draggable="true" 
+            onDragStart={(e) => handleDragStart(e, p)}
+          >
+            <img src={p.picture || `/${p.Contributor}.jpeg`} alt={p.Contributor} />
+            <div className="name">{p.Contributor}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="match-lineup-container">
+    <div className={`match-lineup-container ${isVertical ? "layout-vertical" : "layout-horizontal"}`}>
       <h2 className="lineup-title">⚽ Match Lineup & Ratings</h2>
       
-      <div className="formations-select">
-        <div className="team-select">
-          <label>Team A Formation:</label>
-          <select value={teamAFormation} onChange={e => setTeamAFormation(e.target.value)}>
-            {Object.keys(FORMATIONS).map(f => <option key={f} value={f}>{f}</option>)}
-          </select>
-        </div>
-        <div className="team-select">
-          <label>Team B Formation:</label>
-          <select value={teamBFormation} onChange={e => setTeamBFormation(e.target.value)}>
-            {Object.keys(FORMATIONS).map(f => <option key={f} value={f}>{f}</option>)}
-          </select>
-        </div>
-      </div>
+      <div className="lineup-content">
+        {/* Left Side: Player Pool (only in vertical layout) */}
+        {isVertical && PlayerPoolComponent}
 
-      <div className="pitch-wrapper">
-        <div className="pitch-lines">
-          <div className="pitch-outline" />
-          <div className="center-line" />
-          <div className="center-circle" />
-          <div className="penalty-box-left" />
-          <div className="penalty-box-right" />
-        </div>
-        
-        {renderSlots(teamAFormation, "A", teamAPlayers)}
-        {renderSlots(teamBFormation, "B", teamBPlayers)}
-      </div>
-
-      <div className="player-pool">
-        <h3>Available Players (Drag to Pitch)</h3>
-        <div className="pool-grid">
-          {allPlayers.map(p => (
-            <div 
-              key={p.Contributor} 
-              className="pool-card" 
-              draggable="true" 
-              onDragStart={(e) => handleDragStart(e, p)}
-            >
-              <img src={p.picture || `/${p.Contributor}.jpeg`} alt={p.Contributor} />
-              <div className="name">{p.Contributor}</div>
+        <div className="pitch-and-controls">
+          <div className="formations-select">
+            <div className="team-select">
+              <label>Team A Formation:</label>
+              <select value={teamAFormation} onChange={e => setTeamAFormation(e.target.value)}>
+                {Object.keys(FORMATIONS).map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
             </div>
-          ))}
+            <div className="team-select">
+              <label>Team B Formation:</label>
+              <select value={teamBFormation} onChange={e => setTeamBFormation(e.target.value)}>
+                {Object.keys(FORMATIONS).map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className={`pitch-wrapper ${isVertical ? "vertical" : ""}`}>
+            <div className="pitch-lines">
+              <div className="pitch-outline" />
+              <div className="center-line" />
+              <div className="center-circle" />
+              <div className="penalty-box-left" />
+              <div className="penalty-box-right" />
+            </div>
+            
+            {renderSlots(teamAFormation, "A", teamAPlayers)}
+            {renderSlots(teamBFormation, "B", teamBPlayers)}
+          </div>
+
+          {/* Bottom Player Pool (only in horizontal layout) */}
+          {!isVertical && PlayerPoolComponent}
         </div>
       </div>
 
@@ -208,15 +234,10 @@ function MatchLineup({ matchData }) {
           <div className="rating-modal" onClick={e => e.stopPropagation()}>
             <h3>Rate {ratingModal.player.Contributor}</h3>
             <input 
-              type="number" 
-              min="0" 
-              max="10" 
-              step="0.1"
-              className="rating-input" 
-              value={tempRating}
+              type="number" min="0" max="10" step="0.1"
+              className="rating-input" value={tempRating}
               onChange={e => setTempRating(e.target.value)}
-              placeholder="0.0 - 10.0"
-              autoFocus
+              placeholder="0.0 - 10.0" autoFocus
             />
             <div className="rating-actions">
               <button className="btn-cancel" onClick={() => setRatingModal(null)}>Cancel</button>

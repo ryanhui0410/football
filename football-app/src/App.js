@@ -10,6 +10,7 @@ import Sidebar from "./UI/Sidebar";
 import MenuButton from "./UI/MenuButton";
 import MatchCalendar from "./CalendarMatch/MatchCalendar";
 import AddPlayerCard from "./PlayerCards/AddPlayerCard";
+import TacticalDashboard from "./Tactical/TacticalDashboard";
 
 class PlayerStats {
   constructor(fields) {
@@ -118,6 +119,14 @@ function App() {
     setContributors([]);
     setShowForm(false);
     setActiveView("calendar");
+  };
+  const handleTacticalClick = () => {
+    setShowSplash(false);
+    setContributors([]);
+    setSummaryData([]);
+    setShowForm(false);
+    setActiveView("tactical");
+    setMenuOpen(false);
   };
   const handlePlayerRatingsClick = () => {
     setShowSplash(false);
@@ -235,7 +244,8 @@ function App() {
           handlePlayerRatingsClick={handlePlayerRatingsClick}
           handleStatsSummaryClick={handleStatsSummaryClick}
           handleCalendarClick={handleCalendarClick}
-          handleAddPlayerCardClick={handleAddPlayerCardClick}   // ← NEW
+          handleAddPlayerCardClick={handleAddPlayerCardClick}
+          handleTacticalClick={handleTacticalClick}   // ← ADD THIS LINE
         />
 
         <div
@@ -284,10 +294,11 @@ function App() {
                       {activeView === "summary" && (
                         <StatsSummary stats={summaryData} />
                       )}
-                      {activeView === "calendar" && (
+                                            {activeView === "calendar" && (
                         <MatchCalendar stats={summaryData} />
                       )}
                       {activeView === "addPlayerCard" && <AddPlayerCard />}
+                      {activeView === "tactical" && <TacticalDashboard />} {/* ← ADD THIS LINE */}
                     </>
                   )}
                 </>

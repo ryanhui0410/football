@@ -132,3 +132,91 @@
   .slot-rating { font-size: 12px; }
   .slot-remove { width: 16px; height: 16px; font-size: 10px; top: -6px; right: -6px; }
 }
+/* ========================================== */
+/* ===== VERTICAL LAYOUT (MANAGER MODE) ===== */
+/* ========================================== */
+
+.match-lineup-container.layout-vertical .lineup-content {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Sticky Left Sidebar for Player Pool */
+.match-lineup-container.layout-vertical .player-pool.vertical-pool {
+  position: sticky;
+  top: 20px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 16px;
+  margin: 0;
+}
+
+.match-lineup-container.layout-vertical .pool-grid.vertical-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: none;
+  overflow-y: visible;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.match-lineup-container.layout-vertical .pool-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.match-lineup-container.layout-vertical .pool-card img {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 0;
+}
+
+/* Vertical Pitch (Portrait Mode) */
+.pitch-wrapper.vertical {
+  aspect-ratio: 2 / 3; /* Portrait ratio */
+  max-width: 500px;
+  margin: 0 auto;
+  background-image: linear-gradient(180deg, #27702b 50%, #2e7d32 50%); /* Horizontal stripes */
+}
+
+/* Rotate Pitch Lines for Vertical */
+.pitch-wrapper.vertical .center-line {
+  left: 4%; right: 4%; top: 50%; bottom: auto; width: auto; height: 2px;
+}
+
+.pitch-wrapper.vertical .penalty-box-left {
+  left: 25%; top: 4%; width: 50%; height: 12%; 
+  border: 2px solid rgba(255,255,255,0.6); border-top: none;
+}
+
+.pitch-wrapper.vertical .penalty-box-right {
+  left: 25%; bottom: 4%; width: 50%; height: 12%; 
+  border: 2px solid rgba(255,255,255,0.6); border-bottom: none;
+}
+
+/* Slightly smaller slots for vertical pitch to prevent overlapping */
+.pitch-wrapper.vertical .pitch-slot {
+  width: 55px;
+  height: 70px;
+}
+
+@media (max-width: 900px) {
+  .match-lineup-container.layout-vertical .lineup-content {
+    grid-template-columns: 1fr;
+  }
+  .match-lineup-container.layout-vertical .player-pool.vertical-pool {
+    position: static;
+    max-height: 300px;
+  }
+}
