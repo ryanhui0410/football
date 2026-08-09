@@ -2342,5 +2342,26 @@
     "Win/Loss?": "Win",
     "Assist to": "Darren",
     "Assist to count": 1
+  },
+  {
+    "Date": "8/9/2026",
+    "Contributor": "Darren",
+    "Symbol": "⚽👟👟👟👟",
+    "Goal": 1,
+    "Assist": 4,
+    "Rating": 10,
+    "Location": "傑志",
+    "Time": "10:30 AM",
+    "Goal Contribution": 5,
+    "source": "Barry",
+    "Left Foot": 0,
+    "Right Foot": 1,
+    "Head": 0,
+    "Other body parts": 0,
+    "Season": "2026-2027",
+    "Match result": "8-4",
+    "Win/Loss?": "Win",
+    "Assist to": "Ryan",
+    "Assist to count": 2
   }
 ]
