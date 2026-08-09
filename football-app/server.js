@@ -151,61 +151,76 @@ app.get("/player-attributes", (req, res) => {
   res.json(readAttributes());
 });
 
-app.post("/player-attributes", (req, res) => {
+app.post("/player-attributes", async (req, res) => { // <-- Added 'async' here
   try {
     const card = req.body;
     console.log(`\n📥 [PLAYER CARD] Received payload for: ${card.Contributor}`);
 
     if (!card || !card.Contributor) {
-      console.error("❌ Missing Contributor name in payload");
       return res.status(400).json({ error: "Missing Contributor name" });
     }
 
-    // 1. Ensure the 'src' directory actually exists before trying to write
-    const srcDir = path.dirname(ATTR_PATH);
-    if (!fs.existsSync(srcDir)) {
-      console.log("📁 Creating 'src' directory...");
-      fs.mkdirSync(srcDir, { recursive: true });
+    // 🔄 1. PULL LATEST DATA FROM GITHUB *BEFORE* WE TOUCH THE FILE
+    try {
+      await git.pull('origin', 'main', ['--rebase']);
+      console.log("⬇️ Pulled latest data from GitHub before saving.");
+    } catch (pullErr) {
+      console.log("⚠️ Could not pull from GitHub (offline or no changes). Continuing with local save.");
     }
 
-    // 2. Read existing data
+    // 🖼️ 2. Handle Image Upload (Decode base64 and save to public/images)
+    if (card.picture && typeof card.picture === 'string' && card.picture.startsWith("data:image")) {
+      try {
+        const base64Data = card.picture.replace(/^data:image\/\w+;base64,/, "");
+        const imageBuffer = Buffer.from(base64Data, "base64");
+        
+        const imagesDir = path.join(__dirname, "public", "images");
+        if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
+        
+        const safeName = card.Contributor.replace(/[^a-z0-9\u4e00-\u9fa5]/gi, "_");
+        const fileName = `${safeName}.jpeg`;
+        const filePath = path.join(imagesDir, fileName);
+        
+        fs.writeFileSync(filePath, imageBuffer);
+        card.picture = `/images/${fileName}`;
+      } catch (imgErr) {
+        console.error("❌ Failed to save image:", imgErr);
+      }
+    }
+
+    // 3. NOW read the file (it now contains the latest remote data!)
     const data = readAttributes();
-    
-    // 3. Find if the player already exists by name
     const index = data.findIndex((item) => item.Contributor === card.Contributor);
 
     if (index === -1) {
-      // New player -> add to array
       data.push(card);
       console.log(`➕ Added NEW player: ${card.Contributor}`);
     } else {
-      // Existing player -> merge updates
       data[index] = { ...data[index], ...card };
       console.log(`🔄 UPDATED existing player: ${card.Contributor}`);
     }
 
     // 4. Write to file
     writeAttributes(data);
-    console.log(`💾 Successfully saved to ${ATTR_PATH}`);
 
-    // 5. Auto-sync to GitHub (non-blocking)
-    commitAndPush(
-      `Update player card: ${card.Contributor} (${new Date().toISOString()})`
-    ).catch(err => console.error("⚠️ Git push failed (but file was saved locally):", err.message));
+    // 5. Commit and Push
+    await git.add(".");
+    try {
+      await git.commit(`Update player card: ${card.Contributor} (${new Date().toISOString()})`);
+      await git.push('origin', 'main');
+      console.log(`✅ Git sync successful!`);
+    } catch (gitErr) {
+      // If there was nothing to commit, it throws an error. We can ignore it.
+      if (!gitErr.message.includes("nothing to commit")) {
+         console.error("⚠️ Git push warning:", gitErr.message);
+      }
+    }
 
-    // 6. Send success response to frontend
-    res.json({ 
-      message: "✅ Player card saved successfully", 
-      updated: index === -1 ? card : data[index] 
-    });
+    res.json({ message: "✅ Player card saved successfully", updated: index === -1 ? card : data[index] });
 
   } catch (error) {
-    // This catches ANY unexpected crashes (like permission errors or JSON parsing issues)
     console.error("❌ CRITICAL ERROR saving player card:", error);
-    res.status(500).json({ 
-      error: "Failed to save player card", 
-      details: error.message 
-    });
+    res.status(500).json({ error: "Failed to save player card", details: error.message });
   }
 });
 
