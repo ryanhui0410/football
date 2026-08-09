@@ -70,7 +70,19 @@ function ModifyDashboard({ contributors, onSave }) {
       alert("No other contributors found for this exact match.");
     }
   };
-
+    // Helper to normalize dates for matching (Converts "8/9/2026" and "2026-08-09" to "2026-08-09")
+  const normalizeDate = (dateStr) => {
+    if (!dateStr) return "";
+    if (dateStr.length === 10 && dateStr.includes("-")) return dateStr; // Already YYYY-MM-DD
+    const parts = dateStr.split("/");
+    if (parts.length === 3) {
+      const month = parts[0].padStart(2, '0');
+      const day = parts[1].padStart(2, '0');
+      const year = parts[2];
+      return `${year}-${month}-${day}`;
+    }
+    return dateStr;
+  };
   const selectCompareTarget = (target) => {
     setCompareData({
       contributor1: compareMenu.contributorName, match1: compareMenu.match,
@@ -212,17 +224,18 @@ function ModifyDashboard({ contributors, onSave }) {
       {selectedMatch && <EditMatchModal match={selectedMatch} onClose={closeModal} onSave={onSave} />}
       <HeadToHeadCompare open={!!compareData} onClose={closeCompare} compareData={compareData} />
       <MatchStatsModal open={statsModalOpen} match={selectedStats} onClose={() => setStatsModalOpen(false)} />
-              {/* 1. THE CHOICE MODAL */}
+            {/* 1. THE CHOICE MODAL */}
       {choiceMatch && !matchReport && (
         <div className="choice-overlay" onClick={() => setChoiceMatch(null)}>
           <div className="choice-modal" onClick={e => e.stopPropagation()}>
             <button className="choice-close" onClick={() => setChoiceMatch(null)}>✕</button>
-            <h3>Match on {choiceMatch.date}</h3>
+            <h3>Match on {choiceMatch.match.date}</h3>
             <p className="choice-subtitle">What would you like to view for <strong>{choiceMatch.name}</strong>?</p>
             
             <div className="choice-buttons">
+              {/* ✅ CHANGED: Now opens MatchStatsModal instead of EditMatchModal */}
               <button className="choice-btn stats" onClick={() => {
-                openModal(choiceMatch.match, choiceMatch.name); // ✅ OPENS EDIT MODAL
+                openStatsModal(choiceMatch.match, choiceMatch.name); 
                 setChoiceMatch(null);
               }}>
                 📊 <span>View Individual Stats</span>
@@ -232,11 +245,21 @@ function ModifyDashboard({ contributors, onSave }) {
                 try {
                   const res = await fetch("http://localhost:5000/match-lineups");
                   const lineups = await res.json();
-                  const found = lineups.find(l => l.date === choiceMatch.date);
+                  
+                  // Normalize the date from the stats (e.g., "8/9/2026" -> "2026-08-09")
+                  const targetDate = normalizeDate(choiceMatch.match.date);
+                  const targetLocation = choiceMatch.match.location;
+                  
+                  // Find the lineup that matches the Date AND Location
+                  const found = lineups.find(l => 
+                    normalizeDate(l.date) === targetDate && 
+                    l.location === targetLocation
+                  );
+
                   if (found) {
                     setMatchReport(found);
                   } else {
-                    alert("No tactical report saved for this match date yet.");
+                    alert(`No tactical report saved for ${targetDate} at ${targetLocation} yet.`);
                     setChoiceMatch(null);
                   }
                 } catch (err) {
