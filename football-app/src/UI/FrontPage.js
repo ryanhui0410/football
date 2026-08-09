@@ -61,11 +61,11 @@ function FrontPage({ onNavigate }) {
       <div className="fp-content">
         <div className="fp-kicker">Pro Feedback Loop</div>
         <h1 className="fp-title">
-          TRACK. ANALYZE.<br />
-          <span>DOMINATE.</span>
+          Is football all about goals and assists?<br />
+          <span>NAH.</span>
         </h1>
         <p className="fp-subtitle">
-          The ultimate analytics dashboard for amateur footballers. Log your matches, 
+          The ultimate analytics dashboard for Ryan and Darren. Log your matches, 
           compare stats with teammates, and visualize your season's progress in real-time.
         </p>
         

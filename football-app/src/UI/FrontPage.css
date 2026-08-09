@@ -85,9 +85,10 @@
 
 .fp-title {
   font-family: 'Oswald', sans-serif;
-  font-size: clamp(3rem, 8vw, 6rem); /* Responsive massive text */
+  /* Reduced size: Min 2.25rem (mobile), scales at 5.5vw, caps at 4.5rem (large screens) */
+  font-size: clamp(2.25rem, 5.5vw, 4.5rem); 
   font-weight: 700;
-  line-height: 0.95;
+  line-height: 1.05; /* Increased slightly from 0.95 so wrapped text doesn't overlap */
   text-transform: uppercase;
   color: #ffffff;
   margin: 0 0 24px 0;
