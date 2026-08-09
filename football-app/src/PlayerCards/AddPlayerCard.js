@@ -1,47 +1,60 @@
 import React, { useState } from "react";
 import "./AddPlayerCard.css";
 
-// ── FIFA stat categories ──
+// ── Outfield EA Fields & Detailed Stats ──
+const OUTFIELD_EA_FIELDS = ["PAC", "SHO", "PAS", "DRI", "DEF", "PHY"];
+
 const STAT_CATEGORIES = {
   PAC: ["Acceleration", "Sprint Speed"],
-  SHO: [
-    "Positioning", "Finishing", "Shot Power",
-    "Long Shots", "Volleys", "Penalties",
-  ],
-  PAS: [
-    "Vision", "Crossing", "Free Kick Accuracy",
-    "Short Passing", "Long Passing", "Curve",
-  ],
-  DRI: [
-    "Agility", "Balance", "Reactions",
-    "Ball Control", "Dribbling", "Composure",
-  ],
-  DEF: [
-    "Interceptions", "Heading Accuracy", "Def Awareness",
-    "Standing Tackle", "Sliding Tackle",
-  ],
+  SHO: ["Positioning", "Finishing", "Shot Power", "Long Shots", "Volleys", "Penalties"],
+  PAS: ["Vision", "Crossing", "Free Kick Accuracy", "Short Passing", "Long Passing", "Curve"],
+  DRI: ["Agility", "Balance", "Reactions", "Ball Control", "Dribbling", "Composure"],
+  DEF: ["Interceptions", "Heading Accuracy", "Def Awareness", "Standing Tackle", "Sliding Tackle"],
   PHY: ["Jumping", "Stamina", "Strength", "Aggression"],
 };
 
-// ✅ UPDATED: Only the 13 requested positions
+// ── Goalkeeper EA Fields & Detailed Stats ──
+const GK_EA_FIELDS = ["DIV", "HAN", "KIC", "REF", "SPD", "POS"];
+
+const GK_DETAILED_CATEGORIES = {
+  "Goalkeeping": ["GK Diving", "GK Handling", "GK Kicking", "GK Positioning", "GK Reflexes"],
+  "Pace": ["Acceleration", "Sprint Speed"],
+  "Shooting": ["Shot Power"],
+  "Passing": ["Vision", "Short Passing", "Long Passing"],
+  "Dribbling": ["Reactions"],
+  "Physicality": ["Jumping", "Strength"]
+};
+
 const ALL_POSITIONS = [
   "LW", "CF", "SS", "RW",
   "LM", "AM", "CM", "DM", "RM",
   "LB", "CB", "GK", "RB",
 ];
 
-// Build initial empty form
+const FILTER_OPTIONS = ["Barry", "The Bros", "馬哲"];
+
+// Combine all possible sub-stats to initialize the form state
+const ALL_SUB_STATS = [
+  ...Object.values(STAT_CATEGORIES).flat(),
+  ...Object.values(GK_DETAILED_CATEGORIES).flat()
+];
+const UNIQUE_SUB_STATS = [...new Set(ALL_SUB_STATS)];
+
 const buildEmptyForm = () => {
   const form = {
     Contributor: "",
     picture: "",
     overall: "",
-    position: "CB", // Default to CB which is in the new list
+    position: "CB",
     weakFoot: 3,
     preferredFoot: "Right",
+    filterGroup: "", // Added Filter Group
+    // Outfield EA
     PAC: "", SHO: "", PAS: "", DRI: "", DEF: "", PHY: "",
+    // GK EA
+    DIV: "", HAN: "", KIC: "", REF: "", SPD: "", POS: "",
   };
-  Object.values(STAT_CATEGORIES).flat().forEach((s) => {
+  UNIQUE_SUB_STATS.forEach((s) => {
     form[s] = "";
   });
   return form;
@@ -50,17 +63,15 @@ const buildEmptyForm = () => {
 function AddPlayerCard() {
   const [formData, setFormData] = useState(buildEmptyForm());
   const [positionRatings, setPositionRatings] = useState([]);
-  const [newPos, setNewPos] = useState("RB"); // Default to RB which is in the new list
+  const [newPos, setNewPos] = useState("RB"); 
   const [newPosRating, setNewPosRating] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  // ── Generic field handler ──
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // ── Picture upload (base64) ──
   const handlePicture = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -73,39 +84,36 @@ function AddPlayerCard() {
     reader.readAsDataURL(file);
   };
 
-  // ── Auto-calculate the 6 EA fields ──
   const autoCalculate = () => {
+    const isGK = formData.position === "GK";
     const avg = (...vals) => {
       const nums = vals.map((v) => parseInt(v) || 0);
+      if (nums.length === 0) return 0;
       return Math.round(nums.reduce((a, b) => a + b, 0) / nums.length);
     };
 
-    setFormData((prev) => ({
-      ...prev,
-      PAC: avg(prev["Acceleration"], prev["Sprint Speed"]),
-      SHO: avg(
-        prev["Positioning"], prev["Finishing"], prev["Shot Power"],
-        prev["Long Shots"], prev["Volleys"], prev["Penalties"]
-      ),
-      PAS: avg(
-        prev["Vision"], prev["Crossing"], prev["Free Kick Accuracy"],
-        prev["Short Passing"], prev["Long Passing"], prev["Curve"]
-      ),
-      DRI: avg(
-        prev["Agility"], prev["Balance"], prev["Reactions"],
-        prev["Ball Control"], prev["Dribbling"], prev["Composure"]
-      ),
-      DEF: avg(
-        prev["Interceptions"], prev["Heading Accuracy"], prev["Def Awareness"],
-        prev["Standing Tackle"], prev["Sliding Tackle"]
-      ),
-      PHY: avg(
-        prev["Jumping"], prev["Stamina"], prev["Strength"], prev["Aggression"]
-      ),
-    }));
+    setFormData((prev) => {
+      const updated = { ...prev };
+      
+      if (isGK) {
+        // Map GK sub-stats to the 6 EA fields
+        updated.DIV = parseInt(prev["GK Diving"]) || 0;
+        updated.HAN = parseInt(prev["GK Handling"]) || 0;
+        updated.KIC = parseInt(prev["GK Kicking"]) || 0;
+        updated.REF = parseInt(prev["GK Reflexes"]) || 0;
+        updated.SPD = avg(prev["Acceleration"], prev["Sprint Speed"]);
+        updated.POS = parseInt(prev["GK Positioning"]) || 0;
+      } else {
+        // Map Outfield sub-stats to the 6 EA fields
+        Object.entries(STAT_CATEGORIES).forEach(([ea, stats]) => {
+          updated[ea] = avg(...stats.map(s => prev[s]));
+        });
+      }
+      
+      return updated;
+    });
   };
 
-  // ── Position Ratings (dynamic list) ──
   const addPosition = () => {
     const rating = parseInt(newPosRating);
     if (!newPos || isNaN(rating) || rating < 1 || rating > 99) {
@@ -124,7 +132,6 @@ function AddPlayerCard() {
     setPositionRatings((prev) => prev.filter((p) => p.position !== pos));
   };
 
-  // ── Submit ──
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.Contributor.trim()) {
@@ -140,18 +147,20 @@ function AddPlayerCard() {
       posRatingsObj[position] = rating;
     });
 
+    // Fields that should remain as strings (not parsed to numbers)
+    const stringFields = ["Contributor", "picture", "position", "preferredFoot", "filterGroup"];
+
     const payload = {
       ...formData,
-      // Ensure all numeric fields are numbers
+      // Ensure all numeric fields are numbers, but keep strings as strings
       ...Object.fromEntries(
         Object.entries(formData).map(([k, v]) => [
           k,
-          k === "Contributor" || k === "picture" || k === "position" || k === "preferredFoot"
-            ? v
-            : parseInt(v) || 0,
+          stringFields.includes(k) ? v : parseInt(v) || 0,
         ])
       ),
-      positionRatings: posRatingsObj,
+      // Force empty position ratings if the player is a GK
+      positionRatings: formData.position === "GK" ? {} : posRatingsObj,
     };
 
     try {
@@ -163,15 +172,19 @@ function AddPlayerCard() {
       if (!res.ok) throw new Error("Save failed");
       setMessage("✅ Player card saved successfully!");
       
-      // Optional: Reset form after successful save
-      // setFormData(buildEmptyForm());
-      // setPositionRatings([]);
+      // Reset form after successful save
+      setFormData(buildEmptyForm());
+      setPositionRatings([]);
     } catch (err) {
       setMessage("❌ Failed to save. Check that the server is running.");
     } finally {
       setSaving(false);
     }
   };
+
+  const isGK = formData.position === "GK";
+  const activeEAFields = isGK ? GK_EA_FIELDS : OUTFIELD_EA_FIELDS;
+  const activeDetailedCats = isGK ? GK_DETAILED_CATEGORIES : STAT_CATEGORIES;
 
   return (
     <div className="apc-wrap">
@@ -199,6 +212,18 @@ function AddPlayerCard() {
               >
                 {ALL_POSITIONS.map((p) => (
                   <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            </div>
+            <div className="apc-field">
+              <label>Filter Group</label>
+              <select
+                value={formData.filterGroup}
+                onChange={(e) => handleChange("filterGroup", e.target.value)}
+              >
+                <option value="">None</option>
+                {FILTER_OPTIONS.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
                 ))}
               </select>
             </div>
@@ -238,7 +263,6 @@ function AddPlayerCard() {
             </div>
           </div>
 
-          {/* Picture preview */}
           {formData.picture && (
             <div className="apc-pic-preview">
               <img src={formData.picture} alt="Player" />
@@ -255,7 +279,7 @@ function AddPlayerCard() {
             </button>
           </div>
           <div className="apc-ea-grid">
-            {["PAC", "SHO", "PAS", "DRI", "DEF", "PHY"].map((ea) => (
+            {activeEAFields.map((ea) => (
               <div key={ea} className="apc-ea-field">
                 <span className="apc-ea-label">{ea}</span>
                 <input
@@ -271,7 +295,7 @@ function AddPlayerCard() {
         {/* ── DETAILED STATS ── */}
         <section className="apc-card">
           <h2 className="apc-section-title">Detailed Stats</h2>
-          {Object.entries(STAT_CATEGORIES).map(([cat, stats]) => (
+          {Object.entries(activeDetailedCats).map(([cat, stats]) => (
             <div key={cat} className="apc-cat-block">
               <h3 className="apc-cat-title">{cat}</h3>
               <div className="apc-stats-grid">
@@ -290,36 +314,38 @@ function AddPlayerCard() {
           ))}
         </section>
 
-        {/* ── POSITION RATINGS ── */}
-        <section className="apc-card">
-          <h2 className="apc-section-title">Playable Positions</h2>
-          <div className="apc-pos-add">
-            <select value={newPos} onChange={(e) => setNewPos(e.target.value)}>
-              {ALL_POSITIONS.map((p) => (
-                <option key={p} value={p}>{p}</option>
-              ))}
-            </select>
-            <input
-              type="number" min="1" max="99"
-              placeholder="Rating"
-              value={newPosRating}
-              onChange={(e) => setNewPosRating(e.target.value)}
-            />
-            <button type="button" onClick={addPosition}>+ Add</button>
-          </div>
-
-          {positionRatings.length > 0 && (
-            <div className="apc-pos-list">
-              {positionRatings.map(({ position, rating }) => (
-                <div key={position} className="apc-pos-item">
-                  <span className="apc-pos-name">{position}</span>
-                  <span className="apc-pos-rating">{rating}</span>
-                  <button type="button" onClick={() => removePosition(position)}>✕</button>
-                </div>
-              ))}
+        {/* ── POSITION RATINGS (Hidden for GK) ── */}
+        {!isGK && (
+          <section className="apc-card">
+            <h2 className="apc-section-title">Playable Positions</h2>
+            <div className="apc-pos-add">
+              <select value={newPos} onChange={(e) => setNewPos(e.target.value)}>
+                {ALL_POSITIONS.filter(p => p !== "GK").map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+              <input
+                type="number" min="1" max="99"
+                placeholder="Rating"
+                value={newPosRating}
+                onChange={(e) => setNewPosRating(e.target.value)}
+              />
+              <button type="button" onClick={addPosition}>+ Add</button>
             </div>
-          )}
-        </section>
+
+            {positionRatings.length > 0 && (
+              <div className="apc-pos-list">
+                {positionRatings.map(({ position, rating }) => (
+                  <div key={position} className="apc-pos-item">
+                    <span className="apc-pos-name">{position}</span>
+                    <span className="apc-pos-rating">{rating}</span>
+                    <button type="button" onClick={() => removePosition(position)}>✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* ── SUBMIT ── */}
         <div className="apc-actions">

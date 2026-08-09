@@ -21,6 +21,7 @@ function PlayerRatings() {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [activeFilters, setActiveFilters] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState("All"); 
 
   useEffect(() => {
     fetchData();
@@ -92,19 +93,32 @@ function PlayerRatings() {
   if (loading) return <div>Loading...</div>;
 
   const names = profiles
-  .map(p => p.Contributor)
-  .filter(Boolean)
-  .filter(name => {
-    if (activeFilters.length === 0) return true;
-    return activeFilters.some(group => FILTER_GROUPS[group]?.includes(name));
-  })
-  .sort((a, b) => {
-    const pa = getProfile(a);
-    const pb = getProfile(b);
-    const oa = pa.overall || pa.PAC || 0;
-    const ob = pb.overall || pb.PAC || 0;
-    return ob - oa; // highest rated first
-  });
+    .map(p => p.Contributor)
+    .filter(Boolean)
+    .filter(name => {
+      const profile = profiles.find(p => p.Contributor === name);
+      
+      // 1. Apply Dropdown Filter (selectedGroup)
+      if (selectedGroup !== "All") {
+        const matchesDropdown = profile?.filterGroup === selectedGroup || FILTER_GROUPS[selectedGroup]?.includes(name);
+        if (!matchesDropdown) return false;
+      }
+
+      // 2. Apply Button Filters (activeFilters)
+      if (activeFilters.length > 0) {
+        const matchesButtons = activeFilters.some(group => FILTER_GROUPS[group]?.includes(name));
+        if (!matchesButtons) return false;
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      const pa = getProfile(a);
+      const pb = getProfile(b);
+      const oa = pa.overall || pa.PAC || pa.DIV || 0;
+      const ob = pb.overall || pb.PAC || pb.DIV || 0;
+      return ob - oa; // highest rated first
+    });
 
   return (
     <div className="pr-page">
@@ -131,11 +145,46 @@ function PlayerRatings() {
         )}
       </div>
 
+      {/* ---- Filter Dropdown ---- */}
+      <div style={{ marginBottom: "24px", textAlign: "center" }}>
+        <label style={{ marginRight: "12px", fontWeight: "bold", fontSize: "16px", color: "#1e3a8a" }}>
+          Filter by Group:
+        </label>
+        <select 
+          value={selectedGroup} 
+          onChange={(e) => setSelectedGroup(e.target.value)}
+          style={{ 
+            padding: "10px 16px", 
+            borderRadius: "8px", 
+            border: "1px solid #cbd5e1", 
+            fontSize: "15px",
+            backgroundColor: "#f8fafc",
+            fontWeight: "600",
+            cursor: "pointer"
+          }}
+        >
+          <option value="All">All Players</option>
+          <option value="Barry">Barry</option>
+          <option value="The Bros">The Bros</option>
+          <option value="馬哲">馬哲</option>
+        </select>
+      </div>
+
       {/* ---- Cards Grid ---- */}
       <div className="pr-grid">
         {names.map(name => {
           const profile = getProfile(name);
-          const main = {
+          
+          // 🧤 GK vs Outfield Stat Logic
+          const isGK = profile.position === "GK";
+          const main = isGK ? {
+            DIV: profile.DIV ?? 0,
+            HAN: profile.HAN ?? 0,
+            KIC: profile.KIC ?? 0,
+            REF: profile.REF ?? 0,
+            SPD: profile.SPD ?? 0,
+            POS: profile.POS ?? 0,
+          } : {
             PAC: profile.PAC ?? 0,
             SHO: profile.SHO ?? 0,
             PAS: profile.PAS ?? 0,
@@ -143,7 +192,8 @@ function PlayerRatings() {
             DEF: profile.DEF ?? 0,
             PHY: profile.PHY ?? 0,
           };
-          const overall = profile.overall || main.PAC;
+
+          const overall = profile.overall || main.PAC || main.DIV || 0;
           const position = profile.position || 'POS';
           const weakFoot = profile.weakFoot || 0;
           const form = getForm(name);
@@ -163,7 +213,8 @@ function PlayerRatings() {
 
               <div className="pr-picture">
                 <img
-                  src={`/${name}.jpeg`}
+                  // Use JSON path if uploaded, otherwise check public folder
+                  src={profile.picture || `/${name}.jpeg`}
                   alt={name}
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -183,13 +234,14 @@ function PlayerRatings() {
               <div className="pr-divider" />
 
               <div className="pr-stats-grid">
-                {['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'].map(stat => (
+                {Object.entries(main).map(([stat, value]) => (
                   <div key={stat} className="pr-stat-item">
                     <span className="pr-stat-label">{stat}</span>
-                    <span className="pr-score-box">{main[stat]}</span>
+                    <span className="pr-score-box">{value}</span>
                   </div>
                 ))}
               </div>
+              
               {/* Preferred Foot */}
               {profile.preferredFoot && (
                 <div className="pr-pref-foot">
@@ -199,6 +251,7 @@ function PlayerRatings() {
                   </span>
                 </div>
               )}
+              
               {weakFoot > 0 && (
                 <div className="pr-weak-foot">
                   <span className="pr-weak-foot-label">Weak Foot:</span>
@@ -230,12 +283,12 @@ function PlayerRatings() {
       </div>
 
       {showModal && (
-        // Pass the fetch function down as onUpdate
+        // Pass the fetch function down as onUpdate so edits refresh the grid
         <PlayerStatsModal 
           selectedPlayer={selectedPlayer} 
-          onClose={() => setSelectedPlayer(null)} 
+          onClose={closeModal} 
           profiles={profiles} 
-          // onUpdate={fetchProfiles} // ← Add this!
+          onUpdate={fetchData} 
         />
       )}
     </div>
