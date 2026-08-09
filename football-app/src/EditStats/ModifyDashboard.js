@@ -3,6 +3,7 @@ import EditMatchModal from "./EditMatchModal";
 import HeadToHeadCompare from "./HeadToHeadCompare"; 
 import MatchStatsModal from "./MatchStatsModal"; 
 import "./ModifyDashboard.css";
+import MatchLineup from "./MatchLineup"; // Import the pitch component
 
 function ModifyDashboard({ contributors, onSave }) {
   const [selectedMatch, setSelectedMatch] = useState(null);
@@ -10,7 +11,8 @@ function ModifyDashboard({ contributors, onSave }) {
   const [compareMenu, setCompareMenu] = useState(null);
   const [statsModalOpen, setStatsModalOpen] = useState(false);
   const [selectedStats, setSelectedStats] = useState(null);
-  
+  const [choiceMatch, setChoiceMatch] = useState(null); // Holds { index, date, name }
+  const [matchReport, setMatchReport] = useState(null); // Holds the fetched lineup data
   // NEW: Filter State
   const [activeFilter, setActiveFilter] = useState("All");
 
@@ -139,7 +141,7 @@ function ModifyDashboard({ contributors, onSave }) {
                     <tr 
                       key={idx} 
                       className="md-row" 
-                      onClick={() => openStatsModal(match, contributor.name)}
+                      onClick={() => setChoiceMatch({ match: match, name: contributor.name })} // ✅ NEW
                     >
                       <td className="md-td" data-label="Date & Location">
                         <div className="md-date">{match.date}</div>
@@ -210,6 +212,61 @@ function ModifyDashboard({ contributors, onSave }) {
       {selectedMatch && <EditMatchModal match={selectedMatch} onClose={closeModal} onSave={onSave} />}
       <HeadToHeadCompare open={!!compareData} onClose={closeCompare} compareData={compareData} />
       <MatchStatsModal open={statsModalOpen} match={selectedStats} onClose={() => setStatsModalOpen(false)} />
+              {/* 1. THE CHOICE MODAL */}
+      {choiceMatch && !matchReport && (
+        <div className="choice-overlay" onClick={() => setChoiceMatch(null)}>
+          <div className="choice-modal" onClick={e => e.stopPropagation()}>
+            <button className="choice-close" onClick={() => setChoiceMatch(null)}>✕</button>
+            <h3>Match on {choiceMatch.date}</h3>
+            <p className="choice-subtitle">What would you like to view for <strong>{choiceMatch.name}</strong>?</p>
+            
+            <div className="choice-buttons">
+              <button className="choice-btn stats" onClick={() => {
+                openModal(choiceMatch.match, choiceMatch.name); // ✅ OPENS EDIT MODAL
+                setChoiceMatch(null);
+              }}>
+                📊 <span>View Individual Stats</span>
+              </button>
+              
+              <button className="choice-btn report" onClick={async () => {
+                try {
+                  const res = await fetch("http://localhost:5000/match-lineups");
+                  const lineups = await res.json();
+                  const found = lineups.find(l => l.date === choiceMatch.date);
+                  if (found) {
+                    setMatchReport(found);
+                  } else {
+                    alert("No tactical report saved for this match date yet.");
+                    setChoiceMatch(null);
+                  }
+                } catch (err) {
+                  alert("Failed to fetch match report.");
+                }
+              }}>
+                ⚽ <span>View Match Report</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. THE MATCH REPORT VIEWER */}
+      {matchReport && (
+        <div className="report-overlay" onClick={() => setMatchReport(null)}>
+          <div className="report-modal" onClick={e => e.stopPropagation()}>
+            <button className="report-close" onClick={() => setMatchReport(null)}>✕</button>
+            <h2 className="report-title">⚽ Match Report: {matchReport.date}</h2>
+            {matchReport.location && <p className="report-meta">📍 {matchReport.location} {matchReport.time && `• 🕒 ${matchReport.time}`}</p>}
+            
+            <MatchLineup 
+              matchData={{ Date: matchReport.date }} 
+              initialLineup={matchReport} 
+              readOnly={true} 
+              layout="horizontal" 
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
