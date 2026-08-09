@@ -3,7 +3,7 @@ import PlayerStatsModal from "./PlayerStatsModal";
 import "./PlayerRatings.css";
 
 const FILTER_GROUPS = {
-  Barry: ['Lu', 'Nick', 'Jacob', '普巴', 'Chris', '局長', 'Eugene', '大嚿', 'Barry', 'Chun', '子睿', 'Steve', 'Eugene', 'Alex', 'hong'],
+  Barry: ['Lu', 'Nick', 'Jacob', '普巴', 'Chris', '局長', 'Eugene', '大嚿', 'Barry', 'Chun', '子睿', 'Steve', 'Eugene', 'Alex', 'hong', 'R', 'Ken','Derek', 'Marco', 'Nin', 'Dave', 'S Joe', '大嚿', 'Po', 'QC', 'Raymond', 'Eugene'],
   'The Bros': ['Ryan', 'Darren'],
   馬哲: ['Tony', '馬俊翔'],
 };
