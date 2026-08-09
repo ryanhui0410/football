@@ -241,28 +241,36 @@ function ModifyDashboard({ contributors, onSave }) {
                 📊 <span>View Individual Stats</span>
               </button>
               
-              <button className="choice-btn report" onClick={async () => {
+                            <button className="choice-btn report" onClick={async () => {
                 try {
                   const res = await fetch("http://localhost:5000/match-lineups");
                   const lineups = await res.json();
                   
-                  // Normalize the date from the stats (e.g., "8/9/2026" -> "2026-08-09")
+                  // 1. Normalize the date and TRIM the location to remove hidden spaces
                   const targetDate = normalizeDate(choiceMatch.match.date);
-                  const targetLocation = choiceMatch.match.location;
+                  const targetLocation = (choiceMatch.match.location || "").trim();
                   
-                  // Find the lineup that matches the Date AND Location
+                  // 🕵️ DEBUG: Open your browser console (F12) to see exactly what is being compared!
+                  console.log("🔍 Searching for -> Date:", targetDate, "| Location:", targetLocation);
+                  console.log("📂 Available Lineups in DB:", lineups.map(l => ({ 
+                      date: normalizeDate(l.date), 
+                      location: (l.location || "").trim() 
+                  })));
+
+                  // 2. Find the match using trimmed locations
                   const found = lineups.find(l => 
                     normalizeDate(l.date) === targetDate && 
-                    l.location === targetLocation
+                    (l.location || "").trim() === targetLocation
                   );
 
                   if (found) {
                     setMatchReport(found);
                   } else {
-                    alert(`No tactical report saved for ${targetDate} at ${targetLocation} yet.`);
+                    alert(`No tactical report found.\n\nCheck the browser console (F12) to see the exact Date and Location strings being compared. There might be a hidden space or typo!`);
                     setChoiceMatch(null);
                   }
                 } catch (err) {
+                  console.error("Fetch error:", err);
                   alert("Failed to fetch match report.");
                 }
               }}>
