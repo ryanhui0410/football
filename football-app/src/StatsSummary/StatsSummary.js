@@ -32,7 +32,8 @@ function StatsSummary({ stats }) {
 
     if (!contributorMap[name]) {
       contributorMap[name] = {
-        ratings: [], left: 0, right: 0, head: 0, assists: 0, errors: 0, wins: 0,
+        // Added 'other: 0' to track other body parts
+        ratings: [], left: 0, right: 0, head: 0, other: 0, assists: 0, errors: 0, wins: 0,
         locationStats: {}, matches: [], 
       };
     }
@@ -42,6 +43,7 @@ function StatsSummary({ stats }) {
     const left = parseInt(s["Left Foot"] || 0);
     const right = parseInt(s["Right Foot"] || 0);
     const head = parseInt(s.Head || s["Head"] || 0);
+    const other = parseInt(s["Other body parts"] || s.OtherBodyParts || 0); // ← Extract Other
     const assists = parseInt(s.Assist || 0);
     const errors = parseInt(s["Error?"] || 0);
     const wl = s["Win/Loss?"] || s.WinLoss || "";
@@ -50,17 +52,20 @@ function StatsSummary({ stats }) {
     entry.left += left;
     entry.right += right;
     entry.head += head;
+    entry.other += other; // ← Accumulate Other
     entry.assists += assists;
     entry.errors += errors;
     if (wl.toLowerCase() === "win") entry.wins += 1;
 
-    entry.matches.push({ date: s.Date, rating, goals: left + right + head, assists });
+    // Updated goals calculation for the Form Trend Graph
+    entry.matches.push({ date: s.Date, rating, goals: left + right + head + other, assists });
 
     const location = s.Location?.trim() || "Unknown";
     if (!entry.locationStats[location]) entry.locationStats[location] = { count: 0, goals: 0, assists: 0 };
     const loc = entry.locationStats[location];
     loc.count += 1;
-    loc.goals += left + right + head;
+    // Updated goals calculation for the Location Table
+    loc.goals += left + right + head + other; 
     loc.assists += assists;
   });
 
@@ -92,21 +97,31 @@ function StatsSummary({ stats }) {
         <div className="cards-grid">
           {Object.entries(contributorMap).map(([name, stats]) => {
             const avgRating = stats.ratings.reduce((sum, r) => sum + r, 0) / (stats.ratings.length || 1);
-            const totalGoals = stats.left + stats.right + stats.head;
             
+            // ✅ Updated Total Goals Calculation
+            const totalGoals = stats.left + stats.right + stats.head + stats.other;
+            
+            // ✅ Updated Percentages Calculation
             const percentages = totalGoals > 0 ? [
               ((stats.left / totalGoals) * 100).toFixed(1),
               ((stats.right / totalGoals) * 100).toFixed(1),
               ((stats.head / totalGoals) * 100).toFixed(1),
-            ] : [0, 0, 0];
+              ((stats.other / totalGoals) * 100).toFixed(1),
+            ] : [0, 0, 0, 0];
 
+            // ✅ Updated Pie Chart Data
             const data = {
-              labels: [`Left Foot (${percentages[0]}%)`, `Right Foot (${percentages[1]}%)`, `Head (${percentages[2]}%)`],
+              labels: [
+                `Left Foot (${percentages[0]}%)`, 
+                `Right Foot (${percentages[1]}%)`, 
+                `Head (${percentages[2]}%)`,
+                `Other (${percentages[3]}%)`
+              ],
               datasets: [{
-                data: [stats.left, stats.right, stats.head],
-                backgroundColor: ["#4CAF50", "#2196F3", "#FFC107"],
-                borderColor: "#1e293b",
-                borderWidth: 2
+                data: [stats.left, stats.right, stats.head, stats.other],
+                backgroundColor: ["#4CAF50", "#2196F3", "#FFC107", "#9C27B0"], // Added Purple for "Other"
+                borderColor: "#ffffff",
+                borderWidth: 3
               }],
             };
 
@@ -135,13 +150,15 @@ function StatsSummary({ stats }) {
                     <span className="summary-label">Avg Rating</span>
                     <span className={`badge badge-rating-${ratingClass}`}>{avgRating.toFixed(2)}</span>
                   </div>
-                  <div className="summary-row">
-                    <span className="summary-label">Total Goals</span>
-                    <span className="plain-value">{totalGoals}</span>
-                  </div>
+                  
+                  {/* ✅ Moved Matches above Total Goals */}
                   <div className="summary-row">
                     <span className="summary-label">Matches</span>
                     <span className="plain-value">{totalMatches}</span>
+                  </div>
+                  <div className="summary-row">
+                    <span className="summary-label">Total Goals</span>
+                    <span className="plain-value">{totalGoals}</span>
                   </div>
                   <div className="summary-row">
                     <span className="summary-label">Assists</span>
@@ -157,17 +174,10 @@ function StatsSummary({ stats }) {
                   </div>
                 </div>
 
-                                {totalGoals > 0 ? (
+                {totalGoals > 0 ? (
                   <div className="chart-container">
                     <Pie
-                      data={{
-                        ...data,
-                        datasets: [{
-                          ...data.datasets[0],
-                          borderColor: "#ffffff", // ✅ White borders between slices
-                          borderWidth: 3
-                        }]
-                      }}
+                      data={data}
                       options={{
                         responsive: true,
                         maintainAspectRatio: false,
@@ -175,7 +185,7 @@ function StatsSummary({ stats }) {
                           legend: { 
                             position: "bottom",
                             labels: { 
-                              color: "#475569", // ✅ Darker text for light background
+                              color: "#475569", 
                               font: { family: "'Barlow', sans-serif", size: 12 } 
                             }
                           } 
