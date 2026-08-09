@@ -240,7 +240,45 @@ app.delete("/player-attributes/:name", (req, res) => {
 
   res.json({ message: "Player card deleted" });
 });
+// ===================== Match Lineups =====================
+const LINEUPS_PATH = path.join(__dirname, "src", "match_lineups.json");
 
+function readLineups() {
+  if (!fs.existsSync(LINEUPS_PATH)) return [];
+  const content = fs.readFileSync(LINEUPS_PATH, "utf8");
+  return content.trim() ? JSON.parse(content) : [];
+}
+
+function writeLineups(data) {
+  fs.writeFileSync(LINEUPS_PATH, JSON.stringify(data, null, 2));
+}
+
+app.post("/match-lineups", async (req, res) => {
+  try {
+    const lineup = req.body;
+    if (!lineup.date) return res.status(400).json({ error: "Missing date" });
+
+    // Pull latest before saving to avoid conflicts
+    await git.pull('origin', 'main', ['--rebase']).catch(() => {});
+
+    const data = readLineups();
+    const index = data.findIndex(l => l.date === lineup.date);
+
+    if (index === -1) data.push(lineup);
+    else data[index] = lineup;
+
+    writeLineups(data);
+
+    await git.add(".");
+    await git.commit(`Update lineup for ${lineup.date}`);
+    await git.push('origin', 'main');
+
+    res.json({ message: "✅ Lineup saved" });
+  } catch (err) {
+    console.error("Lineup save error:", err);
+    res.status(500).json({ error: "Failed to save lineup" });
+  }
+});
 // ===================== POST /add-stats =====================
 
 app.post("/add-stats", (req, res) => {

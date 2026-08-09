@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./EditMatchPage.css";
+import MatchLineup from "./MatchLineup";
 
 function EditMatchPage() {
   const { index } = useParams();
@@ -168,7 +169,8 @@ function EditMatchPage() {
           </div>
         </div>
       </section>
-
+      {/* ---- Match Lineup & Ratings ---- */}
+      <MatchLineup matchData={formData} />
       {/* ---- Actions ---- */}
       <div className="em-actions">
         <button className="em-btn save" onClick={handleSave}>Save Changes</button>
