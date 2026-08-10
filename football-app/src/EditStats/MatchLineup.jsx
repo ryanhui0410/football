@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import "./MatchLineup.css";
 
 const FORMATIONS = {
-  // Existing Formations
   "4-3-3": { 
     GK: [{ x: 8, y: 50 }], 
     DEF: [{ x: 20, y: 20 }, { x: 20, y: 40 }, { x: 20, y: 60 }, { x: 20, y: 80 }], 
@@ -27,8 +26,6 @@ const FORMATIONS = {
     MID: [{ x: 28, y: 15 }, { x: 34, y: 35 }, { x: 34, y: 50 }, { x: 34, y: 65 }, { x: 28, y: 85 }], 
     FWD: [{ x: 44, y: 35 }, { x: 44, y: 65 }] 
   },
-
-  // ✨ NEW FORMATIONS ✨
   "4-3-1-2": { 
     GK: [{ x: 8, y: 50 }], 
     DEF: [{ x: 20, y: 20 }, { x: 20, y: 40 }, { x: 20, y: 60 }, { x: 20, y: 80 }], 
@@ -39,8 +36,8 @@ const FORMATIONS = {
   "4-2-3-1": { 
     GK: [{ x: 8, y: 50 }], 
     DEF: [{ x: 20, y: 20 }, { x: 20, y: 40 }, { x: 20, y: 60 }, { x: 20, y: 80 }], 
-    MID: [{ x: 28, y: 35 }, { x: 28, y: 65 }], // CDMs
-    AM: [{ x: 38, y: 25 }, { x: 38, y: 50 }, { x: 38, y: 75 }], // Attacking Mids
+    MID: [{ x: 28, y: 35 }, { x: 28, y: 65 }], 
+    AM: [{ x: 38, y: 25 }, { x: 38, y: 50 }, { x: 38, y: 75 }], 
     FWD: [{ x: 46, y: 50 }] 
   },
   "3-4-3": { 
@@ -80,8 +77,8 @@ function MatchLineup({ matchData, layout = "horizontal", initialLineup, readOnly
   const [ratingModal, setRatingModal] = useState(null);
   const [tempRating, setTempRating] = useState("");
   const [saving, setSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // 1. Load initial saved data if viewing a past report
   useEffect(() => {
     if (initialLineup) {
       setTeamAFormation(initialLineup.teamA?.formation || "4-3-3");
@@ -91,7 +88,6 @@ function MatchLineup({ matchData, layout = "horizontal", initialLineup, readOnly
     }
   }, [initialLineup]);
 
-  // 2. Only fetch full player pool if we are in Edit mode (not readOnly)
   useEffect(() => {
     if (!readOnly) {
       fetch("http://localhost:5000/player-attributes")
@@ -100,16 +96,56 @@ function MatchLineup({ matchData, layout = "horizontal", initialLineup, readOnly
     }
   }, [readOnly]);
 
-  const handleDragStart = (e, player) => e.dataTransfer.setData("application/json", JSON.stringify(player));
+  // Filter out players already on the pitch to prevent duplicates
+  const playersOnPitch = new Set([
+    ...Object.values(teamAPlayers).map(p => p.Contributor),
+    ...Object.values(teamBPlayers).map(p => p.Contributor)
+  ]);
+
+  const filteredPlayers = allPlayers.filter(p => 
+    !playersOnPitch.has(p.Contributor) &&
+    (p.Contributor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.position && p.position.toLowerCase().includes(searchQuery.toLowerCase())))
+  );
+
+  const handleDragStart = (e, player, origin, team = null, slotId = null) => {
+    e.dataTransfer.setData("application/json", JSON.stringify({ player, origin, team, slotId }));
+    e.dataTransfer.effectAllowed = "move";
+  };
+  
   const handleDragOver = (e) => { e.preventDefault(); e.currentTarget.classList.add("drag-over"); };
   const handleDragLeave = (e) => e.currentTarget.classList.remove("drag-over");
   
-  const handleDrop = (e, team, slotId) => {
+  const handleDrop = (e, targetTeam, targetSlotId) => {
     e.preventDefault();
     e.currentTarget.classList.remove("drag-over");
-    const player = JSON.parse(e.dataTransfer.getData("application/json"));
-    setRatingModal({ team, slotId, player });
-    setTempRating("");
+    const data = JSON.parse(e.dataTransfer.getData("application/json"));
+    const { player, origin, team: sourceTeam, slotId: sourceSlotId } = data;
+
+    if (origin === "pool") {
+      setRatingModal({ team: targetTeam, slotId: targetSlotId, player, isEdit: false });
+      setTempRating("");
+    } else if (origin === "pitch") {
+      if (sourceTeam !== targetTeam) return; // Prevent cross-team swaps
+      if (sourceSlotId === targetSlotId) return; // Dropped on itself
+      
+      const setter = sourceTeam === "A" ? setTeamAPlayers : setTeamBPlayers;
+      setter(prev => {
+        const updated = { ...prev };
+        const sourcePlayerData = updated[sourceSlotId];
+        const targetPlayerData = updated[targetSlotId];
+        
+        delete updated[sourceSlotId];
+        if (targetPlayerData) updated[sourceSlotId] = targetPlayerData; // Swap
+        updated[targetSlotId] = sourcePlayerData;
+        return updated;
+      });
+    }
+  };
+
+  const handleEditRating = (team, slotId, player) => {
+    setRatingModal({ team, slotId, player, isEdit: true });
+    setTempRating(player.rating.toString());
   };
 
   const confirmRating = () => {
@@ -117,7 +153,6 @@ function MatchLineup({ matchData, layout = "horizontal", initialLineup, readOnly
     const rating = parseFloat(tempRating);
     if (isNaN(rating) || rating < 0 || rating > 10) return alert("Invalid rating (0-10).");
     
-    // ✨ OPTIMIZATION: Only save essential data, NOT the 28 individual stats
     const essentialPlayer = {
       Contributor: player.Contributor,
       picture: player.picture,
@@ -169,7 +204,13 @@ function MatchLineup({ matchData, layout = "horizontal", initialLineup, readOnly
             onDragLeave={readOnly ? undefined : handleDragLeave}
             onDrop={readOnly ? undefined : (e) => handleDrop(e, team, slotId)}>
             {player ? (
-              <div className="slot-card">
+              <div 
+                className="slot-card" 
+                draggable={!readOnly} 
+                onDragStart={!readOnly ? (e) => handleDragStart(e, player, "pitch", team, slotId) : undefined}
+                onClick={!readOnly ? () => handleEditRating(team, slotId, player) : undefined}
+                title="Click to edit rating"
+              >
                 <img src={player.picture || `/${player.Contributor}.jpeg`} alt={player.Contributor} />
                 <div className="slot-info">
                   <span className="slot-name">{player.Contributor}</span>
@@ -189,12 +230,22 @@ function MatchLineup({ matchData, layout = "horizontal", initialLineup, readOnly
 
   const PlayerPoolComponent = (
     <div className={`player-pool ${isVertical ? "vertical-pool" : ""}`}>
-      <h3>{isVertical ? "Squad" : "Available Players (Drag to Pitch)"}</h3>
+      <h3>{isVertical ? "Squad" : "Available Players"}</h3>
+      {!readOnly && (
+        <input 
+          type="text" 
+          className="pool-search-input" 
+          placeholder="Search name or position..." 
+          value={searchQuery} 
+          onChange={(e) => setSearchQuery(e.target.value)} 
+        />
+      )}
       <div className={`pool-grid ${isVertical ? "vertical-grid" : ""}`}>
-        {allPlayers.map(p => (
-          <div key={p.Contributor} className="pool-card" draggable="true" onDragStart={(e) => handleDragStart(e, p)}>
+        {filteredPlayers.map(p => (
+          <div key={p.Contributor} className="pool-card" draggable="true" onDragStart={(e) => handleDragStart(e, p, "pool")}>
             <img src={p.picture || `/${p.Contributor}.jpeg`} alt={p.Contributor} />
             <div className="name">{p.Contributor}</div>
+            <div className="pos">{p.position}</div>
           </div>
         ))}
       </div>
@@ -248,7 +299,8 @@ function MatchLineup({ matchData, layout = "horizontal", initialLineup, readOnly
       {ratingModal && (
         <div className="rating-modal-overlay" onClick={() => setRatingModal(null)}>
           <div className="rating-modal" onClick={e => e.stopPropagation()}>
-            <h3>Rate {ratingModal.player.Contributor}</h3>
+            <h3>{ratingModal.isEdit ? "Edit Rating" : "Rate Player"}</h3>
+            <p className="modal-player-name">{ratingModal.player.Contributor}</p>
             <input type="number" min="0" max="10" step="0.1" className="rating-input" value={tempRating} onChange={e => setTempRating(e.target.value)} placeholder="0.0 - 10.0" autoFocus />
             <div className="rating-actions">
               <button className="btn-cancel" onClick={() => setRatingModal(null)}>Cancel</button>
