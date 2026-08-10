@@ -262,7 +262,14 @@ app.post("/match-lineups", async (req, res) => {
     await git.pull('origin', 'main', ['--rebase']).catch(() => {});
 
     const data = readLineups();
-    const index = data.findIndex(l => l.date === lineup.date);
+    // In server.js -> app.post("/match-lineups")
+
+    // To this:
+    const index = data.findIndex(l => 
+      l.date === lineup.date && 
+      l.location === lineup.location && 
+      l.time === lineup.time
+    );
 
     if (index === -1) data.push(lineup);
     else data[index] = lineup;
