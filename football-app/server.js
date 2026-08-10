@@ -279,6 +279,9 @@ app.post("/match-lineups", async (req, res) => {
     res.status(500).json({ error: "Failed to save lineup" });
   }
 });
+app.get("/match-lineups", (req, res) => {
+  res.json(readLineups());
+});
 // ===================== POST /add-stats =====================
 
 app.post("/add-stats", (req, res) => {

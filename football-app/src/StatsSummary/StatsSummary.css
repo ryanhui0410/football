@@ -272,3 +272,133 @@
   .filter-panel { width: 100%; min-width: unset; position: static; }
   .cards-grid { grid-template-columns: 1fr; }
 }
+/* Lineup Matrix Table Styles */
+.lineup-table-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.lineup-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.lineup-matrix th, .lineup-matrix td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.lineup-matrix thead th {
+  background-color: #f8fafc;
+  color: #334155;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.lineup-matrix tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+/* Reuse your existing badge classes for the ratings */
+.lineup-matrix .badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+/* ================= Simple Card & Season Table ================= */
+.simple-card {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.season-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.season-table th {
+  padding: 12px 8px;
+  background: #eff6ff;
+  color: #1e40af;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 12px;
+  text-align: center;
+  border-bottom: 2px solid #bfdbfe;
+}
+
+.season-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: center;
+  color: #334155;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 500;
+}
+
+.season-table tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Adjusting the Filter Select for the Player Dropdown */
+.filter-select {
+  width: 100%;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #0f172a;
+  font-family: 'Barlow', sans-serif;
+  font-size: 15px;
+  font-weight: 600; /* Bolder for player names */
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  margin-bottom: 16px; /* Spacing between dropdowns */
+}
+/* Add this to your StatsSummary.css */
+.simple-card {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.season-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.season-table th {
+  padding: 12px 8px;
+  background: #eff6ff;
+  color: #1e40af;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 12px;
+  text-align: center;
+  border-bottom: 2px solid #bfdbfe;
+}
+
+.season-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: center;
+  color: #334155;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 500;
+}
+
+.season-table tr:hover {
+  background-color: #f8fafc;
+}
