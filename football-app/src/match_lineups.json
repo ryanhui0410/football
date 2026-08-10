@@ -1,8 +1,6 @@
 [
   {
     "date": "8/9/2026",
-    "location": "傑志",
-    "time": "10:30 AM",
     "teamA": {
       "formation": "4-3-1-2",
       "players": {
@@ -129,6 +127,12 @@
           "Contributor": "Ken",
           "picture": "/images/Ken.jpeg",
           "position": "CM",
+          "rating": 4.4
+        },
+        "GK0": {
+          "Contributor": "Pierre",
+          "picture": "",
+          "position": "GK",
           "rating": 4.4
         }
       }
