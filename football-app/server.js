@@ -269,9 +269,19 @@ app.post("/match-lineups", async (req, res) => {
 
     writeLineups(data);
 
+    // 🔽 UPDATED GIT SYNC LOGIC 🔽
     await git.add(".");
-    await git.commit(`Update lineup for ${lineup.date}`);
-    await git.push('origin', 'main');
+    try {
+      await git.commit(`Update lineup for ${lineup.date}`);
+      await git.push('origin', 'main');
+      console.log(`✅ Git sync successful for lineup: ${lineup.date}`);
+    } catch (gitErr) {
+      // Ignore "nothing to commit" errors so it doesn't falsely return a 500 to the frontend
+      if (gitErr.message && !gitErr.message.includes("nothing to commit")) {
+         console.error("⚠️ Git push warning:", gitErr.message);
+      }
+    }
+    // 🔼 UPDATED GIT SYNC LOGIC 🔼
 
     res.json({ message: "✅ Lineup saved" });
   } catch (err) {
@@ -279,6 +289,7 @@ app.post("/match-lineups", async (req, res) => {
     res.status(500).json({ error: "Failed to save lineup" });
   }
 });
+
 app.get("/match-lineups", (req, res) => {
   res.json(readLineups());
 });

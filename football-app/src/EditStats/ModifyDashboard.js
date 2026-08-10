@@ -3,7 +3,7 @@ import EditMatchModal from "./EditMatchModal";
 import HeadToHeadCompare from "./HeadToHeadCompare"; 
 import MatchStatsModal from "./MatchStatsModal"; 
 import "./ModifyDashboard.css";
-import MatchLineup from "./MatchLineup"; // Import the pitch component
+import MatchLineup from "./MatchLineup"; 
 
 function ModifyDashboard({ contributors, onSave }) {
   const [selectedMatch, setSelectedMatch] = useState(null);
@@ -11,18 +11,17 @@ function ModifyDashboard({ contributors, onSave }) {
   const [compareMenu, setCompareMenu] = useState(null);
   const [statsModalOpen, setStatsModalOpen] = useState(false);
   const [selectedStats, setSelectedStats] = useState(null);
-  const [choiceMatch, setChoiceMatch] = useState(null); // Holds { index, date, name }
-  const [matchReport, setMatchReport] = useState(null); // Holds the fetched lineup data
-  // NEW: Filter State
+  const [choiceMatch, setChoiceMatch] = useState(null); 
+  const [matchReport, setMatchReport] = useState(null); 
+  const [isEditingReport, setIsEditingReport] = useState(false); 
+  
+  // NEW: Edit Mode States
+  const [editedLineup, setEditedLineup] = useState(null);
+  const [assignTarget, setAssignTarget] = useState(null); // { posKey, team }
+
   const [activeFilter, setActiveFilter] = useState("All");
-
-  // Get unique contributor names for the filter pills
   const contributorNames = ["All", ...contributors.map(c => c.name)];
-
-  // Filter contributors based on activeFilter
-  const filteredContributors = activeFilter === "All" 
-    ? contributors 
-    : contributors.filter(c => c.name === activeFilter);
+  const filteredContributors = activeFilter === "All" ? contributors : contributors.filter(c => c.name === activeFilter);
 
   const openModal = (match, contributorName) => setSelectedMatch({ ...match, contributorName });
   const openStatsModal = (match, contributorName) => {
@@ -46,9 +45,7 @@ function ModifyDashboard({ contributors, onSave }) {
     contributors.forEach(contrib => {
       if (contrib.name !== currentContributorName) {
         const matchingMatch = contrib.matches.find(m => 
-          m.date === currentMatch.date && 
-          m.location === currentMatch.location && 
-          m.time === currentMatch.time
+          m.date === currentMatch.date && m.location === currentMatch.location && m.time === currentMatch.time
         );
         if (matchingMatch) players.push({ name: contrib.name, match: matchingMatch });
       }
@@ -70,19 +67,17 @@ function ModifyDashboard({ contributors, onSave }) {
       alert("No other contributors found for this exact match.");
     }
   };
-    // Helper to normalize dates for matching (Converts "8/9/2026" and "2026-08-09" to "2026-08-09")
+
   const normalizeDate = (dateStr) => {
     if (!dateStr) return "";
-    if (dateStr.length === 10 && dateStr.includes("-")) return dateStr; // Already YYYY-MM-DD
+    if (dateStr.length === 10 && dateStr.includes("-")) return dateStr;
     const parts = dateStr.split("/");
     if (parts.length === 3) {
-      const month = parts[0].padStart(2, '0');
-      const day = parts[1].padStart(2, '0');
-      const year = parts[2];
-      return `${year}-${month}-${day}`;
+      return `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
     }
     return dateStr;
   };
+
   const selectCompareTarget = (target) => {
     setCompareData({
       contributor1: compareMenu.contributorName, match1: compareMenu.match,
@@ -91,29 +86,120 @@ function ModifyDashboard({ contributors, onSave }) {
     setCompareMenu(null);
   };
 
-  // Helper to parse dates safely for sorting (handles M/D/YYYY format reliably)
   const parseDate = (dateStr) => {
     if (!dateStr) return new Date(0);
     const parts = dateStr.split('/');
-    if (parts.length === 3) {
-      // parts[0] = Month, parts[1] = Day, parts[2] = Year
-      return new Date(parts[2], parts[0] - 1, parts[1]); 
-    }
+    if (parts.length === 3) return new Date(parts[2], parts[0] - 1, parts[1]); 
     return new Date(dateStr);
+  };
+
+  // --- NEW: EDIT MODE LOGIC ---
+  const getRemainingPlayers = () => {
+    if (!editedLineup) return contributors;
+    const assignedPlayers = new Set();
+    ['teamA', 'teamB'].forEach(team => {
+      if (editedLineup[team]?.players) {
+        Object.values(editedLineup[team].players).forEach(p => {
+          if (p.Contributor) assignedPlayers.add(p.Contributor);
+        });
+      }
+    });
+    return contributors.filter(c => !assignedPlayers.has(c.name));
+  };
+
+  const handleAssignPlayer = (player) => {
+    if (!assignTarget) return;
+    const { posKey, team } = assignTarget;
+    const newLineup = JSON.parse(JSON.stringify(editedLineup));
+    
+    if (!newLineup[team].players) newLineup[team].players = {};
+    
+    newLineup[team].players[posKey] = {
+      ...newLineup[team].players[posKey],
+      Contributor: player.name,
+      rating: newLineup[team].players[posKey]?.rating || 5.0,
+      position: newLineup[team].players[posKey]?.position || posKey,
+      picture: player.picture || ""
+    };
+    
+    setEditedLineup(newLineup);
+    setAssignTarget(null);
+  };
+
+  const handleRemovePlayer = (posKey, team) => {
+    const newLineup = JSON.parse(JSON.stringify(editedLineup));
+    if (newLineup[team]?.players?.[posKey]) {
+      delete newLineup[team].players[posKey];
+      setEditedLineup(newLineup);
+    }
+  };
+
+  const handleRatingChange = (posKey, team, newRating) => {
+    const newLineup = JSON.parse(JSON.stringify(editedLineup));
+    if (newLineup[team]?.players?.[posKey]) {
+      newLineup[team].players[posKey].rating = parseFloat(newRating) || 0;
+      setEditedLineup(newLineup);
+    }
+  };
+
+  const handleSaveEditedReport = async () => {
+    try {
+      // Adjust the endpoint and method (PUT/POST) based on your backend API
+      const res = await fetch(`http://localhost:5000/match-lineups`, {
+        method: 'PUT', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editedLineup)
+      });
+      
+      if (res.ok) {
+        alert("Match report saved successfully!");
+        setIsEditingReport(false);
+        setMatchReport(null);
+        setEditedLineup(null);
+        // Optional: trigger a data refresh here if needed
+      } else {
+        alert("Failed to save match report.");
+      }
+    } catch (err) {
+      console.error("Save error:", err);
+      alert("Error saving match report.");
+    }
+  };
+
+  const fetchAndOpenReport = async (editMode = false) => {
+    try {
+      const res = await fetch("http://localhost:5000/match-lineups");
+      const lineups = await res.json();
+      const targetDate = normalizeDate(choiceMatch.match.date);
+      const targetLocation = (choiceMatch.match.location || "").trim();
+      
+      const found = lineups.find(l => 
+        normalizeDate(l.date) === targetDate && (l.location || "").trim() === targetLocation
+      );
+
+      if (found) {
+        setMatchReport(found);
+        if (editMode) {
+          setEditedLineup(JSON.parse(JSON.stringify(found))); // Deep clone
+          setIsEditingReport(true);
+        }
+      } else {
+        alert(`No tactical report found.`);
+      }
+      setChoiceMatch(null);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      alert("Failed to fetch match report.");
+    }
   };
 
   return (
     <div className="md-wrap">
-      {/* NEW: Attractive Filter UI */}
       <div className="md-filter-bar">
         <span className="md-filter-label">Filter by Player:</span>
         <div className="md-filter-pills">
           {contributorNames.map(name => (
-            <button
-              key={name}
-              className={`md-pill ${activeFilter === name ? 'active' : ''}`}
-              onClick={() => setActiveFilter(name)}
-            >
+            <button key={name} className={`md-pill ${activeFilter === name ? 'active' : ''}`} onClick={() => setActiveFilter(name)}>
               {name}
             </button>
           ))}
@@ -121,18 +207,13 @@ function ModifyDashboard({ contributors, onSave }) {
       </div>
 
       {filteredContributors.map((contributor) => {
-        // NEW: Sort matches by newest date descending
-        const sortedMatches = [...contributor.matches].sort((a, b) => 
-          parseDate(b.date) - parseDate(a.date)
-        );
-
+        const sortedMatches = [...contributor.matches].sort((a, b) => parseDate(b.date) - parseDate(a.date));
         return (
           <div key={contributor.name} className="md-contributor-section">
             <div className="md-contributor-header">
               <h2 className="md-contributor-name">{contributor.name}</h2>
               <span className="md-match-count">{sortedMatches.length} Matches</span>
             </div>
-            
             <table className="md-table">
               <thead className="md-thead">
                 <tr>
@@ -148,65 +229,38 @@ function ModifyDashboard({ contributors, onSave }) {
                 {sortedMatches.map((match, idx) => {
                   const goals = Math.max(0, (match.goalContribution || 0) - (match.assist || 0));
                   const sameMatchPlayers = getSameMatchPlayers(match, contributor.name);
-                  
                   return (
-                    <tr 
-                      key={idx} 
-                      className="md-row" 
-                      onClick={() => setChoiceMatch({ match: match, name: contributor.name })} // ✅ NEW
-                    >
+                    <tr key={idx} className="md-row" onClick={() => setChoiceMatch({ match: match, name: contributor.name })}>
                       <td className="md-td" data-label="Date & Location">
                         <div className="md-date">{match.date}</div>
                         <div className="md-location">📍 {match.location || "Unknown"}</div>
                       </td>
-                      
                       <td className="md-td center" data-label="Match Result">
                         <div className="md-result-box">
                           <div className="md-score">{match.matchResult || "—"}</div>
-                          {match.winLoss && (
-                            <div className={`md-outcome ${match.winLoss.toLowerCase()}`}>
-                              {match.winLoss}
-                            </div>
-                          )}
+                          {match.winLoss && <div className={`md-outcome ${match.winLoss.toLowerCase()}`}>{match.winLoss}</div>}
                         </div>
                       </td>
-
                       <td className="md-td center" data-label="Contributions">
-                        <div className={`md-symbols ${!match.symbol ? 'empty' : ''}`}>
-                          {match.symbol || "No symbols"}
-                        </div>
+                        <div className={`md-symbols ${!match.symbol ? 'empty' : ''}`}>{match.symbol || "No symbols"}</div>
                       </td>
                       <td className="md-td center" data-label="Goals / Assists">
                         <div className="md-stat-box">
-                          <div className="md-stat">
-                            <div className="md-stat-val">{goals}</div>
-                            <div className="md-stat-label">Goals</div>
-                          </div>
-                          <div className="md-stat">
-                            <div className="md-stat-val">{match.assist || 0}</div>
-                            <div className="md-stat-label">Assists</div>
-                          </div>
+                          <div className="md-stat"><div className="md-stat-val">{goals}</div><div className="md-stat-label">Goals</div></div>
+                          <div className="md-stat"><div className="md-stat-val">{match.assist || 0}</div><div className="md-stat-label">Assists</div></div>
                         </div>
                       </td>
-                      <td className="md-td center" data-label="Rating">
-                        <span className="md-rating">{match.rating || "—"}</span>
-                      </td>
+                      <td className="md-td center" data-label="Rating"><span className="md-rating">{match.rating || "—"}</span></td>
                       <td className="md-td center" data-label="Action">
                         <div className="md-action-btns">
-                          <button className="md-edit-btn" onClick={(e) => { e.stopPropagation(); openModal(match, contributor.name); }}>
-                            Edit
-                          </button>
+                          <button className="md-edit-btn" onClick={(e) => { e.stopPropagation(); openModal(match, contributor.name); }}>Edit</button>
                           {sameMatchPlayers.length > 0 && (
-                            <button className="md-compare-btn" title="Compare" onClick={(e) => handleCompareClick(e, match, contributor.name)}>
-                              ⚔️
-                            </button>
+                            <button className="md-compare-btn" title="Compare" onClick={(e) => handleCompareClick(e, match, contributor.name)}>⚔️</button>
                           )}
                           {compareMenu && compareMenu.match === match && compareMenu.contributorName === contributor.name && (
                             <div className="md-compare-dropdown" onClick={(e) => e.stopPropagation()}>
                               {compareMenu.players.map((p, pIdx) => (
-                                <div key={pIdx} className="md-compare-option" onClick={(e) => { e.stopPropagation(); selectCompareTarget(p); }}>
-                                  vs {p.name}
-                                </div>
+                                <div key={pIdx} className="md-compare-option" onClick={(e) => { e.stopPropagation(); selectCompareTarget(p); }}>vs {p.name}</div>
                               ))}
                             </div>
                           )}
@@ -224,77 +278,68 @@ function ModifyDashboard({ contributors, onSave }) {
       {selectedMatch && <EditMatchModal match={selectedMatch} onClose={closeModal} onSave={onSave} />}
       <HeadToHeadCompare open={!!compareData} onClose={closeCompare} compareData={compareData} />
       <MatchStatsModal open={statsModalOpen} match={selectedStats} onClose={() => setStatsModalOpen(false)} />
-            {/* 1. THE CHOICE MODAL */}
+      
+      {/* CHOICE MODAL */}
       {choiceMatch && !matchReport && (
         <div className="choice-overlay" onClick={() => setChoiceMatch(null)}>
           <div className="choice-modal" onClick={e => e.stopPropagation()}>
             <button className="choice-close" onClick={() => setChoiceMatch(null)}>✕</button>
             <h3>Match on {choiceMatch.match.date}</h3>
             <p className="choice-subtitle">What would you like to view for <strong>{choiceMatch.name}</strong>?</p>
-            
             <div className="choice-buttons">
-              {/* ✅ CHANGED: Now opens MatchStatsModal instead of EditMatchModal */}
-              <button className="choice-btn stats" onClick={() => {
-                openStatsModal(choiceMatch.match, choiceMatch.name); 
-                setChoiceMatch(null);
-              }}>
+              <button className="choice-btn stats" onClick={() => { openStatsModal(choiceMatch.match, choiceMatch.name); setChoiceMatch(null); }}>
                 📊 <span>View Individual Stats</span>
               </button>
-              
-                            <button className="choice-btn report" onClick={async () => {
-                try {
-                  const res = await fetch("http://localhost:5000/match-lineups");
-                  const lineups = await res.json();
-                  
-                  // 1. Normalize the date and TRIM the location to remove hidden spaces
-                  const targetDate = normalizeDate(choiceMatch.match.date);
-                  const targetLocation = (choiceMatch.match.location || "").trim();
-                  
-                  // 🕵️ DEBUG: Open your browser console (F12) to see exactly what is being compared!
-                  console.log("🔍 Searching for -> Date:", targetDate, "| Location:", targetLocation);
-                  console.log("📂 Available Lineups in DB:", lineups.map(l => ({ 
-                      date: normalizeDate(l.date), 
-                      location: (l.location || "").trim() 
-                  })));
-
-                  // 2. Find the match using trimmed locations
-                  const found = lineups.find(l => 
-                    normalizeDate(l.date) === targetDate && 
-                    (l.location || "").trim() === targetLocation
-                  );
-
-                  if (found) {
-                    setMatchReport(found);
-                  } else {
-                    alert(`No tactical report found.\n\nCheck the browser console (F12) to see the exact Date and Location strings being compared. There might be a hidden space or typo!`);
-                    setChoiceMatch(null);
-                  }
-                } catch (err) {
-                  console.error("Fetch error:", err);
-                  alert("Failed to fetch match report.");
-                }
-              }}>
+              <button className="choice-btn report" onClick={() => fetchAndOpenReport(false)}>
                 ⚽ <span>View Match Report</span>
+              </button>
+              {/* 🆕 NEW EDIT BUTTON */}
+              <button className="choice-btn edit-report" onClick={() => fetchAndOpenReport(true)}>
+                ✏️ <span>Edit Match Report</span>
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 2. THE MATCH REPORT VIEWER */}
-      {matchReport && (
+      {/* VIEW MODE OVERLAY */}
+      {matchReport && !isEditingReport && (
         <div className="report-overlay" onClick={() => setMatchReport(null)}>
           <div className="report-modal" onClick={e => e.stopPropagation()}>
             <button className="report-close" onClick={() => setMatchReport(null)}>✕</button>
             <h2 className="report-title">⚽ Match Report: {matchReport.date}</h2>
             {matchReport.location && <p className="report-meta">📍 {matchReport.location} {matchReport.time && `• 🕒 ${matchReport.time}`}</p>}
+            <MatchLineup matchData={{ Date: matchReport.date }} initialLineup={matchReport} readOnly={true} layout="horizontal" />
+          </div>
+        </div>
+      )}
+
+      {/* 🆕 EDIT MODE OVERLAY */}
+      {matchReport && isEditingReport && editedLineup && (
+        <div className="report-overlay" onClick={() => { setIsEditingReport(false); setMatchReport(null); }}>
+          <div className="report-modal edit-mode" onClick={e => e.stopPropagation()}>
+            <button className="report-close" onClick={() => { setIsEditingReport(false); setMatchReport(null); }}>✕</button>
+            <h2 className="report-title">✏️ Edit Match Report: {editedLineup.date}</h2>
             
-            <MatchLineup 
-              matchData={{ Date: matchReport.date }} 
-              initialLineup={matchReport} 
-              readOnly={true} 
-              layout="horizontal" 
-            />
+            <div className="edit-layout">
+              <div className="pitch-container">
+                <MatchLineup 
+                  matchData={{ Date: editedLineup.date }} 
+                  initialLineup={editedLineup} 
+                  readOnly={false} 
+                  layout="horizontal"
+                  isEditing={true}
+                  onPositionClick={(posKey, team) => setAssignTarget({ posKey, team })}
+                  onPlayerRemove={handleRemovePlayer}
+                  onRatingChange={handleRatingChange}
+                />
+              </div>
+            </div>
+
+            <div className="edit-actions">
+              <button className="save-btn" onClick={handleSaveEditedReport}>💾 Save Changes</button>
+              <button className="cancel-btn" onClick={() => { setIsEditingReport(false); setMatchReport(null); }}>Cancel</button>
+            </div>
           </div>
         </div>
       )}

@@ -229,20 +229,25 @@ function MatchLineup({ matchData, layout = "horizontal", initialLineup, readOnly
   };
 
   const PlayerPoolComponent = (
-    <div className={`player-pool ${isVertical ? "vertical-pool" : ""}`}>
-      <h3>{isVertical ? "Squad" : "Available Players"}</h3>
-      {!readOnly && (
-        <input 
-          type="text" 
-          className="pool-search-input" 
-          placeholder="Search name or position..." 
-          value={searchQuery} 
-          onChange={(e) => setSearchQuery(e.target.value)} 
+    <div className="player-pool">
+      <div className="pool-header-row">
+        <input
+          type="text"
+          className="pool-search-input"
+          placeholder="Search name or position..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
-      )}
-      <div className={`pool-grid ${isVertical ? "vertical-grid" : ""}`}>
+      </div>
+      <div className="pool-grid">
         {filteredPlayers.map(p => (
-          <div key={p.Contributor} className="pool-card" draggable="true" onDragStart={(e) => handleDragStart(e, p, "pool")}>
+          <div
+            key={p.Contributor}
+            className="pool-card"
+            draggable="true"
+            onDragStart={(e) => handleDragStart(e, p, "pool")}
+            title={`Drag ${p.Contributor} onto the pitch`}
+          >
             <img src={p.picture || `/${p.Contributor}.jpeg`} alt={p.Contributor} />
             <div className="name">{p.Contributor}</div>
             <div className="pos">{p.position}</div>

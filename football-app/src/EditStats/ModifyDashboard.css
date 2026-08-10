@@ -404,3 +404,167 @@
 }
 .report-title { font-family: 'Oswald', sans-serif; color: #1e3a8a; text-align: center; margin-top: 0; }
 .report-meta { text-align: center; color: #475569; font-weight: 600; margin-bottom: 20px; font-size: 15px; }
+/* Choice Modal Edit Button */
+.choice-btn.edit-report {
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+  color: #333;
+}
+
+/* Edit Mode Layout */
+.report-modal.edit-mode {
+  max-width: 1000px;
+  width: 95%;
+}
+
+.edit-layout {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.pitch-container {
+  flex: 2;
+  min-width: 300px;
+  background: #2d8a3e; /* Fallback pitch background */
+  border-radius: 12px;
+  padding: 15px;
+}
+
+/* Remaining Players Sidebar */
+.remaining-players-list {
+  flex: 1;
+  min-width: 200px;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 12px;
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+}
+
+.remaining-players-list h3 {
+  margin-top: 0;
+  font-size: 1.1rem;
+  color: #333;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 5px;
+}
+
+.list-hint {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.remaining-players-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.remaining-players-list li {
+  padding: 10px 12px;
+  background: white;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.remaining-players-list li.selectable {
+  cursor: pointer;
+}
+
+.remaining-players-list li.selectable:hover {
+  background: #e7f1ff;
+  border-color: #007bff;
+  transform: translateX(3px);
+}
+
+.remaining-players-list li.empty-list {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  background: transparent;
+  border: none;
+}
+
+/* MatchLineup Interactive Overrides */
+.player-node.editable.empty {
+  cursor: pointer;
+  border: 2px dashed rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.1);
+}
+
+.player-node.editable.empty:hover {
+  background: rgba(255,255,255,0.3);
+  border-color: #fff;
+}
+
+.player-card {
+  position: relative;
+}
+
+.remove-player-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.rating-input {
+  width: 50px;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  text-align: center;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+/* Action Buttons */
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.save-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.save-btn:hover {
+  background: #218838;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
