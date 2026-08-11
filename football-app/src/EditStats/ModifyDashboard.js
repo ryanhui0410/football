@@ -17,7 +17,7 @@ function ModifyDashboard({ contributors, onSave }) {
   
   const [editedLineup, setEditedLineup] = useState(null);
   const [assignTarget, setAssignTarget] = useState(null); 
-
+  const [matchStatsData, setMatchStatsData] = useState([]);
   const [activeFilter, setActiveFilter] = useState("All");
   const contributorNames = ["All", ...contributors.map(c => c.name)];
   const filteredContributors = activeFilter === "All" ? contributors : contributors.filter(c => c.name === activeFilter);
@@ -182,33 +182,53 @@ function ModifyDashboard({ contributors, onSave }) {
       alert("Error saving match report.");
     }
   };
-
-  const fetchAndOpenReport = async (editMode = false) => {
-    try {
-      const res = await fetch("http://localhost:5000/match-lineups");
-      const lineups = await res.json();
-      const targetDate = normalizeDate(choiceMatch.match.date);
-      const targetLocation = (choiceMatch.match.location || "").trim();
-      
-      const found = lineups.find(l => 
-        normalizeDate(l.date) === targetDate && (l.location || "").trim() === targetLocation
-      );
-
-      if (found) {
-        setMatchReport(found);
-        if (editMode) {
-          setEditedLineup(JSON.parse(JSON.stringify(found))); 
-          setIsEditingReport(true);
-        }
-      } else {
-        alert(`No tactical report found.`);
-      }
-      setChoiceMatch(null);
-    } catch (err) {
-      console.error("Fetch error:", err);
-      alert("Failed to fetch match report.");
-    }
+  // ADD this helper function inside ModifyDashboard
+  const getPlayerMatchStats = (playerName, matchDate, matchLocation, matchTime) => {
+    if (!playerName || !matchStatsData.length) return null;
+    const normDate = normalizeDate(matchDate);
+    return matchStatsData.find(s =>
+      (s.Contributor || "").trim().toLowerCase() === playerName.trim().toLowerCase() &&
+      normalizeDate(s.Date) === normDate &&
+      (s.Location || "").trim().toLowerCase() === (matchLocation || "").trim().toLowerCase() &&
+      (s.Time || "").trim().toLowerCase() === (matchTime || "").trim().toLowerCase()
+    ) || null;
   };
+  const fetchAndOpenReport = async (editMode = false) => {
+  try {
+    // ✅ Fetch BOTH lineups and stats in parallel
+    const [lineupsRes, statsRes] = await Promise.all([
+      fetch("http://localhost:5000/match-lineups"),
+      fetch("http://localhost:5000/stats")
+    ]);
+    const lineups = await lineupsRes.json();
+    const stats = await statsRes.json();
+
+    const targetDate = normalizeDate(choiceMatch.match.date);
+    const targetLocation = (choiceMatch.match.location || "").trim();
+    const targetTime = (choiceMatch.match.time || "").trim();
+
+    const found = lineups.find(l =>
+      normalizeDate(l.date) === targetDate &&
+      (l.location || "").trim() === targetLocation &&
+      (l.time || "").trim() === targetTime
+    );
+
+    if (found) {
+      setMatchReport(found);
+      setMatchStatsData(stats); // ✅ Store stats for symbol lookup
+      if (editMode) {
+        setEditedLineup(JSON.parse(JSON.stringify(found)));
+        setIsEditingReport(true);
+      }
+    } else {
+      alert(`No tactical report found.`);
+    }
+    setChoiceMatch(null);
+  } catch (err) {
+    console.error("Fetch error:", err);
+    alert("Failed to fetch match report.");
+  }
+};
 
   return (
     <div className="md-wrap">
@@ -326,35 +346,72 @@ function ModifyDashboard({ contributors, onSave }) {
             <h2 className="report-title">⚽ Match Report: {matchReport.date}</h2>
             {matchReport.location && <p className="report-meta">📍 {matchReport.location} {matchReport.time && `• 🕒 ${matchReport.time}`}</p>}
 
-            {/* ✅ NEW: Team Average Ratings */}
-            <div className="report-team-averages">
-              {(() => {
-                const avgA = calcTeamAverage(matchReport.teamA);
-                const avgB = calcTeamAverage(matchReport.teamB);
-                return (
-                  <>
-                    <div className="team-avg-card">
-                      <span className="team-avg-label">Team A Avg</span>
-                      <span className="team-avg-value" style={{ color: getRatingColor(avgA) }}>
-                        {avgA ?? '—'}
-                      </span>
-                    </div>
-                    <div className="team-avg-card">
-                      <span className="team-avg-label">Team B Avg</span>
-                      <span className="team-avg-value" style={{ color: getRatingColor(avgB) }}>
-                        {avgB ?? '—'}
-                      </span>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
+            {/* ✅ SMART RESULT HEADER: Score in middle, teams assigned by score */}
+            {(() => {
+              // Find match result from any player's stats
+              const allPlayers = [
+                ...Object.values(matchReport.teamA?.players || {}),
+                ...Object.values(matchReport.teamB?.players || {})
+              ];
+              let matchResult = '', winLoss = '';
+              for (const p of allPlayers) {
+                const stat = getPlayerMatchStats(p.Contributor, matchReport.date, matchReport.location, matchReport.time);
+                if (stat && stat["Match result"]) {
+                  matchResult = stat["Match result"];
+                  winLoss = stat["Win/Loss?"] || '';
+                  break;
+                }
+              }
+
+              const avgA = calcTeamAverage(matchReport.teamA);
+              const avgB = calcTeamAverage(matchReport.teamB);
+
+              // Parse scores to determine left/right assignment
+              let leftLabel = 'Team A', rightLabel = 'Team B';
+              let leftAvg = avgA, rightAvg = avgB;
+              let leftColor = getRatingColor(avgA), rightColor = getRatingColor(avgB);
+              let leftScore = '', rightScore = '';
+
+              if (matchResult) {
+                const parts = matchResult.split('-').map(s => parseInt(s.trim(), 10));
+                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                  if (parts[0] >= parts[1]) {
+                    // Left side gets the higher/equal score → assign Team A to left
+                    leftLabel = 'Team A'; leftAvg = avgA; leftColor = getRatingColor(avgA);
+                    rightLabel = 'Team B'; rightAvg = avgB; rightColor = getRatingColor(avgB);
+                    leftScore = parts[0]; rightScore = parts[1];
+                  } else {
+                    // Right side has higher score → swap so higher score is on left
+                    leftLabel = 'Team B'; leftAvg = avgB; leftColor = getRatingColor(avgB);
+                    rightLabel = 'Team A'; rightAvg = avgA; rightColor = getRatingColor(avgA);
+                    leftScore = parts[1]; rightScore = parts[0];
+                  }
+                }
+              }
+
+              return (
+                <div className="report-result-header">
+                  <div className="result-team-side">
+                    <span className="result-team-name">{leftLabel}</span>
+                    <span className="result-team-avg" style={{ color: leftColor }}>{leftAvg ?? '—'}</span>
+                  </div>
+                  <div className="result-score-center">
+                    <span className="result-score">{matchResult || '—'}</span>
+                    {winLoss && <span className={`result-wl ${winLoss.toLowerCase()}`}>{winLoss}</span>}
+                  </div>
+                  <div className="result-team-side right">
+                    <span className="result-team-name">{rightLabel}</span>
+                    <span className="result-team-avg" style={{ color: rightColor }}>{rightAvg ?? '—'}</span>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* TACTICAL PITCH LINEUP */}
             <div style={{ marginTop: '20px' }}>
               <h3 style={{ textAlign: 'center', marginBottom: '15px', color: '#444' }}>Tactical Lineup</h3>
               <MatchLineup
-                matchData={{ Date: matchReport.date }}
+                matchData={{ Date: matchReport.date, Location: matchReport.location, Time: matchReport.time }}
                 initialLineup={matchReport}
                 readOnly={true}
                 layout="horizontal"

@@ -76,7 +76,8 @@ const MatchLineup = ({
   onPositionClick, 
   onPlayerRemove, 
   onRatingChange,
-  getRatingColor // ⬅️ Add this
+  getRatingColor,
+  getPlayerMatchStats  // ⬅️ Add this
 }) => {
   const isVertical = layout === "vertical";
   const [allPlayers, setAllPlayers] = useState([]);
@@ -255,13 +256,31 @@ const MatchLineup = ({
             onDragLeave={readOnly ? undefined : handleDragLeave}
             onDrop={readOnly ? undefined : (e) => handleDrop(e, team, slotId)}>
             {player ? (
-              <div 
-                className="slot-card" 
-                draggable={!readOnly} 
+              <div
+                className="slot-card"
+                draggable={!readOnly}
                 onDragStart={!readOnly ? (e) => handleDragStart(e, player, "pitch", team, slotId) : undefined}
                 onClick={!readOnly ? () => handleEditRating(team, slotId, player) : undefined}
                 title="Click to edit rating"
               >
+                {/* ✅ NEW: Goal/Assist Symbols for Ryan & Darren */}
+                {readOnly && getPlayerMatchStats && (() => {
+                  const name = (player.Contributor || "").trim();
+                  const lowerName = name.toLowerCase();
+                  if (lowerName !== "ryan" && lowerName !== "darren") return null;
+                  const stats = getPlayerMatchStats(name, matchData.Date, matchData.Location, matchData.Time);
+                  if (!stats) return null;
+                  const goals = parseInt(stats.Goal) || 0;
+                  const assists = parseInt(stats.Assist) || 0;
+                  if (goals === 0 && assists === 0) return null;
+                  const symbols = [...Array(goals).fill('⚽'), ...Array(assists).fill('👟')];
+                  return (
+                    <div className="slot-symbols">
+                      {symbols.map((s, i) => <span key={i} className="slot-symbol">{s}</span>)}
+                    </div>
+                  );
+                })()}
+
                 <img src={player.picture || `/${player.Contributor}.jpeg`} alt={player.Contributor} />
                 <div className="slot-info">
                   <span className="slot-name">{player.Contributor}</span>
@@ -296,7 +315,9 @@ const MatchLineup = ({
       <div className={`pool-grid ${isVertical ? "vertical-grid" : ""}`}>
         {filteredPlayers.map(p => (
           <div key={p.Contributor} className="pool-card" draggable="true" onDragStart={(e) => handleDragStart(e, p, "pool")}>
+            {/* OLD: */}
             <img src={p.picture || `/${p.Contributor}.jpeg`} alt={p.Contributor} />
+
             <div className="name">{p.Contributor}</div>
             <div className="pos">{p.position}</div>
           </div>

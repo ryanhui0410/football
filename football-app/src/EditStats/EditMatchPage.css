@@ -61,7 +61,53 @@
   align-items: center;
   gap: 14px;
   margin-top: 18px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
+
+/* WIN */
+.em-result-strip.em-result-win {
+  background: rgba(126, 217, 87, 0.12) !important;
+  border-color: rgba(126, 217, 87, 0.35) !important;
+}
+
+/* DRAW */
+.em-result-strip.em-result-draw {
+  background: rgba(200, 200, 200, 0.10) !important;
+  border-color: rgba(200, 200, 200, 0.25) !important;
+}
+
+/* LOSS – cover ALL possible spellings */
+.em-result-strip.em-result-lose,
+.em-result-strip.em-result-loss,
+.em-result-strip.em-result-lost {
+  background: rgba(229, 72, 77, 0.12) !important;
+  border-color: rgba(229, 72, 77, 0.35) !important;
+}
+
+.em-scoreline {
+  font-family: 'Oswald', sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fff;
+}
+
+.em-wl {
+  padding: 4px 14px;
+  border-radius: 6px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+.em-wl.win  { background: rgba(126, 217, 87, 0.25); color: #a8e08a; }
+.em-wl.draw { background: rgba(255, 255, 255, 0.18); color: #ddd; }
+.em-wl.loss, .em-wl.lose, .em-wl.lost { background: rgba(229, 72, 77, 0.25); color: #ff9d9f; }
 .em-scoreline {
   font-family: 'Oswald', sans-serif;
   font-size: 34px;

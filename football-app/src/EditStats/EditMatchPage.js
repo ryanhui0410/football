@@ -96,12 +96,15 @@ function EditMatchPage() {
       </div>
 
       {/* ---- Scoreline + result ---- */}
-      {(result || wl) && (
-        <div className="em-result-strip">
-          {result && <span className="em-scoreline">{result}</span>}
-          {wl && <span className={`em-wl ${String(wl).toLowerCase()}`}>{wl}</span>}
-        </div>
-      )}
+      {(result || wl) && (() => {
+        const wlNorm = String(wl || '').trim().toLowerCase();
+        return (
+          <div className={`em-result-strip ${wlNorm ? `em-result-${wlNorm}` : ''}`}>
+            {result && <span className="em-scoreline">{result}</span>}
+            {wl && <span className={`em-wl ${wlNorm}`}>{wl}</span>}
+          </div>
+        );
+      })()}
 
       {/* ---- Goal Contributions hero (symbols live here) ---- */}
       <section className="em-card em-contrib">
