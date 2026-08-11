@@ -15,9 +15,8 @@ function ModifyDashboard({ contributors, onSave }) {
   const [matchReport, setMatchReport] = useState(null); 
   const [isEditingReport, setIsEditingReport] = useState(false); 
   
-  // NEW: Edit Mode States
   const [editedLineup, setEditedLineup] = useState(null);
-  const [assignTarget, setAssignTarget] = useState(null); // { posKey, team }
+  const [assignTarget, setAssignTarget] = useState(null); 
 
   const [activeFilter, setActiveFilter] = useState("All");
   const contributorNames = ["All", ...contributors.map(c => c.name)];
@@ -93,7 +92,27 @@ function ModifyDashboard({ contributors, onSave }) {
     return new Date(dateStr);
   };
 
-  // --- NEW: EDIT MODE LOGIC ---
+  // --- REPLACE the existing getRatingColor with this ---
+  const getRatingColor = (rating) => {
+    const r = parseFloat(rating);
+    if (isNaN(r)) return '#9e9e9e';
+    if (r >= 9.0) return '#2563eb'; // Blue
+    if (r >= 7.0) return '#16a34a'; // Green
+    if (r >= 5.0) return '#ea580c'; // Orange
+    return '#dc2626';               // Red
+  };
+
+  // --- ADD this helper above the return statement ---
+  const calcTeamAverage = (teamObj) => {
+    if (!teamObj?.players) return null;
+    const ratings = Object.values(teamObj.players)
+      .map(p => parseFloat(p.rating))
+      .filter(r => !isNaN(r));
+    if (ratings.length === 0) return null;
+    return (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1);
+  };
+
+  // --- EDIT MODE LOGIC ---
   const getRemainingPlayers = () => {
     if (!editedLineup) return contributors;
     const assignedPlayers = new Set();
@@ -144,7 +163,6 @@ function ModifyDashboard({ contributors, onSave }) {
 
   const handleSaveEditedReport = async () => {
     try {
-      // Adjust the endpoint and method (PUT/POST) based on your backend API
       const res = await fetch(`http://localhost:5000/match-lineups`, {
         method: 'PUT', 
         headers: { 'Content-Type': 'application/json' },
@@ -156,7 +174,6 @@ function ModifyDashboard({ contributors, onSave }) {
         setIsEditingReport(false);
         setMatchReport(null);
         setEditedLineup(null);
-        // Optional: trigger a data refresh here if needed
       } else {
         alert("Failed to save match report.");
       }
@@ -180,7 +197,7 @@ function ModifyDashboard({ contributors, onSave }) {
       if (found) {
         setMatchReport(found);
         if (editMode) {
-          setEditedLineup(JSON.parse(JSON.stringify(found))); // Deep clone
+          setEditedLineup(JSON.parse(JSON.stringify(found))); 
           setIsEditingReport(true);
         }
       } else {
@@ -293,7 +310,6 @@ function ModifyDashboard({ contributors, onSave }) {
               <button className="choice-btn report" onClick={() => fetchAndOpenReport(false)}>
                 ⚽ <span>View Match Report</span>
               </button>
-              {/* 🆕 NEW EDIT BUTTON */}
               <button className="choice-btn edit-report" onClick={() => fetchAndOpenReport(true)}>
                 ✏️ <span>Edit Match Report</span>
               </button>
@@ -302,19 +318,54 @@ function ModifyDashboard({ contributors, onSave }) {
         </div>
       )}
 
-      {/* VIEW MODE OVERLAY */}
+      {/* 🆕 VIEW MODE OVERLAY (Stats summary removed, colors passed to Pitch) */}
       {matchReport && !isEditingReport && (
         <div className="report-overlay" onClick={() => setMatchReport(null)}>
-          <div className="report-modal" onClick={e => e.stopPropagation()}>
+          <div className="report-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '1000px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: '25px' }}>
             <button className="report-close" onClick={() => setMatchReport(null)}>✕</button>
             <h2 className="report-title">⚽ Match Report: {matchReport.date}</h2>
             {matchReport.location && <p className="report-meta">📍 {matchReport.location} {matchReport.time && `• 🕒 ${matchReport.time}`}</p>}
-            <MatchLineup matchData={{ Date: matchReport.date }} initialLineup={matchReport} readOnly={true} layout="horizontal" />
+
+            {/* ✅ NEW: Team Average Ratings */}
+            <div className="report-team-averages">
+              {(() => {
+                const avgA = calcTeamAverage(matchReport.teamA);
+                const avgB = calcTeamAverage(matchReport.teamB);
+                return (
+                  <>
+                    <div className="team-avg-card">
+                      <span className="team-avg-label">Team A Avg</span>
+                      <span className="team-avg-value" style={{ color: getRatingColor(avgA) }}>
+                        {avgA ?? '—'}
+                      </span>
+                    </div>
+                    <div className="team-avg-card">
+                      <span className="team-avg-label">Team B Avg</span>
+                      <span className="team-avg-value" style={{ color: getRatingColor(avgB) }}>
+                        {avgB ?? '—'}
+                      </span>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* TACTICAL PITCH LINEUP */}
+            <div style={{ marginTop: '20px' }}>
+              <h3 style={{ textAlign: 'center', marginBottom: '15px', color: '#444' }}>Tactical Lineup</h3>
+              <MatchLineup
+                matchData={{ Date: matchReport.date }}
+                initialLineup={matchReport}
+                readOnly={true}
+                layout="horizontal"
+                getRatingColor={getRatingColor}
+              />
+            </div>
           </div>
         </div>
       )}
 
-      {/* 🆕 EDIT MODE OVERLAY */}
+      {/* EDIT MODE OVERLAY */}
       {matchReport && isEditingReport && editedLineup && (
         <div className="report-overlay" onClick={() => { setIsEditingReport(false); setMatchReport(null); }}>
           <div className="report-modal edit-mode" onClick={e => e.stopPropagation()}>
@@ -332,6 +383,7 @@ function ModifyDashboard({ contributors, onSave }) {
                   onPositionClick={(posKey, team) => setAssignTarget({ posKey, team })}
                   onPlayerRemove={handleRemovePlayer}
                   onRatingChange={handleRatingChange}
+                  getRatingColor={getRatingColor} // ⬅️ Passed to Pitch
                 />
               </div>
             </div>
