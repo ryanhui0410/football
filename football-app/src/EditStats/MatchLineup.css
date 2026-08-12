@@ -263,3 +263,126 @@
     max-height: 300px;
   }
 }
+/* ===== PLAYER PICKER POPUP ===== */
+.picker-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 4000;
+  animation: fadeIn 0.2s ease;
+}
+
+.picker-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 420px;
+  max-height: 80vh;
+  display: flex; flex-direction: column; gap: 12px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  position: relative;
+  animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.picker-close {
+  position: absolute; top: 12px; right: 16px;
+  background: none; border: none; font-size: 22px;
+  cursor: pointer; color: #94a3b8;
+}
+.picker-close:hover { color: #ef4444; }
+
+.picker-modal h3 {
+  margin: 0; font-family: 'Oswald', sans-serif;
+  font-size: 18px; color: #1e293b;
+}
+
+.picker-rating-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.picker-rating-row label {
+  font-weight: 600; font-size: 14px; color: #475569; white-space: nowrap;
+}
+.picker-rating-row input {
+  flex: 1; padding: 8px 12px; border: 2px solid #cbd5e1;
+  border-radius: 8px; font-size: 16px; font-family: 'Oswald', sans-serif;
+  text-align: center;
+}
+.picker-rating-row input:focus {
+  outline: none; border-color: #3b82f6;
+}
+
+.picker-search {
+  padding: 10px 12px; border: 1px solid #cbd5e1;
+  border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box;
+}
+.picker-search:focus { outline: none; border-color: #3b82f6; }
+
+.picker-list {
+  flex: 1; overflow-y: auto; max-height: 300px;
+  border: 1px solid #e2e8f0; border-radius: 8px;
+}
+
+.picker-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s;
+}
+.picker-item:last-child { border-bottom: none; }
+.picker-item:hover { background: #eff6ff; }
+
+.picker-item img {
+  width: 32px; height: 32px; border-radius: 50%;
+  object-fit: cover; border: 2px solid #e2e8f0;
+}
+
+.picker-name {
+  flex: 1; font-weight: 600; font-size: 14px; color: #1e293b;
+}
+
+.picker-pos {
+  font-size: 11px; font-weight: 700; color: #64748b;
+  background: #f1f5f9; padding: 2px 8px; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+.picker-empty {
+  padding: 20px; text-align: center; color: #94a3b8; font-size: 14px;
+}
+
+/* Editable empty slot styling */
+.pitch-slot.empty.editable {
+  cursor: pointer;
+  border: 2px dashed #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+  transition: all 0.2s;
+}
+.pitch-slot.empty.editable:hover {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: #2563eb;
+  transform: translate(-50%, -50%) scale(1.08);
+}
+.pitch-slot.empty.editable .slot-label {
+  color: #3b82f6; font-weight: 700; font-size: 14px;
+}
+
+/* Edit Report Container */
+.edit-report-container { padding: 20px; }
+.edit-report-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px;
+}
+.edit-report-header h2 {
+  margin: 0; font-family: 'Oswald', sans-serif; color: #1e293b;
+}
+.edit-report-actions { display: flex; gap: 10px; }
+.edit-report-actions button {
+  padding: 10px 20px; border-radius: 8px; border: none;
+  font-family: 'Oswald', sans-serif; font-size: 14px;
+  text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer;
+}
+.edit-report-actions .save-btn {
+  background: #10b981; color: #fff;
+}
+.edit-report-actions .save-btn:hover { background: #059669; }

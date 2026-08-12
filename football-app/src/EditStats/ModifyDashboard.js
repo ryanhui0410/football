@@ -117,7 +117,11 @@ function ModifyDashboard({ contributors, onSave }) {
     ) || null;
   };
 
-  const fetchAndOpenReport = async () => {
+    // Add this state at the top of ModifyDashboard
+  const [reportEditMode, setReportEditMode] = useState(false);
+
+  // Update fetchAndOpenReport to accept editMode flag
+  const fetchAndOpenReport = async (editMode = false) => {
     try {
       const [lineupsRes, statsRes] = await Promise.all([
         fetch("http://localhost:5000/match-lineups"),
@@ -139,8 +143,22 @@ function ModifyDashboard({ contributors, onSave }) {
       if (found) {
         setMatchReport(found);
         setMatchStatsData(stats);
+        setReportEditMode(editMode); // ✅ Store edit mode
       } else {
-        alert(`No tactical report found.`);
+        // If no report exists yet and user wants to edit, create empty template
+        if (editMode) {
+          setMatchReport({
+            date: targetDate,
+            location: targetLocation,
+            time: targetTime,
+            teamA: { formation: "4-4-2", players: {} },
+            teamB: { formation: "4-4-2", players: {} }
+          });
+          setMatchStatsData(stats);
+          setReportEditMode(true);
+        } else {
+          alert(`No tactical report found.`);
+        }
       }
       setChoiceMatch(null);
     } catch (err) {
@@ -235,7 +253,7 @@ function ModifyDashboard({ contributors, onSave }) {
       <HeadToHeadCompare open={!!compareData} onClose={closeCompare} compareData={compareData} />
       <MatchStatsModal open={statsModalOpen} match={selectedStats} onClose={() => setStatsModalOpen(false)} />
       
-      {/* CHOICE MODAL */}
+            {/* CHOICE MODAL */}
       {choiceMatch && !matchReport && (
         <div className="choice-overlay" onClick={() => setChoiceMatch(null)}>
           <div className="choice-modal" onClick={e => e.stopPropagation()}>
@@ -249,21 +267,36 @@ function ModifyDashboard({ contributors, onSave }) {
               <button className="choice-btn report" onClick={() => fetchAndOpenReport()}>
                 ⚽ <span>View Match Report</span>
               </button>
+              {/* ✅ NEW EDIT BUTTON */}
+              <button 
+                className="choice-btn edit-report" 
+                onClick={() => {
+                  // Navigate to edit mode or set state to open editable lineup
+                  // For now, we'll reuse the report overlay but in edit mode
+                  fetchAndOpenReport(true); // Pass true for editMode
+                }}
+              >
+                ✏️ <span>Edit Match Report</span>
+              </button>
             </div>
           </div>
         </div>
       )}
 
       {/* VIEW MODE OVERLAY */}
+            {/* VIEW/EDIT MODE OVERLAY */}
       {matchReport && (
-        <div className="report-overlay" onClick={() => setMatchReport(null)}>
+        <div className="report-overlay" onClick={() => { setMatchReport(null); setReportEditMode(false); }}>
           <div className="report-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '1000px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: '25px' }}>
-            <button className="report-close" onClick={() => setMatchReport(null)}>✕</button>
-            <h2 className="report-title">⚽ Match Report: {matchReport.date}</h2>
+            <button className="report-close" onClick={() => { setMatchReport(null); setReportEditMode(false); }}>✕</button>
+            <h2 className="report-title">
+              {reportEditMode ? '✏️ Edit Match Report' : '⚽ Match Report'}: {matchReport.date}
+            </h2>
             {matchReport.location && <p className="report-meta">📍 {matchReport.location} {matchReport.time && `• 🕒 ${matchReport.time}`}</p>}
 
-            {/* SMART RESULT HEADER */}
-            {(() => {
+            {/* SMART RESULT HEADER (only in view mode) */}
+            {!reportEditMode && (() => {
+              // ... existing smart result header code stays the same ...
               const allPlayers = [
                 ...Object.values(matchReport.teamA?.players || {}),
                 ...Object.values(matchReport.teamB?.players || {})
@@ -277,14 +310,11 @@ function ModifyDashboard({ contributors, onSave }) {
                   break;
                 }
               }
-
               const avgA = calcTeamAverage(matchReport.teamA);
               const avgB = calcTeamAverage(matchReport.teamB);
-
               let leftLabel = 'Team A', rightLabel = 'Team B';
               let leftAvg = avgA, rightAvg = avgB;
               let leftColor = getRatingColor(avgA), rightColor = getRatingColor(avgB);
-
               if (matchResult) {
                 const parts = matchResult.split('-').map(s => parseInt(s.trim(), 10));
                 if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
@@ -297,7 +327,6 @@ function ModifyDashboard({ contributors, onSave }) {
                   }
                 }
               }
-
               return (
                 <div className="report-result-header">
                   <div className="result-team-side">
@@ -318,15 +347,47 @@ function ModifyDashboard({ contributors, onSave }) {
 
             {/* TACTICAL PITCH LINEUP */}
             <div style={{ marginTop: '20px' }}>
-              <h3 style={{ textAlign: 'center', marginBottom: '15px', color: '#444' }}>Tactical Lineup</h3>
+              <h3 style={{ textAlign: 'center', marginBottom: '15px', color: '#444' }}>
+                {reportEditMode ? 'Edit Lineup & Ratings' : 'Tactical Lineup'}
+              </h3>
               <MatchLineup
                 matchData={{ Date: matchReport.date, Location: matchReport.location, Time: matchReport.time }}
                 initialLineup={matchReport}
-                readOnly={true}
+                readOnly={!reportEditMode}
+                editMode={reportEditMode}
                 layout="horizontal"
                 getRatingColor={getRatingColor}
+                availablePlayers={reportEditMode ? contributors.flatMap(c => c.matches.map(m => ({ Contributor: c.name, position: m.position }))) : []}
+                getPlayerMatchStats={getPlayerMatchStats}
               />
             </div>
+
+            {/* ✅ SAVE BUTTON (only in edit mode) */}
+            {reportEditMode && (
+              <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <button 
+                  className="md-edit-btn" 
+                  style={{ padding: '12px 32px', fontSize: '16px' }}
+                  onClick={async () => {
+                    try {
+                      await fetch("http://localhost:5000/match-lineups", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(matchReport)
+                      });
+                      alert("✅ Match report saved!");
+                      setReportEditMode(false);
+                      setMatchReport(null);
+                      onSave(); // Refresh parent data
+                    } catch (err) {
+                      alert("❌ Failed to save");
+                    }
+                  }}
+                >
+                  💾 Save Match Report
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

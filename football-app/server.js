@@ -151,29 +151,26 @@ app.get("/player-attributes", (req, res) => {
   res.json(readAttributes());
 });
 
-app.post("/player-attributes", async (req, res) => { // <-- Added 'async' here
+// ===================== Player Attributes (FIXED) =====================
+app.post("/player-attributes", async (req, res) => {
   try {
     const card = req.body;
-    console.log(`\n📥 [PLAYER CARD] Received payload for: ${card.Contributor}`);
-
     if (!card || !card.Contributor) {
       return res.status(400).json({ error: "Missing Contributor name" });
     }
 
-    // 🔄 1. PULL LATEST DATA FROM GITHUB *BEFORE* WE TOUCH THE FILE
+    // Pull latest before saving
     try {
       await git.pull('origin', 'main', ['--rebase']);
-      console.log("⬇️ Pulled latest data from GitHub before saving.");
     } catch (pullErr) {
-      console.log("⚠️ Could not pull from GitHub (offline or no changes). Continuing with local save.");
+      console.log("⚠️ Could not pull from GitHub. Continuing with local save.");
     }
 
-    // 🖼️ 2. Handle Image Upload (Decode base64 and save to public/images)
+    // Handle Image Upload
     if (card.picture && typeof card.picture === 'string' && card.picture.startsWith("data:image")) {
       try {
         const base64Data = card.picture.replace(/^data:image\/\w+;base64,/, "");
         const imageBuffer = Buffer.from(base64Data, "base64");
-        
         const imagesDir = path.join(__dirname, "public", "images");
         if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
         
@@ -188,46 +185,30 @@ app.post("/player-attributes", async (req, res) => { // <-- Added 'async' here
       }
     }
 
-    // 3. NOW read the file (it now contains the latest remote data!)
     const data = readAttributes();
-    const index = data.findIndex(l =>
-  (l.date || "").trim() === (lineup.date || "").trim() &&
-  (l.location || "").trim() === (lineup.location || "").trim() &&
-  (l.time || "").trim() === (lineup.time || "").trim()
-);
+    const index = data.findIndex(a => 
+      (a.Contributor || "").trim().toLowerCase() === card.Contributor.trim().toLowerCase()
+    );
 
-// ✅ Normalize before saving
-const normalizedLineup = {
-  ...lineup,
-  date: (lineup.date || "").trim(),
-  location: (lineup.location || "").trim(),
-  time: (lineup.time || "").trim()
-};
+    if (index === -1) {
+      data.push(card);
+    } else {
+      data[index] = { ...data[index], ...card };
+    }
 
-if (index === -1) {
-  data.push(normalizedLineup);
-  console.log(`➕ Created NEW lineup for ${normalizedLineup.date}`);
-} else {
-  data[index] = normalizedLineup;
-  console.log(`🔄 UPDATED existing lineup for ${normalizedLineup.date}`);
-}
+    writeAttributes(data);
 
-writeLineups(data);
-    // 5. Commit and Push
     await git.add(".");
     try {
-      await git.commit(`Update player card: ${card.Contributor} (${new Date().toISOString()})`);
+      await git.commit(`Update player card: ${card.Contributor}`);
       await git.push('origin', 'main');
-      console.log(`✅ Git sync successful!`);
     } catch (gitErr) {
-      // If there was nothing to commit, it throws an error. We can ignore it.
-      if (!gitErr.message.includes("nothing to commit")) {
-         console.error("⚠️ Git push warning:", gitErr.message);
+      if (!gitErr.message?.includes("nothing to commit")) {
+        console.error("⚠️ Git push warning:", gitErr.message);
       }
     }
 
-    res.json({ message: "✅ Player card saved successfully", updated: index === -1 ? card : data[index] });
-
+    res.json({ message: "✅ Player card saved", updated: index === -1 ? card : data[index] });
   } catch (error) {
     console.error("❌ CRITICAL ERROR saving player card:", error);
     res.status(500).json({ error: "Failed to save player card", details: error.message });

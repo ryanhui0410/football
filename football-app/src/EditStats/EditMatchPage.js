@@ -7,51 +7,116 @@ function EditMatchPage() {
   const { index } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState(null);
+  
+  // New states for Lineup Editing
+  const [isEditingLineup, setIsEditingLineup] = useState(false);
+  const [availablePlayers, setAvailablePlayers] = useState([]);
+  const [lineupData, setLineupData] = useState(null);
 
+  // Fetch match stats
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("http://localhost:5000/stats");
-      const data = await res.json();
-      setFormData(data[index]);
+      try {
+        const res = await fetch("http://localhost:5000/stats");
+        const data = await res.json();
+        setFormData(data[index]);
+      } catch (err) {
+        console.error("Failed to fetch stats:", err);
+      }
     };
     fetchData();
   }, [index]);
 
-    const handleSave = async () => {
-    // 1. Calculate the Win/Loss outcome based on the current "Match result" input
+  // Fetch available players when entering edit mode
+  useEffect(() => {
+    if (isEditingLineup && availablePlayers.length === 0) {
+      fetch("http://localhost:5000/player-attributes")
+        .then(res => res.json())
+        .then(data => setAvailablePlayers(Array.isArray(data) ? data : []))
+        .catch(console.error);
+    }
+  }, [isEditingLineup, availablePlayers.length]);
+
+  // Load existing lineup when entering edit mode
+  useEffect(() => {
+    if (isEditingLineup && formData) {
+      fetch("http://localhost:5000/match-lineups")
+        .then(res => res.json())
+        .then(lineups => {
+          const match = lineups.find(l => 
+            l.date === formData.Date && 
+            l.location === formData.Location && 
+            l.time === formData.Time
+          );
+          if (match) setLineupData(match);
+          else setLineupData({ teamA: { formation: "4-4-2", players: {} }, teamB: { formation: "4-4-2", players: {} } });
+        })
+        .catch(console.error);
+    }
+  }, [isEditingLineup, formData]);
+
+  const handleSaveStats = async () => {
     const resultStr = formData["Match result"] || "";
     const calculatedWL = calculateWinLoss(resultStr);
 
-    // 2. Send the updated data to the server
     await fetch(`http://localhost:5000/modify-stats/${index}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...formData,                     // Spread all existing form fields
-        "Win/Loss?": calculatedWL        // Overwrite "Win/Loss?" with our calculated value
-      }),
+      body: JSON.stringify({ ...formData, "Win/Loss?": calculatedWL }),
     });
     
     alert("✅ Stat updated!");
     navigate("/modify");
   };
-  // Helper function to calculate Win/Loss/Draw based on "X-Y" score format
+
+  const handleSaveLineup = async (newLineup) => {
+    if (!formData) return;
+    
+    const payload = {
+      date: formData.Date,
+      location: formData.Location,
+      time: formData.Time,
+      teamA: newLineup.teamA,
+      teamB: newLineup.teamB
+    };
+
+    try {
+      await fetch("http://localhost:5000/match-lineups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      alert("✅ Lineup saved successfully!");
+      setIsEditingLineup(false);
+    } catch (err) {
+      console.error("Save failed:", err);
+      alert("❌ Failed to save lineup");
+    }
+  };
+
   function calculateWinLoss(resultStr) {
     if (!resultStr) return "";
     const parts = resultStr.split("-");
     if (parts.length === 2) {
-      const score1 = parseInt(parts[0], 10);
-      const score2 = parseInt(parts[1], 10);
-      
-      if (!isNaN(score1) && !isNaN(score2)) {
-        if (score1 > score2) return "Win";
-        if (score1 === score2) return "Draw";
-        if (score1 < score2) return "Lose";
+      const s1 = parseInt(parts[0], 10);
+      const s2 = parseInt(parts[1], 10);
+      if (!isNaN(s1) && !isNaN(s2)) {
+        if (s1 > s2) return "Win";
+        if (s1 === s2) return "Draw";
+        if (s1 < s2) return "Lose";
       }
     }
-    return ""; // Returns empty if the format isn't recognized (e.g. "TBD")
+    return "";
   }
-  const handleCancel = () => navigate("/modify");
+
+  const getRatingColor = (rating) => {
+    const r = parseFloat(rating);
+    if (isNaN(r)) return '#9e9e9e';
+    if (r >= 9.0) return '#2563eb';
+    if (r >= 7.0) return '#16a34a';
+    if (r >= 5.0) return '#ea580c';
+    return '#dc2626';
+  };
 
   if (!formData) {
     return (
@@ -68,7 +133,6 @@ function EditMatchPage() {
   const result = formData["Match result"];
   const wl     = formData["Win/Loss?"];
 
-  // build the icon row: one ⚽ per goal, one 👟 per assist
   const icons = [
     ...Array.from({ length: goal },   () => ({ cls: "goal",   ch: "⚽" })),
     ...Array.from({ length: assist }, () => ({ cls: "assist", ch: "👟" })),
@@ -95,7 +159,7 @@ function EditMatchPage() {
         </div>
       </div>
 
-      {/* ---- Scoreline + result ---- */}
+      {/* ---- Scoreline ---- */}
       {(result || wl) && (() => {
         const wlNorm = String(wl || '').trim().toLowerCase();
         return (
@@ -106,38 +170,25 @@ function EditMatchPage() {
         );
       })()}
 
-      {/* ---- Goal Contributions hero (symbols live here) ---- */}
+      {/* ---- Goal Contributions ---- */}
       <section className="em-card em-contrib">
         <h2 className="em-card-title">Goal Contributions</h2>
         <div className="em-icons">
           {icons.length === 0 && <span className="em-icon empty">No goal involvements</span>}
           {icons.map((ic, i) => (
-            <span
-              key={i}
-              className={`em-icon ${ic.cls}`}
-              style={{ animationDelay: `${i * 70}ms` }}
-            >
+            <span key={i} className={`em-icon ${ic.cls}`} style={{ animationDelay: `${i * 70}ms` }}>
               {ic.ch}
             </span>
           ))}
         </div>
         <div className="em-contrib-stats">
-          <div className="em-stat">
-            <span className="em-stat-num">{goal}</span>
-            <span className="em-stat-label">Goals</span>
-          </div>
-          <div className="em-stat">
-            <span className="em-stat-num">{assist}</span>
-            <span className="em-stat-label">Assists</span>
-          </div>
-          <div className="em-stat highlight">
-            <span className="em-stat-num">{gc}</span>
-            <span className="em-stat-label">Goal Contrib.</span>
-          </div>
+          <div className="em-stat"><span className="em-stat-num">{goal}</span><span className="em-stat-label">Goals</span></div>
+          <div className="em-stat"><span className="em-stat-num">{assist}</span><span className="em-stat-label">Assists</span></div>
+          <div className="em-stat highlight"><span className="em-stat-num">{gc}</span><span className="em-stat-label">Goal Contrib.</span></div>
         </div>
       </section>
 
-      {/* ---- Scoring breakdown ---- */}
+      {/* ---- Scoring Breakdown ---- */}
       <section className="em-card">
         <h2 className="em-card-title">How the goals came</h2>
         <div className="em-breakdown">
@@ -150,34 +201,76 @@ function EditMatchPage() {
         </div>
       </section>
 
-      {/* ---- Match details ---- */}
+      {/* ---- Match Details ---- */}
       <section className="em-card">
         <h2 className="em-card-title">Match Details</h2>
         <div className="em-details">
-          <div className="em-detail">
-            <span className="em-detail-label">📍 Location</span>
-            <span className="em-detail-val">{formData.Location || "—"}</span>
-          </div>
-          <div className="em-detail">
-            <span className="em-detail-label">🕒 Time</span>
-            <span className="em-detail-val">{formData.Time || "—"}</span>
-          </div>
-          <div className="em-detail">
-            <span className="em-detail-label">⭐ Rating</span>
-            <span className="em-detail-val em-rating">{formData.Rating}</span>
-          </div>
-          <div className="em-detail">
-            <span className="em-detail-label">📝 Source</span>
-            <span className="em-detail-val">{formData.source || "—"}</span>
-          </div>
+          <div className="em-detail"><span className="em-detail-label">📍 Location</span><span className="em-detail-val">{formData.Location || "—"}</span></div>
+          <div className="em-detail"><span className="em-detail-label">🕒 Time</span><span className="em-detail-val">{formData.Time || "—"}</span></div>
+          <div className="em-detail"><span className="em-detail-label">⭐ Rating</span><span className="em-detail-val em-rating">{formData.Rating}</span></div>
+          <div className="em-detail"><span className="em-detail-label">📝 Source</span><span className="em-detail-val">{formData.source || "—"}</span></div>
         </div>
       </section>
-      {/* ---- Match Lineup & Ratings ---- */}
-      <MatchLineup matchData={formData} />
+
+      {/* ---- LINEUP SECTION ---- */}
+      <section className="em-card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h2 className="em-card-title" style={{ margin: 0 }}>Tactical Lineup</h2>
+          {!isEditingLineup && (
+            <button 
+              onClick={() => setIsEditingLineup(true)}
+              style={{
+                padding: '8px 16px', background: '#f2c14e', border: 'none', borderRadius: '6px',
+                fontWeight: 600, cursor: 'pointer', fontSize: '13px', textTransform: 'uppercase'
+              }}
+            >
+              ✏️ Edit Lineup
+            </button>
+          )}
+        </div>
+
+        {isEditingLineup && lineupData ? (
+          <>
+            <MatchLineup
+              matchData={{ Date: formData.Date, Location: formData.Location, Time: formData.Time }}
+              initialLineup={lineupData}
+              readOnly={false}
+              editMode={true}
+              layout="horizontal"
+              availablePlayers={availablePlayers}
+              getRatingColor={getRatingColor}
+              onLineupChange={setLineupData}
+            />
+            <div style={{ marginTop: '16px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button 
+                onClick={() => setIsEditingLineup(false)}
+                style={{ padding: '10px 20px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => handleSaveLineup(lineupData)}
+                style={{ padding: '10px 20px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+              >
+                💾 Save Lineup
+              </button>
+            </div>
+          </>
+        ) : (
+          <MatchLineup
+            matchData={{ Date: formData.Date, Location: formData.Location, Time: formData.Time }}
+            initialLineup={lineupData}
+            readOnly={true}
+            layout="horizontal"
+            getRatingColor={getRatingColor}
+          />
+        )}
+      </section>
+
       {/* ---- Actions ---- */}
       <div className="em-actions">
-        <button className="em-btn save" onClick={handleSave}>Save Changes</button>
-        <button className="em-btn cancel" onClick={handleCancel}>Cancel</button>
+        <button className="em-btn save" onClick={handleSaveStats}>Save Changes</button>
+        <button className="em-btn cancel" onClick={() => navigate("/modify")}>Cancel</button>
       </div>
     </div>
   );
