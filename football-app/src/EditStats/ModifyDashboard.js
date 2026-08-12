@@ -162,6 +162,7 @@ function ModifyDashboard({ contributors, onSave }) {
   };
 
   const handleSaveEditedReport = async () => {
+    console.log("📤 SAVING LINEUP:", JSON.stringify(editedLineup, null, 2));
   try {
     const res = await fetch(`http://localhost:5000/match-lineups`, {
       method: 'POST',  // ← Changed from 'PUT' to 'POST'
@@ -217,7 +218,12 @@ function ModifyDashboard({ contributors, onSave }) {
       setMatchReport(found);
       setMatchStatsData(stats); // ✅ Store stats for symbol lookup
       if (editMode) {
-        setEditedLineup(JSON.parse(JSON.stringify(found)));
+        const editableCopy = JSON.parse(JSON.stringify(found));
+        // ✅ Ensure match keys are always present and trimmed
+        editableCopy.date = (found.date || "").trim();
+        editableCopy.location = (found.location || "").trim();
+        editableCopy.time = (found.time || "").trim();
+        setEditedLineup(editableCopy);
         setIsEditingReport(true);
       }
     } else {

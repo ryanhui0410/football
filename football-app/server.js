@@ -190,19 +190,29 @@ app.post("/player-attributes", async (req, res) => { // <-- Added 'async' here
 
     // 3. NOW read the file (it now contains the latest remote data!)
     const data = readAttributes();
-    const index = data.findIndex((item) => item.Contributor === card.Contributor);
+    const index = data.findIndex(l =>
+  (l.date || "").trim() === (lineup.date || "").trim() &&
+  (l.location || "").trim() === (lineup.location || "").trim() &&
+  (l.time || "").trim() === (lineup.time || "").trim()
+);
 
-    if (index === -1) {
-      data.push(card);
-      console.log(`➕ Added NEW player: ${card.Contributor}`);
-    } else {
-      data[index] = { ...data[index], ...card };
-      console.log(`🔄 UPDATED existing player: ${card.Contributor}`);
-    }
+// ✅ Normalize before saving
+const normalizedLineup = {
+  ...lineup,
+  date: (lineup.date || "").trim(),
+  location: (lineup.location || "").trim(),
+  time: (lineup.time || "").trim()
+};
 
-    // 4. Write to file
-    writeAttributes(data);
+if (index === -1) {
+  data.push(normalizedLineup);
+  console.log(`➕ Created NEW lineup for ${normalizedLineup.date}`);
+} else {
+  data[index] = normalizedLineup;
+  console.log(`🔄 UPDATED existing lineup for ${normalizedLineup.date}`);
+}
 
+writeLineups(data);
     // 5. Commit and Push
     await git.add(".");
     try {
