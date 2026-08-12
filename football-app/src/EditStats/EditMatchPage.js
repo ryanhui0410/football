@@ -8,12 +8,10 @@ function EditMatchPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(null);
   
-  // New states for Lineup Editing
   const [isEditingLineup, setIsEditingLineup] = useState(false);
   const [availablePlayers, setAvailablePlayers] = useState([]);
   const [lineupData, setLineupData] = useState(null);
 
-  // Fetch match stats
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -27,7 +25,6 @@ function EditMatchPage() {
     fetchData();
   }, [index]);
 
-  // Fetch available players when entering edit mode
   useEffect(() => {
     if (isEditingLineup && availablePlayers.length === 0) {
       fetch("http://localhost:5000/player-attributes")
@@ -37,7 +34,6 @@ function EditMatchPage() {
     }
   }, [isEditingLineup, availablePlayers.length]);
 
-  // Load existing lineup when entering edit mode
   useEffect(() => {
     if (isEditingLineup && formData) {
       fetch("http://localhost:5000/match-lineups")
@@ -70,32 +66,32 @@ function EditMatchPage() {
   };
 
   const handleSaveLineup = async (lineupData) => {
-  if (!formData) return;
+    if (!formData) return;
 
-  const payload = {
-    date: formData.Date,
-    location: formData.Location,
-    time: formData.Time,
-    teamA: lineupData.teamA,   // ← Send the FULL object with formation + players
-    teamB: lineupData.teamB,   // ← Send the FULL object with formation + players
+    const payload = {
+      date: formData.Date,
+      location: formData.Location,
+      time: formData.Time,
+      teamA: lineupData.teamA,
+      teamB: lineupData.teamB,
+    };
+
+    console.log("📤 Sending lineup payload:", JSON.stringify(payload, null, 2));
+
+    try {
+      const res = await fetch("http://localhost:5000/match-lineups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+      console.log("📥 Server response:", result);
+      alert("✅ Match Report saved!");
+    } catch (err) {
+      console.error("Save failed:", err);
+      alert("❌ Failed to save match report");
+    }
   };
-
-  console.log("📤 Sending lineup payload:", JSON.stringify(payload, null, 2)); // ← Verify this!
-
-  try {
-    const res = await fetch("http://localhost:5000/match-lineups", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const result = await res.json();
-    console.log("📥 Server response:", result);
-    alert("✅ Match Report saved!");
-  } catch (err) {
-    console.error("Save failed:", err);
-    alert("❌ Failed to save match report");
-  }
-};
 
   function calculateWinLoss(resultStr) {
     if (!resultStr) return "";
@@ -135,11 +131,19 @@ function EditMatchPage() {
   const gc     = parseInt(formData["Goal Contribution"]) || goal + assist;
   const result = formData["Match result"];
   const wl     = formData["Win/Loss?"];
+  const isMotm = formData["Man of the Match"] === true; // ✅ 读取 MOTM
 
   const icons = [
     ...Array.from({ length: goal },   () => ({ cls: "goal",   ch: "⚽" })),
     ...Array.from({ length: assist }, () => ({ cls: "assist", ch: "👟" })),
   ];
+
+  // ✅ 将图标按每行最多 5 个分组
+  const chunkSize = 5;
+  const iconRows = [];
+  for (let i = 0; i < icons.length; i += chunkSize) {
+    iconRows.push(icons.slice(i, i + chunkSize));
+  }
 
   const breakdown = [
     { label: "Left Foot",  val: formData["Left Foot"] },
@@ -147,6 +151,9 @@ function EditMatchPage() {
     { label: "Head",       val: formData["Head"] },
     { label: "Other",      val: formData["Other body parts"] },
   ];
+
+  // 构建 result 样式类
+  const wlNorm = String(wl || '').trim().toLowerCase();
 
   return (
     <div className="em-wrap">
@@ -163,25 +170,26 @@ function EditMatchPage() {
       </div>
 
       {/* ---- Scoreline ---- */}
-      {(result || wl) && (() => {
-        const wlNorm = String(wl || '').trim().toLowerCase();
-        return (
-          <div className={`em-result-strip ${wlNorm ? `em-result-${wlNorm}` : ''}`}>
-            {result && <span className="em-scoreline">{result}</span>}
-            {wl && <span className={`em-wl ${wlNorm}`}>{wl}</span>}
-          </div>
-        );
-      })()}
+      {(result || wl) && (
+        <div className={`em-result-strip em-result-${wlNorm}`}>
+          {result && <span className="em-scoreline">{result}</span>}
+          {wl && <span className={`em-wl ${wlNorm}`}>{wl}</span>}
+        </div>
+      )}
 
       {/* ---- Goal Contributions ---- */}
       <section className="em-card em-contrib">
         <h2 className="em-card-title">Goal Contributions</h2>
-        <div className="em-icons">
+        <div className="em-icons-wrapper">
           {icons.length === 0 && <span className="em-icon empty">No goal involvements</span>}
-          {icons.map((ic, i) => (
-            <span key={i} className={`em-icon ${ic.cls}`} style={{ animationDelay: `${i * 70}ms` }}>
-              {ic.ch}
-            </span>
+          {iconRows.map((row, rowIdx) => (
+            <div key={rowIdx} className="em-icons-row">
+              {row.map((ic, i) => (
+                <span key={i} className={`em-icon ${ic.cls}`} style={{ animationDelay: `${(rowIdx * chunkSize + i) * 70}ms` }}>
+                  {ic.ch}
+                </span>
+              ))}
+            </div>
           ))}
         </div>
         <div className="em-contrib-stats">
@@ -210,7 +218,13 @@ function EditMatchPage() {
         <div className="em-details">
           <div className="em-detail"><span className="em-detail-label">📍 Location</span><span className="em-detail-val">{formData.Location || "—"}</span></div>
           <div className="em-detail"><span className="em-detail-label">🕒 Time</span><span className="em-detail-val">{formData.Time || "—"}</span></div>
-          <div className="em-detail"><span className="em-detail-label">⭐ Rating</span><span className="em-detail-val em-rating">{formData.Rating}</span></div>
+          <div className="em-detail">
+            <span className="em-detail-label">⭐ Rating</span>
+            <span className="em-detail-val em-rating">
+              {isMotm && <span className="em-motm-star">⭐</span>}
+              {formData.Rating}
+            </span>
+          </div>
           <div className="em-detail"><span className="em-detail-label">📝 Source</span><span className="em-detail-val">{formData.source || "—"}</span></div>
         </div>
       </section>
@@ -233,50 +247,49 @@ function EditMatchPage() {
         </div>
 
         {isEditingLineup ? (
-  <>
-    <MatchLineup
-      matchData={{ Date: formData.Date, Location: formData.Location, Time: formData.Time }}
-      initialLineup={lineupData || { teamA: { formation: "4-4-2", players: {} }, teamB: { formation: "4-4-2", players: {} } }}
-      readOnly={false}
-      editMode={true}
-      layout="horizontal"
-      availablePlayers={availablePlayers}
-      getRatingColor={getRatingColor}
-      onLineupChange={(newLineup) => {
-        // ✅ Merge date/location/time into lineupData so save payload is complete
-        setLineupData({
-          date: formData.Date,
-          location: formData.Location,
-          time: formData.Time,
-          ...newLineup,
-        });
-      }}
-    />
-    <div style={{ marginTop: '16px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-      <button 
-        onClick={() => setIsEditingLineup(false)}
-        style={{ padding: '10px 20px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-      >
-        Cancel
-      </button>
-      <button 
-        onClick={() => handleSaveLineup(lineupData)}
-        disabled={!lineupData}
-        style={{ 
-          padding: '10px 20px', 
-          background: lineupData ? '#10b981' : '#94a3b8', 
-          color: '#fff', 
-          border: 'none', 
-          borderRadius: '6px', 
-          cursor: lineupData ? 'pointer' : 'not-allowed', 
-          fontWeight: 600 
-        }}
-      >
-        💾 Save Lineup
-      </button>
-    </div>
-  </>
-) : null}
+          <>
+            <MatchLineup
+              matchData={{ Date: formData.Date, Location: formData.Location, Time: formData.Time }}
+              initialLineup={lineupData || { teamA: { formation: "4-4-2", players: {} }, teamB: { formation: "4-4-2", players: {} } }}
+              readOnly={false}
+              editMode={true}
+              layout="horizontal"
+              availablePlayers={availablePlayers}
+              getRatingColor={getRatingColor}
+              onLineupChange={(newLineup) => {
+                setLineupData({
+                  date: formData.Date,
+                  location: formData.Location,
+                  time: formData.Time,
+                  ...newLineup,
+                });
+              }}
+            />
+            <div style={{ marginTop: '16px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button 
+                onClick={() => setIsEditingLineup(false)}
+                style={{ padding: '10px 20px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => handleSaveLineup(lineupData)}
+                disabled={!lineupData}
+                style={{ 
+                  padding: '10px 20px', 
+                  background: lineupData ? '#10b981' : '#94a3b8', 
+                  color: '#fff', 
+                  border: 'none', 
+                  borderRadius: '6px', 
+                  cursor: lineupData ? 'pointer' : 'not-allowed', 
+                  fontWeight: 600 
+                }}
+              >
+                💾 Save Lineup
+              </button>
+            </div>
+          </>
+        ) : null}
       </section>
 
       {/* ---- Actions ---- */}

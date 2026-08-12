@@ -138,14 +138,13 @@
   justify-content: center;
   min-width: 46px;
   padding: 8px 12px;
-  background: rgba(242, 193, 78, 0.15);
-  border: 1px solid rgba(242, 193, 78, 0.5);
   border-radius: 8px;
   font-family: 'Oswald', sans-serif;
   font-size: 20px;
   font-weight: 700;
-  color: #f2c14e;
-  box-shadow: 0 4px 10px rgba(242, 193, 78, 0.1);
+  color: #ffffff;              /* 白色文字以保持对比 */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: background 0.2s;
 }
 
 .md-edit-btn {
@@ -392,7 +391,7 @@
 }
 .choice-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.05); }
 .choice-btn.stats:hover { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; }
-.choice-btn.report:hover { border-color: #10b981; background: #ecfdf5; color: #047857; }
+.choice-btn.report:hover { border-color: #10b981; background: #ecfdf5; color: #5ad6b3; }
 .choice-btn span { font-family: 'Barlow', sans-serif; text-transform: none; letter-spacing: normal; font-weight: 600; }
 
 /* --- Report Viewer Modal --- */
@@ -472,7 +471,7 @@
   letter-spacing: 0.1em;
   font-weight: 600;
 }
-.result-wl.win  { background: rgba(22, 163, 74, 0.15); color: #16a34a; }
+.result-wl.win  { background: rgba(22, 163, 74, 0.15); color: #65ee97; }
 .result-wl.draw { background: rgba(100, 116, 139, 0.15); color: #64748b; }
 .result-wl.loss, .result-wl.lose { background: rgba(220, 38, 38, 0.15); color: #dc2626; }
 
@@ -505,4 +504,156 @@
 @keyframes symbolPop {
   from { opacity: 0; transform: scale(0.3); }
   to   { opacity: 1; transform: scale(1); }
+}
+/* ---- 行背景浅蓝色 ---- */
+.md-row {
+  background: #e6f0fa !important;      /* 浅蓝色 */
+  border-color: #b0c4de !important;
+}
+.md-row:hover {
+  background: #d4e4f7 !important;      /* 悬浮稍深 */
+}
+.md-td {
+  color: #1e2a3a !important;           /* 深色文字 */
+}
+.md-date, .md-stat-val, .md-score {
+  color: #0f172a !important;           /* 深色 */
+}
+.md-location, .md-stat-label, .md-outcome {
+  color: #334155 !important;           /* 深灰 */
+}
+.md-outcome.win, .md-outcome.draw, .md-outcome.loss {
+  color: #1e2a3a !important;           /* 深色，不覆盖背景色 */
+}
+
+/* ---- 比赛结果框 ---- */
+.md-result-box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 20px;
+  border-radius: 16px;
+  min-width: 80px;
+  background: #f1f5f9; /* 默认浅灰 */
+  transition: background 0.3s;
+}
+.md-result-box.win {
+  background: #b3ebb6 !important;
+  border: 1px solid #54db5b;
+}
+.md-result-box.draw {
+  background: #616161 !important;
+  border: 1px solid #f3baba;
+}
+.md-result-box.lose, .md-result-box.loss, .md-result-box.lost {
+  background: #c62828 !important;
+  border: 1px solid #ef5350;
+}
+.md-score {
+  font-family: 'Oswald', sans-serif;
+  font-size: 28px;            /* 放大 */
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+.md-result-box .md-outcome {
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  color: #fff !important;     /* 白色文字 */
+  background: rgba(255,255,255,0.15);
+  padding: 2px 10px;
+  border-radius: 4px;
+  margin-top: 2px;
+}
+
+/* ---- 图标分组 ---- */
+.md-symbols-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+.md-symbols-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+}
+.md-symbol-icon {
+  font-size: 22px;            /* 缩小图标 */
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+.md-symbols.empty {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.md-rating {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 46px;
+  height: 46px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: background 0.2s;
+}
+
+
+/* ---- 列宽控制 ---- */
+.md-th-date { width: 16%; }
+.md-th-result { width: 12%; }
+.md-th-contrib { width: 34%; }   /* 加宽 Contributions 列 */
+.md-th-stats { width: 14%; }
+.md-th-rating { width: 12%; }
+.md-th-action { width: 12%; }
+
+/* ---- Edit 按钮改为黄色 ---- */
+.md-edit-btn {
+  padding: 10px 22px;
+  background: #f2c14e;               /* 黄色背景 */
+  border: none;                      /* 移除边框 */
+  border-radius: 8px;
+  color: #083a29;                    /* 深色文字 */
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.md-edit-btn:hover {
+  background: #e5b83c;               /* 悬浮稍深 */
+  box-shadow: 0 4px 12px rgba(242, 193, 78, 0.4);
+  transform: translateY(-2px);
+}
+
+/* ---- 比赛结果框颜色调整 ---- */
+/* Win 变浅绿（更浅） */
+.md-result-box.win {
+  background: #81c784 !important;    /* 更浅的绿色 */
+  border: 1px solid #a5d6a7;
+}
+/* Draw 加深灰 */
+.md-result-box.draw {
+  background: #3b3939ee !important;    /* 深灰 */
+  border: 1px solid #757575;
+}
+/* Lose 不变（保持红色） */
+.md-result-box.lose,
+.md-result-box.loss,
+.md-result-box.lost {
+  background: #c62828 !important;
+  border: 1px solid #ef5350;
 }

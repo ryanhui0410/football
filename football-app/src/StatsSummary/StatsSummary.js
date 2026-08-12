@@ -176,85 +176,106 @@ function StatsSummary({ stats }) {
 
   // ===== Render: Detailed profile (Ryan/Darren) =====
   const renderDetailedProfile = (playerName) => {
-    const statsData = getDetailedPlayerStats(playerName);
-    if (!statsData) return null;
+  const statsData = getDetailedPlayerStats(playerName);
+  if (!statsData) return null;
 
-    const avgRating = statsData.ratings.reduce((sum, r) => sum + r, 0) / (statsData.ratings.length || 1);
-    const totalGoals = statsData.left + statsData.right + statsData.head + statsData.other;
-    const percentages = totalGoals > 0 ? [
-      ((statsData.left / totalGoals) * 100).toFixed(1),
-      ((statsData.right / totalGoals) * 100).toFixed(1),
-      ((statsData.head / totalGoals) * 100).toFixed(1),
-      ((statsData.other / totalGoals) * 100).toFixed(1),
-    ] : [0, 0, 0, 0];
+  const avgRating = statsData.ratings.reduce((sum, r) => sum + r, 0) / (statsData.ratings.length || 1);
+  const totalGoals = statsData.left + statsData.right + statsData.head + statsData.other;
+  const percentages = totalGoals > 0 ? [
+    ((statsData.left / totalGoals) * 100).toFixed(1),
+    ((statsData.right / totalGoals) * 100).toFixed(1),
+    ((statsData.head / totalGoals) * 100).toFixed(1),
+    ((statsData.other / totalGoals) * 100).toFixed(1),
+  ] : [0, 0, 0, 0];
 
-    const pieData = {
-      labels: [`Left Foot (${percentages[0]}%)`, `Right Foot (${percentages[1]}%)`, `Head (${percentages[2]}%)`, `Other (${percentages[3]}%)`],
-      datasets: [{ data: [statsData.left, statsData.right, statsData.head, statsData.other], backgroundColor: ["#4CAF50", "#2196F3", "#FFC107", "#9C27B0"], borderColor: "#ffffff", borderWidth: 3 }],
-    };
+  const pieData = {
+    labels: [`Left Foot (${percentages[0]}%)`, `Right Foot (${percentages[1]}%)`, `Head (${percentages[2]}%)`, `Other (${percentages[3]}%)`],
+    datasets: [{ data: [statsData.left, statsData.right, statsData.head, statsData.other], backgroundColor: ["#4CAF50", "#2196F3", "#FFC107", "#9C27B0"], borderColor: "#ffffff", borderWidth: 3 }],
+  };
 
-    const totalMatches = statsData.ratings.length;
-    const winRate = totalMatches > 0 ? ((statsData.wins || 0) / totalMatches) * 100 : 0;
-    const ratingClass = avgRating < 6 ? "low" : avgRating <= 8 ? "mid" : "high";
-    const errorClass = statsData.errors === 0 ? "none" : statsData.errors <= 3 ? "low" : "high";
-    const winRateClass = winRate >= 50 ? "high" : winRate > 0 ? "mid" : "low";
+  const totalMatches = statsData.ratings.length;
+  const winRate = totalMatches > 0 ? ((statsData.wins || 0) / totalMatches) * 100 : 0;
+  const ratingClass = avgRating < 6 ? "low" : avgRating <= 8 ? "mid" : "high";
+  const errorClass = statsData.errors === 0 ? "none" : statsData.errors <= 3 ? "low" : "high";
+  const winRateClass = winRate >= 50 ? "high" : winRate > 0 ? "mid" : "low";
 
-    // ✅ MOTM total (respect filterSeason if set)
-    const playerMotm = motmStats[playerName] || {};
-    const totalMotm = filterSeason
-      ? (playerMotm[filterSeason] || 0)
-      : Object.values(playerMotm).reduce((a, b) => a + b, 0);
+  const playerMotm = motmStats[playerName] || {};
+  const totalMotm = filterSeason
+    ? (playerMotm[filterSeason] || 0)
+    : Object.values(playerMotm).reduce((a, b) => a + b, 0);
 
-    const locationEntries = Object.entries(statsData.locationStats).filter(([loc]) => loc !== "Unknown").sort((a, b) => a[0].localeCompare(b[0]));
-    const locationData = locationEntries.map(([loc, data]) => {
-      const avgGoals = data.count > 0 ? data.goals / data.count : 0;
-      const avgAssists = data.count > 0 ? data.assists / data.count : 0;
-      const avgContrib = data.count > 0 ? (data.goals + data.assists) / data.count : 0;
-      return { loc, data, avgGoals, avgAssists, avgContrib };
+  // ---- 新增：计算助攻给对方的总数 ----
+  const targetAssistPlayer = (playerName === "Ryan") ? "Darren" : (playerName === "Darren") ? "Ryan" : null;
+  let totalAssistTo = 0;
+  if (targetAssistPlayer) {
+    const relevantStats = filterSeason
+      ? stats.filter(s => getSeasonFromDate(s.Date) === filterSeason)
+      : stats;
+    relevantStats.forEach(s => {
+      if (s.Contributor?.trim() === playerName && s["Assist to"]?.trim() === targetAssistPlayer) {
+        totalAssistTo += parseInt(s["Assist to count"]) || 0;
+      }
     });
-    const maxContrib = locationData.length > 0 ? Math.max(...locationData.map((d) => d.avgContrib)) : 0;
+  }
+  // ---- 新增结束 ----
 
-    return (
-      <div className="player-card">
-        <h3 className="player-name">⚔️ {playerName} - Attacking Stats</h3>
-        <div className="summary-list">
-          <div className="summary-row"><span className="summary-label">Avg Rating</span><span className={`badge badge-rating-${ratingClass}`}>{avgRating.toFixed(2)}</span></div>
-          <div className="summary-row"><span className="summary-label">Matches</span><span className="plain-value">{totalMatches}</span></div>
-          <div className="summary-row"><span className="summary-label">Total Goals</span><span className="plain-value">{totalGoals}</span></div>
-          <div className="summary-row"><span className="summary-label">Assists</span><span className="plain-value">{statsData.assists}</span></div>
-          <div className="summary-row"><span className="summary-label">Win Rate</span><span className={`badge badge-winrate-${winRateClass}`}>{winRate.toFixed(1)}%</span></div>
-          <div className="summary-row"><span className="summary-label">Errors</span><span className={`badge badge-error-${errorClass}`}>{statsData.errors}</span></div>
-          {/* ✅ MOTM row under Errors */}
+  const locationEntries = Object.entries(statsData.locationStats).filter(([loc]) => loc !== "Unknown").sort((a, b) => a[0].localeCompare(b[0]));
+  const locationData = locationEntries.map(([loc, data]) => {
+    const avgGoals = data.count > 0 ? data.goals / data.count : 0;
+    const avgAssists = data.count > 0 ? data.assists / data.count : 0;
+    const avgContrib = data.count > 0 ? (data.goals + data.assists) / data.count : 0;
+    return { loc, data, avgGoals, avgAssists, avgContrib };
+  });
+  const maxContrib = locationData.length > 0 ? Math.max(...locationData.map((d) => d.avgContrib)) : 0;
+
+  return (
+    <div className="player-card">
+      <h3 className="player-name">⚔️ {playerName} - Attacking Stats</h3>
+      <div className="summary-list">
+        <div className="summary-row"><span className="summary-label">Avg Rating</span><span className={`badge badge-rating-${ratingClass}`}>{avgRating.toFixed(2)}</span></div>
+        <div className="summary-row"><span className="summary-label">Matches</span><span className="plain-value">{totalMatches}</span></div>
+        <div className="summary-row"><span className="summary-label">Total Goals</span><span className="plain-value">{totalGoals}</span></div>
+        <div className="summary-row"><span className="summary-label">Assists</span><span className="plain-value">{statsData.assists}</span></div>
+        {/* ---- 新增：助攻给对方的行 ---- */}
+        {targetAssistPlayer && (
           <div className="summary-row">
-            <span className="summary-label">MOTM</span>
-            <span className="plain-value">{totalMotm}</span>
-          </div>
-        </div>
-        {totalGoals > 0 ? (
-          <div className="chart-container">
-            <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { color: "#475569", font: { family: "'Barlow', sans-serif", size: 12 } } } } }} />
-          </div>
-        ) : (<p className="no-data">No goal source data</p>)}
-        <FormTrendGraph matches={statsData.matches} />
-        <StreakTracker matches={statsData.matches} />
-        {locationData.length > 0 && (
-          <div className="location-section">
-            <div className="location-title">📍 地点表现</div>
-            <table className="location-table">
-              <thead><tr><th>Location</th><th>Matches</th><th>Avg Goals</th><th>Avg Assists</th><th>Avg Contrib</th></tr></thead>
-              <tbody>
-                {locationData.map(({ loc, data, avgGoals, avgAssists, avgContrib }) => (
-                  <tr key={loc} className={avgContrib === maxContrib && maxContrib > 0 ? "highlight" : ""}>
-                    <td>{loc}</td><td>{data.count}</td><td>{avgGoals.toFixed(2)}</td><td>{avgAssists.toFixed(2)}</td><td>{avgContrib.toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <span className="summary-label">Assists to {targetAssistPlayer}</span>
+            <span className="plain-value">{totalAssistTo}</span>
           </div>
         )}
+        {/* ---- 新增结束 ---- */}
+        <div className="summary-row"><span className="summary-label">Win Rate</span><span className={`badge badge-winrate-${winRateClass}`}>{winRate.toFixed(1)}%</span></div>
+        <div className="summary-row"><span className="summary-label">Errors</span><span className={`badge badge-error-${errorClass}`}>{statsData.errors}</span></div>
+        <div className="summary-row">
+          <span className="summary-label">MOTM</span>
+          <span className="plain-value">{totalMotm}</span>
+        </div>
       </div>
-    );
-  };
+      {totalGoals > 0 ? (
+        <div className="chart-container">
+          <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { color: "#475569", font: { family: "'Barlow', sans-serif", size: 12 } } } } }} />
+        </div>
+      ) : (<p className="no-data">No goal source data</p>)}
+      <FormTrendGraph matches={statsData.matches} />
+      <StreakTracker matches={statsData.matches} />
+      {locationData.length > 0 && (
+        <div className="location-section">
+          <div className="location-title">📍 地点表现</div>
+          <table className="location-table">
+            <thead><tr><th>Location</th><th>Matches</th><th>Avg Goals</th><th>Avg Assists</th><th>Avg Contrib</th></tr></thead>
+            <tbody>
+              {locationData.map(({ loc, data, avgGoals, avgAssists, avgContrib }) => (
+                <tr key={loc} className={avgContrib === maxContrib && maxContrib > 0 ? "highlight" : ""}>
+                  <td>{loc}</td><td>{data.count}</td><td>{avgGoals.toFixed(2)}</td><td>{avgAssists.toFixed(2)}</td><td>{avgContrib.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
 
   // ===== Render: Seasonal profile (other players) =====
   const renderSeasonalProfile = (playerName) => {
@@ -358,14 +379,6 @@ function StatsSummary({ stats }) {
   return (
     <div className="stats-summary-wrap">
       <h2 className="stats-header">Stats Summary</h2>
-
-      {/* ✅ Visible debug info */}
-      {debugInfo && (
-        <div style={{ padding: "8px 16px", marginBottom: "16px", background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "8px", fontSize: "13px", color: "#166534" }}>
-          {debugInfo} | Lineup players loaded: {Object.keys(lineupStats).join(", ") || "(none)"}
-        </div>
-      )}
-
       <div className="stats-layout">
         {/* Filter Panel */}
         <div className="filter-panel">

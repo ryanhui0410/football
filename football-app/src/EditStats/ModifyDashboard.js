@@ -99,6 +99,27 @@ function ModifyDashboard({ contributors, onSave }) {
     return '#dc2626';
   };
 
+  // 评分背景色（新规则）
+  const getRatingBgColor = (rating) => {
+    const r = parseFloat(rating);
+    if (isNaN(r)) return '#e2e8f0';
+    if (r > 9) return '#3b82f6';    // blue
+    if (r >= 7) return '#22c55e';   // green
+    if (r >= 5) return '#eab308';   // yellow
+    return '#ef4444';               // red
+  };
+
+  const splitSymbols = (symbolStr) => {
+    if (!symbolStr) return [];
+    const chars = [...symbolStr];
+    const rows = [];
+    const chunkSize = 5;
+    for (let i = 0; i < chars.length; i += chunkSize) {
+      rows.push(chars.slice(i, i + chunkSize));
+    }
+    return rows;
+  };
+
   const calcTeamAverage = (teamObj) => {
     if (!teamObj?.players) return null;
     const ratings = Object.values(teamObj.players)
@@ -119,29 +140,26 @@ function ModifyDashboard({ contributors, onSave }) {
     ) || null;
   };
 
-  // ✅ Enrich lineup players with MOTM flag from stats data
   const enrichLineupWithMotm = (lineup) => {
-  if (!lineup || !matchStatsData.length) return lineup;
-  const enriched = JSON.parse(JSON.stringify(lineup)); // deep clone
-  ['teamA', 'teamB'].forEach(team => {
-    if (!enriched[team]?.players) return;
-    Object.keys(enriched[team].players).forEach(slotId => {
-      const player = enriched[team].players[slotId];
-      const stat = getPlayerMatchStats(
-        player.Contributor,
-        enriched.date,
-        enriched.location,
-        enriched.time
-      );
-      // ✅ Add MOTM flag
-      player.isMotm = stat?.["Man of the Match"] === true;
-      // ✅ Add goals and assists for symbol rendering in MatchLineup
-      player.goals = parseInt(stat?.Goal) || 0;
-      player.assists = parseInt(stat?.Assist) || 0;
+    if (!lineup || !matchStatsData.length) return lineup;
+    const enriched = JSON.parse(JSON.stringify(lineup));
+    ['teamA', 'teamB'].forEach(team => {
+      if (!enriched[team]?.players) return;
+      Object.keys(enriched[team].players).forEach(slotId => {
+        const player = enriched[team].players[slotId];
+        const stat = getPlayerMatchStats(
+          player.Contributor,
+          enriched.date,
+          enriched.location,
+          enriched.time
+        );
+        player.isMotm = stat?.["Man of the Match"] === true;
+        player.goals = parseInt(stat?.Goal) || 0;
+        player.assists = parseInt(stat?.Assist) || 0;
+      });
     });
-  });
-  return enriched;
-};
+    return enriched;
+  };
 
   const fetchAndOpenReport = async (editMode = false) => {
     try {
@@ -212,12 +230,12 @@ function ModifyDashboard({ contributors, onSave }) {
             <table className="md-table">
               <thead className="md-thead">
                 <tr>
-                  <th className="md-th">Date & Location</th>
-                  <th className="md-th center">Match Result</th>
-                  <th className="md-th center">Contributions</th>
-                  <th className="md-th center">Goals / Assists</th>
-                  <th className="md-th center">Rating</th>
-                  <th className="md-th center">Action</th>
+                  <th className="md-th md-th-date">Date & Location</th>
+                  <th className="md-th md-th-result center">Match Result</th>
+                  <th className="md-th md-th-contrib center">Contributions</th>
+                  <th className="md-th md-th-stats center">Goals / Assists</th>
+                  <th className="md-th md-th-rating center">Rating</th>
+                  <th className="md-th md-th-action center">Action</th>
                 </tr>
               </thead>
               <tbody className="md-tbody">
@@ -231,13 +249,25 @@ function ModifyDashboard({ contributors, onSave }) {
                         <div className="md-location">📍 {match.location || "Unknown"}</div>
                       </td>
                       <td className="md-td center" data-label="Match Result">
-                        <div className="md-result-box">
+                        <div className={`md-result-box ${match.winLoss ? match.winLoss.toLowerCase() : ''}`}>
                           <div className="md-score">{match.matchResult || "—"}</div>
                           {match.winLoss && <div className={`md-outcome ${match.winLoss.toLowerCase()}`}>{match.winLoss}</div>}
                         </div>
                       </td>
                       <td className="md-td center" data-label="Contributions">
-                        <div className={`md-symbols ${!match.symbol ? 'empty' : ''}`}>{match.symbol || "No symbols"}</div>
+                        {match.symbol ? (
+                          <div className="md-symbols-wrapper">
+                            {splitSymbols(match.symbol).map((row, rowIdx) => (
+                              <div key={rowIdx} className="md-symbols-row">
+                                {row.map((ch, idx) => (
+                                  <span key={idx} className="md-symbol-icon">{ch}</span>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="md-symbols empty">No symbols</span>
+                        )}
                       </td>
                       <td className="md-td center" data-label="Goals / Assists">
                         <div className="md-stat-box">
@@ -245,7 +275,25 @@ function ModifyDashboard({ contributors, onSave }) {
                           <div className="md-stat"><div className="md-stat-val">{match.assist || 0}</div><div className="md-stat-label">Assists</div></div>
                         </div>
                       </td>
-                      <td className="md-td center" data-label="Rating"><span className="md-rating">{match.rating || "—"}</span></td>
+                      <td className="md-td center" data-label="Rating">
+                        {match.manOfTheMatch ? (
+                          <span className="md-rating-motm-wrapper">
+                            <span 
+                              className="md-rating md-rating-motm" 
+                              style={{ backgroundColor: getRatingBgColor(match.rating) }}
+                            >
+                              {match.rating || "—"}
+                            </span>
+                          </span>
+                        ) : (
+                          <span 
+                            className="md-rating" 
+                            style={{ backgroundColor: getRatingBgColor(match.rating) }}
+                          >
+                            {match.rating || "—"}
+                          </span>
+                        )}
+                      </td>
                       <td className="md-td center" data-label="Action">
                         <div className="md-action-btns">
                           <button className="md-edit-btn" onClick={(e) => { e.stopPropagation(); openModal(match, contributor.name); }}>Edit</button>
