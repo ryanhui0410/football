@@ -119,7 +119,14 @@ function ModifyDashboard({ contributors, onSave }) {
 
     // Add this state at the top of ModifyDashboard
   const [reportEditMode, setReportEditMode] = useState(false);
-
+  // ✅ ADD THIS: Update matchReport state when lineup changes
+  const handleLineupChange = (newLineup) => {
+    setMatchReport(prev => ({
+      ...prev,
+      teamA: newLineup.teamA,
+      teamB: newLineup.teamB,
+    }));
+  };
   // Update fetchAndOpenReport to accept editMode flag
   const fetchAndOpenReport = async (editMode = false) => {
     try {
@@ -351,15 +358,16 @@ function ModifyDashboard({ contributors, onSave }) {
                 {reportEditMode ? 'Edit Lineup & Ratings' : 'Tactical Lineup'}
               </h3>
               <MatchLineup
-                matchData={{ Date: matchReport.date, Location: matchReport.location, Time: matchReport.time }}
-                initialLineup={matchReport}
-                readOnly={!reportEditMode}
-                editMode={reportEditMode}
-                layout="horizontal"
-                getRatingColor={getRatingColor}
-                availablePlayers={reportEditMode ? contributors.flatMap(c => c.matches.map(m => ({ Contributor: c.name, position: m.position }))) : []}
-                getPlayerMatchStats={getPlayerMatchStats}
-              />
+                  matchData={{ Date: matchReport.date, Location: matchReport.location, Time: matchReport.time }}
+                  initialLineup={matchReport}
+                  readOnly={!reportEditMode}
+                  editMode={reportEditMode}
+                  layout="horizontal"
+                  getRatingColor={getRatingColor}
+                  onLineupChange={handleLineupChange}   // ✅ ADD THIS LINE
+                  availablePlayers={reportEditMode ? contributors.flatMap(c => c.matches.map(m => ({ Contributor: c.name, position: m.position }))) : []}
+                  getPlayerMatchStats={getPlayerMatchStats}
+                />
             </div>
 
             {/* ✅ SAVE BUTTON (only in edit mode) */}
