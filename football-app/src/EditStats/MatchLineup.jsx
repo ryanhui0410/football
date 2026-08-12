@@ -90,14 +90,15 @@ function MatchLineup({
   }, [initialLineup]);
 
   // Notify parent of changes
-  useEffect(() => {
-    if (editMode && onLineupChange) {
-      onLineupChange({
-        teamA: { formation: teamAFormation, players: teamAPlayers },
-        teamB: { formation: teamBFormation, players: teamBPlayers }
-      });
-    }
-  }, [teamAFormation, teamBFormation, teamAPlayers, teamBPlayers, editMode, onLineupChange]);
+  // Inside MatchLineup.js - after ANY state change to teamAPlayers or teamBPlayers:
+useEffect(() => {
+  if (editMode && onLineupChange) {
+    onLineupChange({
+      teamA: { formation: teamAFormation, players: teamAPlayers },
+      teamB: { formation: teamBFormation, players: teamBPlayers },
+    });
+  }
+}, [teamAFormation, teamBFormation, teamAPlayers, teamBPlayers, editMode, onLineupChange]);
 
   // --- Player Picker Logic ---
   const handleEmptySlotClick = (team, slotId, position) => {

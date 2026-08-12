@@ -71,30 +71,29 @@ function EditMatchPage() {
 
   const handleSaveLineup = async (lineupData) => {
   if (!formData) return;
-  
+
   const payload = {
-    date: formData.Date,          // ← Must match match_lineups.json format exactly
-    location: formData.Location,  // ← e.g., "傑志" not "Kitchee"
-    time: formData.Time,          // ← e.g., "10:30 AM" not "10:30"
-    teamA: lineupData.teamA,
-    teamB: lineupData.teamB
+    date: formData.Date,
+    location: formData.Location,
+    time: formData.Time,
+    teamA: lineupData.teamA,   // ← Send the FULL object with formation + players
+    teamB: lineupData.teamB,   // ← Send the FULL object with formation + players
   };
 
-  console.log("📤 Sending lineup payload:", payload); // ← ADD THIS
+  console.log("📤 Sending lineup payload:", JSON.stringify(payload, null, 2)); // ← Verify this!
 
-  const res = await fetch("http://localhost:5000/match-lineups", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-  
-  const result = await res.json();
-  console.log("📥 Server response:", result); // ← ADD THIS
-  
-  if (result.error) {
-    alert(`❌ ${result.error}`);
-  } else {
-    alert("✅ Match Report updated");
+  try {
+    const res = await fetch("http://localhost:5000/match-lineups", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = await res.json();
+    console.log("📥 Server response:", result);
+    alert("✅ Match Report saved!");
+  } catch (err) {
+    console.error("Save failed:", err);
+    alert("❌ Failed to save match report");
   }
 };
 
@@ -233,42 +232,51 @@ function EditMatchPage() {
           )}
         </div>
 
-        {isEditingLineup && lineupData ? (
-          <>
-            <MatchLineup
-              matchData={{ Date: formData.Date, Location: formData.Location, Time: formData.Time }}
-              initialLineup={lineupData}
-              readOnly={false}
-              editMode={true}
-              layout="horizontal"
-              availablePlayers={availablePlayers}
-              getRatingColor={getRatingColor}
-              onLineupChange={setLineupData}
-            />
-            <div style={{ marginTop: '16px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button 
-                onClick={() => setIsEditingLineup(false)}
-                style={{ padding: '10px 20px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={() => handleSaveLineup(lineupData)}
-                style={{ padding: '10px 20px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
-              >
-                💾 Save Lineup
-              </button>
-            </div>
-          </>
-        ) : (
-          <MatchLineup
-            matchData={{ Date: formData.Date, Location: formData.Location, Time: formData.Time }}
-            initialLineup={lineupData}
-            readOnly={true}
-            layout="horizontal"
-            getRatingColor={getRatingColor}
-          />
-        )}
+        {isEditingLineup ? (
+  <>
+    <MatchLineup
+      matchData={{ Date: formData.Date, Location: formData.Location, Time: formData.Time }}
+      initialLineup={lineupData || { teamA: { formation: "4-4-2", players: {} }, teamB: { formation: "4-4-2", players: {} } }}
+      readOnly={false}
+      editMode={true}
+      layout="horizontal"
+      availablePlayers={availablePlayers}
+      getRatingColor={getRatingColor}
+      onLineupChange={(newLineup) => {
+        // ✅ Merge date/location/time into lineupData so save payload is complete
+        setLineupData({
+          date: formData.Date,
+          location: formData.Location,
+          time: formData.Time,
+          ...newLineup,
+        });
+      }}
+    />
+    <div style={{ marginTop: '16px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+      <button 
+        onClick={() => setIsEditingLineup(false)}
+        style={{ padding: '10px 20px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+      >
+        Cancel
+      </button>
+      <button 
+        onClick={() => handleSaveLineup(lineupData)}
+        disabled={!lineupData}
+        style={{ 
+          padding: '10px 20px', 
+          background: lineupData ? '#10b981' : '#94a3b8', 
+          color: '#fff', 
+          border: 'none', 
+          borderRadius: '6px', 
+          cursor: lineupData ? 'pointer' : 'not-allowed', 
+          fontWeight: 600 
+        }}
+      >
+        💾 Save Lineup
+      </button>
+    </div>
+  </>
+) : null}
       </section>
 
       {/* ---- Actions ---- */}
