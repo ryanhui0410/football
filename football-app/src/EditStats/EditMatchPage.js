@@ -69,30 +69,34 @@ function EditMatchPage() {
     navigate("/modify");
   };
 
-  const handleSaveLineup = async (newLineup) => {
-    if (!formData) return;
-    
-    const payload = {
-      date: formData.Date,
-      location: formData.Location,
-      time: formData.Time,
-      teamA: newLineup.teamA,
-      teamB: newLineup.teamB
-    };
-
-    try {
-      await fetch("http://localhost:5000/match-lineups", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      alert("✅ Lineup saved successfully!");
-      setIsEditingLineup(false);
-    } catch (err) {
-      console.error("Save failed:", err);
-      alert("❌ Failed to save lineup");
-    }
+  const handleSaveLineup = async (lineupData) => {
+  if (!formData) return;
+  
+  const payload = {
+    date: formData.Date,          // ← Must match match_lineups.json format exactly
+    location: formData.Location,  // ← e.g., "傑志" not "Kitchee"
+    time: formData.Time,          // ← e.g., "10:30 AM" not "10:30"
+    teamA: lineupData.teamA,
+    teamB: lineupData.teamB
   };
+
+  console.log("📤 Sending lineup payload:", payload); // ← ADD THIS
+
+  const res = await fetch("http://localhost:5000/match-lineups", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  
+  const result = await res.json();
+  console.log("📥 Server response:", result); // ← ADD THIS
+  
+  if (result.error) {
+    alert(`❌ ${result.error}`);
+  } else {
+    alert("✅ Match Report updated");
+  }
+};
 
   function calculateWinLoss(resultStr) {
     if (!resultStr) return "";

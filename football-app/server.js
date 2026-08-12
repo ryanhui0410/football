@@ -247,47 +247,77 @@ function writeLineups(data) {
 app.post("/match-lineups", async (req, res) => {
   try {
     const lineup = req.body;
+    
+    // ✅ ADD DEBUG LOGGING
+    console.log("📥 Received lineup payload:", JSON.stringify({
+      date: lineup.date,
+      location: lineup.location, 
+      time: lineup.time,
+      hasTeamA: !!lineup.teamA,
+      hasTeamB: !!lineup.teamB
+    }, null, 2));
+
     if (!lineup.date) return res.status(400).json({ error: "Missing date" });
 
-    // Pull latest before saving to avoid conflicts
     await git.pull('origin', 'main', ['--rebase']).catch(() => {});
 
     const data = readLineups();
-    // In server.js -> app.post("/match-lineups")
+    
+    // ✅ NORMALIZE before comparison
+    const normDate = (lineup.date || "").trim();
+    const normLoc  = (lineup.location || "").trim();
+    const normTime = (lineup.time || "").trim();
 
-    // To this:
+    console.log(`🔍 Searching for: date="${normDate}" loc="${normLoc}" time="${normTime}"`);
+    console.log(`📋 Existing entries: ${data.length}`);
+    data.forEach((l, i) => {
+      console.log(`  [${i}] date="${l.date}" loc="${l.location}" time="${l.time}"`);
+    });
+
     const index = data.findIndex(l => 
-      l.date === lineup.date && 
-      l.location === lineup.location && 
-      l.time === lineup.time
+      (l.date || "").trim() === normDate && 
+      (l.location || "").trim() === normLoc && 
+      (l.time || "").trim() === normTime
     );
 
-    if (index === -1) data.push(lineup);
-    else data[index] = lineup;
+    console.log(`🎯 Match index: ${index}`);
+
+    // ✅ Ensure the saved object always has date/location/time
+    const normalizedLineup = {
+      date: normDate,
+      location: normLoc,
+      time: normTime,
+      teamA: lineup.teamA || { formation: "4-4-2", players: {} },
+      teamB: lineup.teamB || { formation: "4-4-2", players: {} }
+    };
+
+    if (index === -1) {
+      data.push(normalizedLineup);
+      console.log(`➕ Created NEW lineup for ${normDate}`);
+    } else {
+      data[index] = normalizedLineup;
+      console.log(`🔄 UPDATED existing lineup at index ${index}`);
+    }
 
     writeLineups(data);
 
-    // 🔽 UPDATED GIT SYNC LOGIC 🔽
     await git.add(".");
     try {
-      await git.commit(`Update lineup for ${lineup.date}`);
+      await git.commit(`Update lineup for ${normDate}`);
       await git.push('origin', 'main');
-      console.log(`✅ Git sync successful for lineup: ${lineup.date}`);
+      console.log(`✅ Git sync successful for lineup: ${normDate}`);
     } catch (gitErr) {
-      // Ignore "nothing to commit" errors so it doesn't falsely return a 500 to the frontend
       if (gitErr.message && !gitErr.message.includes("nothing to commit")) {
-         console.error("⚠️ Git push warning:", gitErr.message);
+        console.error("⚠️ Git push warning:", gitErr.message);
       }
     }
-    // 🔼 UPDATED GIT SYNC LOGIC 🔼
 
-    res.json({ message: "✅ Lineup saved" });
+    res.json({ message: "✅ Lineup saved", index, isNew: index === -1 });
   } catch (err) {
-    console.error("Lineup save error:", err);
-    res.status(500).json({ error: "Failed to save lineup" });
+    console.error("❌ Lineup save error:", err);
+    res.status(500).json({ error: "Failed to save lineup", details: err.message });
   }
 });
-
 app.get("/match-lineups", (req, res) => {
   res.json(readLineups());
 });
