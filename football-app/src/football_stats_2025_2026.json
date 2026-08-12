@@ -2341,7 +2341,8 @@
     "Match result": "8-4",
     "Win/Loss?": "Win",
     "Assist to": "Darren",
-    "Assist to count": 1
+    "Assist to count": 1,
+    "Man of the Match": true
   },
   {
     "Date": "8/9/2026",
@@ -2362,6 +2363,7 @@
     "Match result": "8-4",
     "Win/Loss?": "Win",
     "Assist to": "Ryan",
-    "Assist to count": 3
+    "Assist to count": 3,
+    "Man of the Match": false
   }
 ]

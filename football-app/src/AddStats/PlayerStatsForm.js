@@ -4,26 +4,16 @@ import "./PlayerStatsForm.css";
 // ---------- Scoreboard stepper ----------
 function Stepper({ label, name, value, onChange, min = 0, max = 99 }) {
   const current = parseFloat(value) || 0;
-
   const adjust = (dir) => {
     const next = Math.min(max, Math.max(min, current + dir));
     onChange({ target: { name, value: String(next) } });
   };
-
   return (
     <div className="stepper">
       <span className="stepper-label">{label}</span>
       <div className="stepper-controls">
         <button type="button" className="step-btn" onClick={() => adjust(-1)} disabled={current <= min}>−</button>
-        <input
-          type="text"
-          inputMode="numeric"
-          className="step-value"
-          name={name}
-          value={value}
-          onChange={onChange}
-          autoComplete="off"
-        />
+        <input type="text" inputMode="numeric" className="step-value" name={name} value={value} onChange={onChange} autoComplete="off" />
         <button type="button" className="step-btn" onClick={() => adjust(1)} disabled={current >= max}>+</button>
       </div>
     </div>
@@ -39,57 +29,37 @@ function RatingSlider({ label, name, value, onChange }) {
         <span className="stepper-label">{label}</span>
         <span className="rating-badge">{num.toFixed(1)}</span>
       </div>
-      <input
-        type="range"
-        className="rating-slider"
-        name={name}
-        min="0"
-        max="10"
-        step="0.1"
-        value={num}
-        onChange={onChange}
-        style={{ "--fill": `${num * 10}%` }}
-      />
+      <input type="range" className="rating-slider" name={name} min="0" max="10" step="0.1" value={num} onChange={onChange} style={{ "--fill": `${num * 10}%` }} />
       <div className="rating-scale"><span>0</span><span>5</span><span>10</span></div>
     </div>
   );
 }
+
 // ---------- Match result: Us–Them scoreline ----------
 function ScorelineInput({ value, onChange }) {
   const parts = (value || "").split("-");
   const us = parts[0] || "";
   const them = parts[1] || "";
-
   const setSide = (side, raw) => {
-    const clean = raw.replace(/\D/g, ""); // digits only
+    const clean = raw.replace(/\D/g, "");
     const nextUs = side === "us" ? clean : us;
     const nextThem = side === "them" ? clean : them;
     onChange({ target: { name: "MatchResult", value: `${nextUs}-${nextThem}` } });
   };
-
   const bump = (side, dir) => {
     const cur = parseInt(side === "us" ? us : them) || 0;
     setSide(side, String(Math.max(0, Math.min(99, cur + dir))));
   };
-
   const Side = ({ side, tag, cls, val }) => (
     <div className="score-side">
       <span className={`score-tag ${cls}`}>{tag}</span>
       <div className="stepper-controls">
         <button type="button" className="step-btn" onClick={() => bump(side, -1)}>−</button>
-        <input
-          type="text"
-          inputMode="numeric"
-          className="step-value"
-          value={val}
-          onChange={(e) => setSide(side, e.target.value)}
-          autoComplete="off"
-        />
+        <input type="text" inputMode="numeric" className="step-value" value={val} onChange={(e) => setSide(side, e.target.value)} autoComplete="off" />
         <button type="button" className="step-btn" onClick={() => bump(side, 1)}>+</button>
       </div>
     </div>
   );
-
   return (
     <div className="scoreline">
       <span className="stepper-label">Match Result</span>
@@ -114,12 +84,7 @@ function ResultToggle({ value, onChange }) {
       <span className="stepper-label">Win / Loss</span>
       <div className="result-options">
         {options.map((o) => (
-          <button
-            key={o.key}
-            type="button"
-            className={`result-btn ${o.cls} ${value === o.key ? "active" : ""}`}
-            onClick={() => onChange({ target: { name: "WinLoss", value: o.key } })}
-          >
+          <button key={o.key} type="button" className={`result-btn ${o.cls} ${value === o.key ? "active" : ""}`} onClick={() => onChange({ target: { name: "WinLoss", value: o.key } })}>
             {o.key}
           </button>
         ))}
@@ -127,27 +92,45 @@ function ResultToggle({ value, onChange }) {
     </div>
   );
 }
+
+// ✅ NEW: Man of the Match Toggle
+function MotmToggle({ value, onChange }) {
+  return (
+    <div className="motm-toggle">
+      <span className="stepper-label">Man of the Match</span>
+      <button
+        type="button"
+        className={`motm-btn ${value ? "active" : ""}`}
+        onClick={() => onChange({ target: { name: "ManOfTheMatch", value: !value } })}
+      >
+        <span className="motm-icon">🏆</span>
+        <span className="motm-text">{value ? "YES — MOTM" : "Not MOTM"}</span>
+      </button>
+    </div>
+  );
+}
+
 function PlayerStatsForm({ formData, handleChange, handleSubmit, onCancel, history = {} }) {
   const { contributors = [], locations = [], times = [], sources = [] } = history;
 
-  // ---- Goal tally validation: Goal = LF + RF + Head + Other ----
   const n = (v) => parseFloat(v) || 0;
   const goal      = n(formData.Goal);
-  const assist    = n(formData.Assist);   // ← ADD THIS LINE
+  const assist    = n(formData.Assist);
   const leftFoot  = n(formData.LeftFoot);
   const rightFoot = n(formData.RightFoot);
   const head      = n(formData.Head);
   const other     = n(formData.OtherBodyParts);
   const bodyTotal = leftFoot + rightFoot + head + other;
   const tallyOk   = goal === bodyTotal;
-    // ---- Assist-to detail (Ryan ↔ Darren only) ----
+
   const contributor = (formData.Contributor || "").trim();
   const cLower = contributor.toLowerCase();
   const assistRecipient = cLower === "ryan" ? "Darren" : cLower === "darren" ? "Ryan" : "";
   const showAssistTo = assistRecipient !== "" && assist > 0;
+
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (!tallyOk) return; // 🚫 block save until tally balances
+    if (!tallyOk) return;
     handleSubmit(e);
   };
 
@@ -184,12 +167,7 @@ function PlayerStatsForm({ formData, handleChange, handleSubmit, onCancel, histo
             <div className="field-box" key={f.name}>
               <label className="info-label">
                 {f.label}
-                <input
-                  type="text"
-                  name={f.name}
-                  value={formData[f.name]}
-                  onChange={handleChange}
-                  autoComplete="off"
+                <input type="text" name={f.name} value={formData[f.name]} onChange={handleChange} autoComplete="off"
                   {...(f.placeholder && { placeholder: f.placeholder })}
                   {...(f.pattern && { pattern: f.pattern })}
                   {...(f.title && { title: f.title })}
@@ -205,7 +183,8 @@ function PlayerStatsForm({ formData, handleChange, handleSubmit, onCancel, histo
           ))}
         </div>
       </section>
-            {/* ---- Match outcome ---- */}
+
+      {/* ---- Match outcome ---- */}
       <section className="form-section">
         <h3 className="section-title">Match Outcome</h3>
         <div className="outcome-grid">
@@ -213,6 +192,7 @@ function PlayerStatsForm({ formData, handleChange, handleSubmit, onCancel, histo
           <ResultToggle value={formData.WinLoss} onChange={handleChange} />
         </div>
       </section>
+
       {/* ---- Scoreboard ---- */}
       <section className="form-section">
         <h3 className="section-title">Scoreboard</h3>
@@ -227,32 +207,28 @@ function PlayerStatsForm({ formData, handleChange, handleSubmit, onCancel, histo
         {tallyOk ? (
           <div className="tally-bar ok">
             <span className="tally-icon">✓</span>
-            <span>
-              <strong>TALLY OK</strong> — Goal ({goal}) = Left Foot ({leftFoot}) + Right Foot ({rightFoot}) + Head ({head}) + Other ({other})
-            </span>
+            <span><strong>TALLY OK</strong> — Goal ({goal}) = Left Foot ({leftFoot}) + Right Foot ({rightFoot}) + Head ({head}) + Other ({other})</span>
           </div>
         ) : (
           <div className="tally-bar error" role="alert">
             <span className="red-card" aria-hidden="true"></span>
-            <span>
-              <strong>VAR CHECK — GOAL MISMATCH!</strong> Goal ({goal}) must equal Left Foot ({leftFoot}) + Right Foot ({rightFoot}) + Head ({head}) + Other ({other}) = <strong>{bodyTotal}</strong>. Off by <strong>{Math.abs(goal - bodyTotal)}</strong>.
-            </span>
+            <span><strong>VAR CHECK — GOAL MISMATCH!</strong> Goal ({goal}) must equal Left Foot ({leftFoot}) + Right Foot ({rightFoot}) + Head ({head}) + Other ({other}) = <strong>{bodyTotal}</strong>. Off by <strong>{Math.abs(goal - bodyTotal)}</strong>.</span>
           </div>
         )}
       </section>
-            {/* ---- Assist detail (only for Ryan/Darren with assists) ---- */}
+
+      {/* ✅ NEW: Man of the Match Section */}
+      <section className="form-section">
+        <h3 className="section-title">Recognition</h3>
+        <MotmToggle value={!!formData.ManOfTheMatch} onChange={handleChange} />
+      </section>
+
+      {/* ---- Assist detail (only for Ryan/Darren with assists) ---- */}
       {showAssistTo && (
         <section className="form-section">
           <h3 className="section-title">Assist Detail</h3>
           <div className="assist-to-grid">
-            <Stepper
-              label={`No. of assist to ${assistRecipient}`}
-              name="AssistTo"
-              value={formData.AssistTo}
-              onChange={handleChange}
-              min={0}
-              max={assist}
-            />
+            <Stepper label={`No. of assist to ${assistRecipient}`} name="AssistTo" value={formData.AssistTo} onChange={handleChange} min={0} max={assist} />
             <div className="assist-to-note">
               <span className="assist-to-hint">
                 {contributor} had <strong>{assist}</strong> assist{assist !== 1 ? "s" : ""} — how many went to <strong>{assistRecipient}</strong>?
@@ -261,6 +237,7 @@ function PlayerStatsForm({ formData, handleChange, handleSubmit, onCancel, histo
           </div>
         </section>
       )}
+
       <div className="form-actions">
         <button type="submit" className="btn-save" disabled={!tallyOk}>Save Stats</button>
         <button type="button" className="btn-cancel" onClick={onCancel}>Cancel</button>

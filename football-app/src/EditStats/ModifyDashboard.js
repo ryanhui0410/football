@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import EditMatchModal from "./EditMatchModal";
-import HeadToHeadCompare from "./HeadToHeadCompare"; 
-import MatchStatsModal from "./MatchStatsModal"; 
+import HeadToHeadCompare from "./HeadToHeadCompare";
+import MatchStatsModal from "./MatchStatsModal";
 import "./ModifyDashboard.css";
-import MatchLineup from "./MatchLineup"; 
+import MatchLineup from "./MatchLineup";
 
 function ModifyDashboard({ contributors, onSave }) {
   const [selectedMatch, setSelectedMatch] = useState(null);
@@ -11,10 +11,12 @@ function ModifyDashboard({ contributors, onSave }) {
   const [compareMenu, setCompareMenu] = useState(null);
   const [statsModalOpen, setStatsModalOpen] = useState(false);
   const [selectedStats, setSelectedStats] = useState(null);
-  const [choiceMatch, setChoiceMatch] = useState(null); 
-  const [matchReport, setMatchReport] = useState(null); 
+  const [choiceMatch, setChoiceMatch] = useState(null);
+  const [matchReport, setMatchReport] = useState(null);
   const [matchStatsData, setMatchStatsData] = useState([]);
   const [activeFilter, setActiveFilter] = useState("All");
+  const [reportEditMode, setReportEditMode] = useState(false);
+
   const contributorNames = ["All", ...contributors.map(c => c.name)];
   const filteredContributors = activeFilter === "All" ? contributors : contributors.filter(c => c.name === activeFilter);
 
@@ -39,7 +41,7 @@ function ModifyDashboard({ contributors, onSave }) {
     const players = [];
     contributors.forEach(contrib => {
       if (contrib.name !== currentContributorName) {
-        const matchingMatch = contrib.matches.find(m => 
+        const matchingMatch = contrib.matches.find(m =>
           m.date === currentMatch.date && m.location === currentMatch.location && m.time === currentMatch.time
         );
         if (matchingMatch) players.push({ name: contrib.name, match: matchingMatch });
@@ -84,7 +86,7 @@ function ModifyDashboard({ contributors, onSave }) {
   const parseDate = (dateStr) => {
     if (!dateStr) return new Date(0);
     const parts = dateStr.split('/');
-    if (parts.length === 3) return new Date(parts[2], parts[0] - 1, parts[1]); 
+    if (parts.length === 3) return new Date(parts[2], parts[0] - 1, parts[1]);
     return new Date(dateStr);
   };
 
@@ -117,17 +119,26 @@ function ModifyDashboard({ contributors, onSave }) {
     ) || null;
   };
 
-    // Add this state at the top of ModifyDashboard
-  const [reportEditMode, setReportEditMode] = useState(false);
-  // ✅ ADD THIS: Update matchReport state when lineup changes
-  const handleLineupChange = (newLineup) => {
-    setMatchReport(prev => ({
-      ...prev,
-      teamA: newLineup.teamA,
-      teamB: newLineup.teamB,
-    }));
+  // ✅ Enrich lineup players with MOTM flag from stats data
+  const enrichLineupWithMotm = (lineup) => {
+    if (!lineup || !matchStatsData.length) return lineup;
+    const enriched = JSON.parse(JSON.stringify(lineup)); // deep clone
+    ['teamA', 'teamB'].forEach(team => {
+      if (!enriched[team]?.players) return;
+      Object.keys(enriched[team].players).forEach(slotId => {
+        const player = enriched[team].players[slotId];
+        const stat = getPlayerMatchStats(
+          player.Contributor,
+          enriched.date,
+          enriched.location,
+          enriched.time
+        );
+        player.isMotm = stat?.["Man of the Match"] === true;
+      });
+    });
+    return enriched;
   };
-  // Update fetchAndOpenReport to accept editMode flag
+
   const fetchAndOpenReport = async (editMode = false) => {
     try {
       const [lineupsRes, statsRes] = await Promise.all([
@@ -150,9 +161,8 @@ function ModifyDashboard({ contributors, onSave }) {
       if (found) {
         setMatchReport(found);
         setMatchStatsData(stats);
-        setReportEditMode(editMode); // ✅ Store edit mode
+        setReportEditMode(editMode);
       } else {
-        // If no report exists yet and user wants to edit, create empty template
         if (editMode) {
           setMatchReport({
             date: targetDate,
@@ -259,8 +269,8 @@ function ModifyDashboard({ contributors, onSave }) {
       {selectedMatch && <EditMatchModal match={selectedMatch} onClose={closeModal} onSave={onSave} />}
       <HeadToHeadCompare open={!!compareData} onClose={closeCompare} compareData={compareData} />
       <MatchStatsModal open={statsModalOpen} match={selectedStats} onClose={() => setStatsModalOpen(false)} />
-      
-            {/* CHOICE MODAL */}
+
+      {/* CHOICE MODAL */}
       {choiceMatch && !matchReport && (
         <div className="choice-overlay" onClick={() => setChoiceMatch(null)}>
           <div className="choice-modal" onClick={e => e.stopPropagation()}>
@@ -274,14 +284,9 @@ function ModifyDashboard({ contributors, onSave }) {
               <button className="choice-btn report" onClick={() => fetchAndOpenReport()}>
                 ⚽ <span>View Match Report</span>
               </button>
-              {/* ✅ NEW EDIT BUTTON */}
-              <button 
-                className="choice-btn edit-report" 
-                onClick={() => {
-                  // Navigate to edit mode or set state to open editable lineup
-                  // For now, we'll reuse the report overlay but in edit mode
-                  fetchAndOpenReport(true); // Pass true for editMode
-                }}
+              <button
+                className="choice-btn edit-report"
+                onClick={() => fetchAndOpenReport(true)}
               >
                 ✏️ <span>Edit Match Report</span>
               </button>
@@ -290,8 +295,7 @@ function ModifyDashboard({ contributors, onSave }) {
         </div>
       )}
 
-      {/* VIEW MODE OVERLAY */}
-            {/* VIEW/EDIT MODE OVERLAY */}
+      {/* VIEW/EDIT MODE OVERLAY */}
       {matchReport && (
         <div className="report-overlay" onClick={() => { setMatchReport(null); setReportEditMode(false); }}>
           <div className="report-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '1000px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: '25px' }}>
@@ -303,7 +307,6 @@ function ModifyDashboard({ contributors, onSave }) {
 
             {/* SMART RESULT HEADER (only in view mode) */}
             {!reportEditMode && (() => {
-              // ... existing smart result header code stays the same ...
               const allPlayers = [
                 ...Object.values(matchReport.teamA?.players || {}),
                 ...Object.values(matchReport.teamB?.players || {})
@@ -358,23 +361,22 @@ function ModifyDashboard({ contributors, onSave }) {
                 {reportEditMode ? 'Edit Lineup & Ratings' : 'Tactical Lineup'}
               </h3>
               <MatchLineup
-                  matchData={{ Date: matchReport.date, Location: matchReport.location, Time: matchReport.time }}
-                  initialLineup={matchReport}
-                  readOnly={!reportEditMode}
-                  editMode={reportEditMode}
-                  layout="horizontal"
-                  getRatingColor={getRatingColor}
-                  onLineupChange={handleLineupChange}   // ✅ ADD THIS LINE
-                  availablePlayers={reportEditMode ? contributors.flatMap(c => c.matches.map(m => ({ Contributor: c.name, position: m.position }))) : []}
-                  getPlayerMatchStats={getPlayerMatchStats}
-                />
+                matchData={{ Date: matchReport.date, Location: matchReport.location, Time: matchReport.time }}
+                initialLineup={reportEditMode ? matchReport : enrichLineupWithMotm(matchReport)}
+                readOnly={!reportEditMode}
+                editMode={reportEditMode}
+                layout="horizontal"
+                getRatingColor={getRatingColor}
+                availablePlayers={reportEditMode ? contributors.flatMap(c => c.matches.map(m => ({ Contributor: c.name, position: m.position }))) : []}
+                getPlayerMatchStats={getPlayerMatchStats}
+              />
             </div>
 
-            {/* ✅ SAVE BUTTON (only in edit mode) */}
+            {/* SAVE BUTTON (only in edit mode) */}
             {reportEditMode && (
               <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <button 
-                  className="md-edit-btn" 
+                <button
+                  className="md-edit-btn"
                   style={{ padding: '12px 32px', fontSize: '16px' }}
                   onClick={async () => {
                     try {
@@ -386,7 +388,7 @@ function ModifyDashboard({ contributors, onSave }) {
                       alert("✅ Match report saved!");
                       setReportEditMode(false);
                       setMatchReport(null);
-                      onSave(); // Refresh parent data
+                      onSave();
                     } catch (err) {
                       alert("❌ Failed to save");
                     }

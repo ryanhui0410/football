@@ -82,6 +82,7 @@ function formatStat(raw) {
     "Win/Loss?":       raw["Win/Loss?"]    ?? raw.WinLoss    ?? "",   // ← new
     "Assist to":       assistToCount > 0 ? assistRecipient : "",
     "Assist to count": assistToCount,
+    "Man of the Match": motm, 
   };
 }
 

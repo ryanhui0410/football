@@ -84,7 +84,8 @@ function App() {
     OtherBodyParts: "",
     MatchResult: "",
     WinLoss: "",
-    AssistTo: "",        // ← just add this one line
+    AssistTo: "",   
+    ManOfTheMatch: false,      // ← just add this one line
   });
   const [history, setHistory] = useState({
     contributors: [],
