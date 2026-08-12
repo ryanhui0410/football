@@ -34,7 +34,7 @@
 .md-match-count {
   font-size: 14px;
   font-weight: 500;
-  color: #5e6961; /* Darker grey for the "X Matches" text */
+  color: #5e6961;
   letter-spacing: 0.05em;
 }
 
@@ -50,7 +50,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: #5e6961; /* Darker grey for table headers */
+  color: #5e6961;
   text-align: left;
   padding: 0 16px 12px;
 }
@@ -187,110 +187,111 @@
   
   .md-td { padding: 0; border: none !important; border-radius: 0 !important; }
   
-    .md-td::before {
+  .md-td::before {
     content: attr(data-label);
     display: block;
     font-family: 'Oswald', sans-serif;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    color: #5e6961; /* Darker grey for mobile labels */
+    color: #5e6961;
     margin-bottom: 8px;
-    }
+  }
   
   .md-symbols { text-align: left; }
   .md-stat-box { justify-content: flex-start; }
-  /* Action Buttons Container */
-.md-action-btns {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  align-items: center;
-  position: relative; /* Needed for dropdown positioning */
+
+  .md-action-btns {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+
+  .md-compare-btn {
+    padding: 8px 12px;
+    background: rgba(242, 193, 78, 0.15);
+    border: 1px solid rgba(242, 193, 78, 0.5);
+    border-radius: 8px;
+    color: #f2c14e;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .md-compare-btn:hover {
+    background: #f2c14e;
+    color: #083a29;
+    box-shadow: 0 4px 12px rgba(242, 193, 78, 0.3);
+  }
+
+  .md-compare-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: #0d5a3e;
+    border: 1px solid rgba(242, 193, 78, 0.5);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+    min-width: 140px;
+    overflow: hidden;
+  }
+
+  .md-compare-option {
+    padding: 10px 16px;
+    color: #eef4ee;
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: left;
+  }
+
+  .md-compare-option:last-child { border-bottom: none; }
+
+  .md-compare-option:hover {
+    background: rgba(242, 193, 78, 0.2);
+    color: #f2c14e;
+  }
+
+  .md-result-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .md-score {
+    font-family: 'Oswald', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.05em;
+  }
+
+  .md-outcome {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+
+  .md-outcome.win { background: rgba(126, 217, 87, 0.2); color: #a8e08a; }
+  .md-outcome.draw { background: rgba(255, 255, 255, 0.14); color: #ddd; }
+  .md-outcome.loss { background: rgba(229, 72, 77, 0.2); color: #ff9d9f; }
 }
 
-/* Compare Button */
-.md-compare-btn {
-  padding: 8px 12px;
-  background: rgba(242, 193, 78, 0.15);
-  border: 1px solid rgba(242, 193, 78, 0.5);
-  border-radius: 8px;
-  color: #f2c14e;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.md-compare-btn:hover {
-  background: #f2c14e;
-  color: #083a29;
-  box-shadow: 0 4px 12px rgba(242, 193, 78, 0.3);
-}
-
-/* Compare Dropdown */
-.md-compare-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 8px;
-  background: #0d5a3e;
-  border: 1px solid rgba(242, 193, 78, 0.5);
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  z-index: 100;
-  min-width: 140px;
-  overflow: hidden;
-}
-
-.md-compare-option {
-  padding: 10px 16px;
-  color: #eef4ee;
-  font-family: 'Barlow', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  text-align: left;
-}
-
-.md-compare-option:last-child {
-  border-bottom: none;
-}
-
-.md-compare-option:hover {
-  background: rgba(242, 193, 78, 0.2);
-  color: #f2c14e;
-}
-.md-result-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-.md-score {
-  font-family: 'Oswald', sans-serif;
-  font-size: 22px;
-  font-weight: 600;
-  color: #fff;
-  letter-spacing: 0.05em;
-}
-.md-outcome {
-  padding: 3px 10px;
-  border-radius: 4px;
-  font-family: 'Oswald', sans-serif;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 600;
-}
-.md-outcome.win { background: rgba(126, 217, 87, 0.2); color: #a8e08a; }
-.md-outcome.draw { background: rgba(255, 255, 255, 0.14); color: #ddd; }
-.md-outcome.loss { background: rgba(229, 72, 77, 0.2); color: #ff9d9f; }
-}
 /* Filter Bar */
 .md-filter-bar {
   display: flex;
@@ -310,7 +311,7 @@
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: #e2e8e4; /* Lighter grey label */
+  color: #e2e8e4;
 }
 
 .md-filter-pills {
@@ -345,20 +346,18 @@
   font-weight: 600;
   box-shadow: 0 4px 14px rgba(242, 193, 78, 0.35);
 }
-/* 1. Ensure table cells with the 'center' class are actually centered */
-.md-td.center {
-  text-align: center;
-}
 
-/* 2. Force the result box to take full width and center its contents perfectly */
+.md-td.center { text-align: center; }
+
 .md-result-box {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%; /* This is the key to fixing the deviation! */
+  width: 100%;
   gap: 6px;
 }
+
 /* --- Choice Modal --- */
 .choice-overlay, .report-overlay {
   position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); 
@@ -404,170 +403,7 @@
 }
 .report-title { font-family: 'Oswald', sans-serif; color: #1e3a8a; text-align: center; margin-top: 0; }
 .report-meta { text-align: center; color: #475569; font-weight: 600; margin-bottom: 20px; font-size: 15px; }
-/* Choice Modal Edit Button */
-.choice-btn.edit-report {
-  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-  color: #333;
-}
 
-/* Edit Mode Layout */
-.report-modal.edit-mode {
-  max-width: 1000px;
-  width: 95%;
-}
-
-.edit-layout {
-  display: flex;
-  gap: 20px;
-  margin-top: 20px;
-  flex-wrap: wrap;
-}
-
-.pitch-container {
-  flex: 2;
-  min-width: 300px;
-  background: #2d8a3e; /* Fallback pitch background */
-  border-radius: 12px;
-  padding: 15px;
-}
-
-/* Remaining Players Sidebar */
-.remaining-players-list {
-  flex: 1;
-  min-width: 200px;
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 12px;
-  max-height: 500px;
-  overflow-y: auto;
-  border: 1px solid #dee2e6;
-}
-
-.remaining-players-list h3 {
-  margin-top: 0;
-  font-size: 1.1rem;
-  color: #333;
-  border-bottom: 2px solid #007bff;
-  padding-bottom: 5px;
-}
-
-.list-hint {
-  font-size: 0.8rem;
-  color: #666;
-  margin-bottom: 15px;
-}
-
-.remaining-players-list ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.remaining-players-list li {
-  padding: 10px 12px;
-  background: white;
-  margin-bottom: 8px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  transition: all 0.2s;
-  font-weight: 500;
-}
-
-.remaining-players-list li.selectable {
-  cursor: pointer;
-}
-
-.remaining-players-list li.selectable:hover {
-  background: #e7f1ff;
-  border-color: #007bff;
-  transform: translateX(3px);
-}
-
-.remaining-players-list li.empty-list {
-  text-align: center;
-  color: #999;
-  font-style: italic;
-  background: transparent;
-  border: none;
-}
-
-/* MatchLineup Interactive Overrides */
-.player-node.editable.empty {
-  cursor: pointer;
-  border: 2px dashed rgba(255,255,255,0.6);
-  background: rgba(255,255,255,0.1);
-}
-
-.player-node.editable.empty:hover {
-  background: rgba(255,255,255,0.3);
-  border-color: #fff;
-}
-
-.player-card {
-  position: relative;
-}
-
-.remove-player-btn {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.rating-input {
-  width: 50px;
-  padding: 4px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  text-align: center;
-  font-weight: bold;
-  margin-top: 4px;
-}
-
-/* Action Buttons */
-.edit-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 25px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
-}
-
-.save-btn {
-  background: #28a745;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.save-btn:hover {
-  background: #218838;
-}
-
-.cancel-btn {
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-}
 /* --- Smart Result Header (Score Center, Teams on Sides) --- */
 .report-result-header {
   display: flex;
@@ -646,36 +482,6 @@
   .result-team-avg { font-size: 24px; }
   .result-score-center { padding: 0 16px; }
 }
-/* --- Match Result in Report Modal --- */
-.report-result-strip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin: 12px 0 4px;
-}
-
-.report-scoreline {
-  font-family: 'Oswald', sans-serif;
-  font-size: 36px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #0f172a;
-}
-
-.report-wl {
-  padding: 4px 14px;
-  border-radius: 6px;
-  font-family: 'Oswald', sans-serif;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 600;
-}
-.report-wl.win  { background: rgba(22, 163, 74, 0.15); color: #16a34a; }
-.report-wl.draw { background: rgba(100, 116, 139, 0.15); color: #64748b; }
-.report-wl.loss { background: rgba(220, 38, 38, 0.15); color: #dc2626; }
-.report-wl.lose { background: rgba(220, 38, 38, 0.15); color: #dc2626; }
 
 /* --- Player Card Symbols (Ryan/Darren) --- */
 .slot-symbols {

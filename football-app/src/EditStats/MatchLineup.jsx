@@ -126,48 +126,6 @@ const MatchLineup = ({
   
   const handleDragOver = (e) => { e.preventDefault(); e.currentTarget.classList.add("drag-over"); };
   const handleDragLeave = (e) => e.currentTarget.classList.remove("drag-over");
-  const renderPlayerNode = (player, posKey, team) => {
-    // Fallback to a default gray/blue if the function isn't passed
-    const nodeColor = getRatingColor ? getRatingColor(player.rating) : '#555'; 
-    
-    return (
-      <div 
-        key={posKey}
-        className="player-node" 
-        onClick={() => !readOnly && onPositionClick && onPositionClick(posKey, team)}
-        style={{ 
-          // Apply the color to the background, border, or text depending on your CSS design
-          backgroundColor: nodeColor, 
-          borderColor: nodeColor,
-          color: '#ffffff', // Ensure text is readable against the color
-          cursor: !readOnly ? 'pointer' : 'default',
-          // ... keep your existing positioning styles (top, left, etc.)
-        }}
-      >
-        <div className="player-name">{player.Contributor}</div>
-        
-        {/* Optional: You can also color code just the rating badge instead of the whole circle */}
-        <div className="player-rating" style={{ 
-           backgroundColor: '#fff', 
-           color: nodeColor, 
-           fontWeight: 'bold',
-           borderRadius: '50%',
-           width: '24px',
-           height: '24px',
-           display: 'flex',
-           alignItems: 'center',
-           justifyContent: 'center',
-           fontSize: '0.8rem'
-        }}>
-          {player.rating ? player.rating.toFixed(1) : '-'}
-        </div>
-
-        {!readOnly && isEditing && (
-           <button className="remove-btn" onClick={(e) => { e.stopPropagation(); onPlayerRemove(posKey, team); }}>✕</button>
-        )}
-      </div>
-    );
-  };
   const handleDrop = (e, targetTeam, targetSlotId) => {
     e.preventDefault();
     e.currentTarget.classList.remove("drag-over");

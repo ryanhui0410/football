@@ -13,10 +13,6 @@ function ModifyDashboard({ contributors, onSave }) {
   const [selectedStats, setSelectedStats] = useState(null);
   const [choiceMatch, setChoiceMatch] = useState(null); 
   const [matchReport, setMatchReport] = useState(null); 
-  const [isEditingReport, setIsEditingReport] = useState(false); 
-  
-  const [editedLineup, setEditedLineup] = useState(null);
-  const [assignTarget, setAssignTarget] = useState(null); 
   const [matchStatsData, setMatchStatsData] = useState([]);
   const [activeFilter, setActiveFilter] = useState("All");
   const contributorNames = ["All", ...contributors.map(c => c.name)];
@@ -92,17 +88,15 @@ function ModifyDashboard({ contributors, onSave }) {
     return new Date(dateStr);
   };
 
-  // --- REPLACE the existing getRatingColor with this ---
   const getRatingColor = (rating) => {
     const r = parseFloat(rating);
     if (isNaN(r)) return '#9e9e9e';
-    if (r >= 9.0) return '#2563eb'; // Blue
-    if (r >= 7.0) return '#16a34a'; // Green
-    if (r >= 5.0) return '#ea580c'; // Orange
-    return '#dc2626';               // Red
+    if (r >= 9.0) return '#2563eb';
+    if (r >= 7.0) return '#16a34a';
+    if (r >= 5.0) return '#ea580c';
+    return '#dc2626';
   };
 
-  // --- ADD this helper above the return statement ---
   const calcTeamAverage = (teamObj) => {
     if (!teamObj?.players) return null;
     const ratings = Object.values(teamObj.players)
@@ -112,78 +106,6 @@ function ModifyDashboard({ contributors, onSave }) {
     return (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1);
   };
 
-  // --- EDIT MODE LOGIC ---
-  const getRemainingPlayers = () => {
-    if (!editedLineup) return contributors;
-    const assignedPlayers = new Set();
-    ['teamA', 'teamB'].forEach(team => {
-      if (editedLineup[team]?.players) {
-        Object.values(editedLineup[team].players).forEach(p => {
-          if (p.Contributor) assignedPlayers.add(p.Contributor);
-        });
-      }
-    });
-    return contributors.filter(c => !assignedPlayers.has(c.name));
-  };
-
-  const handleAssignPlayer = (player) => {
-    if (!assignTarget) return;
-    const { posKey, team } = assignTarget;
-    const newLineup = JSON.parse(JSON.stringify(editedLineup));
-    
-    if (!newLineup[team].players) newLineup[team].players = {};
-    
-    newLineup[team].players[posKey] = {
-      ...newLineup[team].players[posKey],
-      Contributor: player.name,
-      rating: newLineup[team].players[posKey]?.rating || 5.0,
-      position: newLineup[team].players[posKey]?.position || posKey,
-      picture: player.picture || ""
-    };
-    
-    setEditedLineup(newLineup);
-    setAssignTarget(null);
-  };
-
-  const handleRemovePlayer = (posKey, team) => {
-    const newLineup = JSON.parse(JSON.stringify(editedLineup));
-    if (newLineup[team]?.players?.[posKey]) {
-      delete newLineup[team].players[posKey];
-      setEditedLineup(newLineup);
-    }
-  };
-
-  const handleRatingChange = (posKey, team, newRating) => {
-    const newLineup = JSON.parse(JSON.stringify(editedLineup));
-    if (newLineup[team]?.players?.[posKey]) {
-      newLineup[team].players[posKey].rating = parseFloat(newRating) || 0;
-      setEditedLineup(newLineup);
-    }
-  };
-
-  const handleSaveEditedReport = async () => {
-    console.log("📤 SAVING LINEUP:", JSON.stringify(editedLineup, null, 2));
-  try {
-    const res = await fetch(`http://localhost:5000/match-lineups`, {
-      method: 'POST',  // ← Changed from 'PUT' to 'POST'
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editedLineup)
-    });
-    
-    if (res.ok) {
-      alert("Match report saved successfully!");
-      setIsEditingReport(false);
-      setMatchReport(null);
-      setEditedLineup(null);
-    } else {
-      alert("Failed to save match report.");
-    }
-  } catch (err) {
-    console.error("Save error:", err);
-    alert("Error saving match report.");
-  }
-};
-  // ADD this helper function inside ModifyDashboard
   const getPlayerMatchStats = (playerName, matchDate, matchLocation, matchTime) => {
     if (!playerName || !matchStatsData.length) return null;
     const normDate = normalizeDate(matchDate);
@@ -194,47 +116,38 @@ function ModifyDashboard({ contributors, onSave }) {
       (s.Time || "").trim().toLowerCase() === (matchTime || "").trim().toLowerCase()
     ) || null;
   };
-  const fetchAndOpenReport = async (editMode = false) => {
-  try {
-    // ✅ Fetch BOTH lineups and stats in parallel
-    const [lineupsRes, statsRes] = await Promise.all([
-      fetch("http://localhost:5000/match-lineups"),
-      fetch("http://localhost:5000/stats")
-    ]);
-    const lineups = await lineupsRes.json();
-    const stats = await statsRes.json();
 
-    const targetDate = normalizeDate(choiceMatch.match.date);
-    const targetLocation = (choiceMatch.match.location || "").trim();
-    const targetTime = (choiceMatch.match.time || "").trim();
+  const fetchAndOpenReport = async () => {
+    try {
+      const [lineupsRes, statsRes] = await Promise.all([
+        fetch("http://localhost:5000/match-lineups"),
+        fetch("http://localhost:5000/stats")
+      ]);
+      const lineups = await lineupsRes.json();
+      const stats = await statsRes.json();
 
-    const found = lineups.find(l =>
-      normalizeDate(l.date) === targetDate &&
-      (l.location || "").trim() === targetLocation &&
-      (l.time || "").trim() === targetTime
-    );
+      const targetDate = normalizeDate(choiceMatch.match.date);
+      const targetLocation = (choiceMatch.match.location || "").trim();
+      const targetTime = (choiceMatch.match.time || "").trim();
 
-    if (found) {
-      setMatchReport(found);
-      setMatchStatsData(stats); // ✅ Store stats for symbol lookup
-      if (editMode) {
-        const editableCopy = JSON.parse(JSON.stringify(found));
-        // ✅ Ensure match keys are always present and trimmed
-        editableCopy.date = (found.date || "").trim();
-        editableCopy.location = (found.location || "").trim();
-        editableCopy.time = (found.time || "").trim();
-        setEditedLineup(editableCopy);
-        setIsEditingReport(true);
+      const found = lineups.find(l =>
+        normalizeDate(l.date) === targetDate &&
+        (l.location || "").trim() === targetLocation &&
+        (l.time || "").trim() === targetTime
+      );
+
+      if (found) {
+        setMatchReport(found);
+        setMatchStatsData(stats);
+      } else {
+        alert(`No tactical report found.`);
       }
-    } else {
-      alert(`No tactical report found.`);
+      setChoiceMatch(null);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      alert("Failed to fetch match report.");
     }
-    setChoiceMatch(null);
-  } catch (err) {
-    console.error("Fetch error:", err);
-    alert("Failed to fetch match report.");
-  }
-};
+  };
 
   return (
     <div className="md-wrap">
@@ -333,28 +246,24 @@ function ModifyDashboard({ contributors, onSave }) {
               <button className="choice-btn stats" onClick={() => { openStatsModal(choiceMatch.match, choiceMatch.name); setChoiceMatch(null); }}>
                 📊 <span>View Individual Stats</span>
               </button>
-              <button className="choice-btn report" onClick={() => fetchAndOpenReport(false)}>
+              <button className="choice-btn report" onClick={() => fetchAndOpenReport()}>
                 ⚽ <span>View Match Report</span>
-              </button>
-              <button className="choice-btn edit-report" onClick={() => fetchAndOpenReport(true)}>
-                ✏️ <span>Edit Match Report</span>
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 🆕 VIEW MODE OVERLAY (Stats summary removed, colors passed to Pitch) */}
-      {matchReport && !isEditingReport && (
+      {/* VIEW MODE OVERLAY */}
+      {matchReport && (
         <div className="report-overlay" onClick={() => setMatchReport(null)}>
           <div className="report-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '1000px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: '25px' }}>
             <button className="report-close" onClick={() => setMatchReport(null)}>✕</button>
             <h2 className="report-title">⚽ Match Report: {matchReport.date}</h2>
             {matchReport.location && <p className="report-meta">📍 {matchReport.location} {matchReport.time && `• 🕒 ${matchReport.time}`}</p>}
 
-            {/* ✅ SMART RESULT HEADER: Score in middle, teams assigned by score */}
+            {/* SMART RESULT HEADER */}
             {(() => {
-              // Find match result from any player's stats
               const allPlayers = [
                 ...Object.values(matchReport.teamA?.players || {}),
                 ...Object.values(matchReport.teamB?.players || {})
@@ -372,25 +281,19 @@ function ModifyDashboard({ contributors, onSave }) {
               const avgA = calcTeamAverage(matchReport.teamA);
               const avgB = calcTeamAverage(matchReport.teamB);
 
-              // Parse scores to determine left/right assignment
               let leftLabel = 'Team A', rightLabel = 'Team B';
               let leftAvg = avgA, rightAvg = avgB;
               let leftColor = getRatingColor(avgA), rightColor = getRatingColor(avgB);
-              let leftScore = '', rightScore = '';
 
               if (matchResult) {
                 const parts = matchResult.split('-').map(s => parseInt(s.trim(), 10));
                 if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
                   if (parts[0] >= parts[1]) {
-                    // Left side gets the higher/equal score → assign Team A to left
                     leftLabel = 'Team A'; leftAvg = avgA; leftColor = getRatingColor(avgA);
                     rightLabel = 'Team B'; rightAvg = avgB; rightColor = getRatingColor(avgB);
-                    leftScore = parts[0]; rightScore = parts[1];
                   } else {
-                    // Right side has higher score → swap so higher score is on left
                     leftLabel = 'Team B'; leftAvg = avgB; leftColor = getRatingColor(avgB);
                     rightLabel = 'Team A'; rightAvg = avgA; rightColor = getRatingColor(avgA);
-                    leftScore = parts[1]; rightScore = parts[0];
                   }
                 }
               }
@@ -423,37 +326,6 @@ function ModifyDashboard({ contributors, onSave }) {
                 layout="horizontal"
                 getRatingColor={getRatingColor}
               />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* EDIT MODE OVERLAY */}
-      {matchReport && isEditingReport && editedLineup && (
-        <div className="report-overlay" onClick={() => { setIsEditingReport(false); setMatchReport(null); }}>
-          <div className="report-modal edit-mode" onClick={e => e.stopPropagation()}>
-            <button className="report-close" onClick={() => { setIsEditingReport(false); setMatchReport(null); }}>✕</button>
-            <h2 className="report-title">✏️ Edit Match Report: {editedLineup.date}</h2>
-            
-            <div className="edit-layout">
-              <div className="pitch-container">
-                <MatchLineup 
-                  matchData={{ Date: editedLineup.date }} 
-                  initialLineup={editedLineup} 
-                  readOnly={false} 
-                  layout="horizontal"
-                  isEditing={true}
-                  onPositionClick={(posKey, team) => setAssignTarget({ posKey, team })}
-                  onPlayerRemove={handleRemovePlayer}
-                  onRatingChange={handleRatingChange}
-                  getRatingColor={getRatingColor} // ⬅️ Passed to Pitch
-                />
-              </div>
-            </div>
-
-            <div className="edit-actions">
-              <button className="save-btn" onClick={handleSaveEditedReport}>💾 Save Changes</button>
-              <button className="cancel-btn" onClick={() => { setIsEditingReport(false); setMatchReport(null); }}>Cancel</button>
             </div>
           </div>
         </div>
