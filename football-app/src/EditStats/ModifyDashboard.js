@@ -162,26 +162,26 @@ function ModifyDashboard({ contributors, onSave }) {
   };
 
   const handleSaveEditedReport = async () => {
-    try {
-      const res = await fetch(`http://localhost:5000/match-lineups`, {
-        method: 'PUT', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editedLineup)
-      });
-      
-      if (res.ok) {
-        alert("Match report saved successfully!");
-        setIsEditingReport(false);
-        setMatchReport(null);
-        setEditedLineup(null);
-      } else {
-        alert("Failed to save match report.");
-      }
-    } catch (err) {
-      console.error("Save error:", err);
-      alert("Error saving match report.");
+  try {
+    const res = await fetch(`http://localhost:5000/match-lineups`, {
+      method: 'POST',  // ← Changed from 'PUT' to 'POST'
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editedLineup)
+    });
+    
+    if (res.ok) {
+      alert("Match report saved successfully!");
+      setIsEditingReport(false);
+      setMatchReport(null);
+      setEditedLineup(null);
+    } else {
+      alert("Failed to save match report.");
     }
-  };
+  } catch (err) {
+    console.error("Save error:", err);
+    alert("Error saving match report.");
+  }
+};
   // ADD this helper function inside ModifyDashboard
   const getPlayerMatchStats = (playerName, matchDate, matchLocation, matchTime) => {
     if (!playerName || !matchStatsData.length) return null;
