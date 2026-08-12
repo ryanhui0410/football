@@ -120,6 +120,24 @@ function StatsSummary({ stats }) {
     ? stats.filter((s) => getSeasonFromDate(s.Date) === filterSeason)
     : stats;
 
+  // ===== ✅ NEW: Compute MOTM stats per player per season =====
+  const motmStats = useMemo(() => {
+    const map = {};
+    stats.forEach((s) => {
+      const name = s.Contributor?.trim();
+      if (!name) return;
+      const season = getSeasonFromDate(s.Date);
+      if (!season) return;
+      if (!map[name]) map[name] = {};
+      if (!map[name][season]) map[name][season] = 0;
+      // Field name is "Man of the Match" (with spaces) as per your JSON
+      if (s["Man of the Match"] === true) {
+        map[name][season] += 1;
+      }
+    });
+    return map;
+  }, [stats]);
+
   // ===== Detailed stats for Ryan/Darren =====
   const getDetailedPlayerStats = (playerName) => {
     const playerStats = filteredStats.filter((s) => s.Contributor?.trim() === playerName);
@@ -181,6 +199,12 @@ function StatsSummary({ stats }) {
     const errorClass = statsData.errors === 0 ? "none" : statsData.errors <= 3 ? "low" : "high";
     const winRateClass = winRate >= 50 ? "high" : winRate > 0 ? "mid" : "low";
 
+    // ✅ MOTM total (respect filterSeason if set)
+    const playerMotm = motmStats[playerName] || {};
+    const totalMotm = filterSeason
+      ? (playerMotm[filterSeason] || 0)
+      : Object.values(playerMotm).reduce((a, b) => a + b, 0);
+
     const locationEntries = Object.entries(statsData.locationStats).filter(([loc]) => loc !== "Unknown").sort((a, b) => a[0].localeCompare(b[0]));
     const locationData = locationEntries.map(([loc, data]) => {
       const avgGoals = data.count > 0 ? data.goals / data.count : 0;
@@ -200,6 +224,11 @@ function StatsSummary({ stats }) {
           <div className="summary-row"><span className="summary-label">Assists</span><span className="plain-value">{statsData.assists}</span></div>
           <div className="summary-row"><span className="summary-label">Win Rate</span><span className={`badge badge-winrate-${winRateClass}`}>{winRate.toFixed(1)}%</span></div>
           <div className="summary-row"><span className="summary-label">Errors</span><span className={`badge badge-error-${errorClass}`}>{statsData.errors}</span></div>
+          {/* ✅ MOTM row under Errors */}
+          <div className="summary-row">
+            <span className="summary-label">MOTM</span>
+            <span className="plain-value">{totalMotm}</span>
+          </div>
         </div>
         {totalGoals > 0 ? (
           <div className="chart-container">
@@ -230,14 +259,23 @@ function StatsSummary({ stats }) {
   // ===== Render: Seasonal profile (other players) =====
   const renderSeasonalProfile = (playerName) => {
     const playerData = lineupStats[playerName];
-
-    // ✅ Show what players ARE in lineupStats for debugging
     const availablePlayers = Object.keys(lineupStats);
+
+    // ✅ Calculate total MOTM across all seasons
+    const playerMotm = motmStats[playerName] || {};
+    const totalMotm = Object.values(playerMotm).reduce((a, b) => a + b, 0);
 
     if (!playerData || Object.keys(playerData).length === 0) {
       return (
         <div className="player-card simple-card">
           <h3 className="player-name">{playerName}</h3>
+          <div className="summary-list">
+            {/* ✅ Show MOTM even when no lineup records */}
+            <div className="summary-row">
+              <span className="summary-label">MOTM</span>
+              <span className="plain-value">{totalMotm}</span>
+            </div>
+          </div>
           <div className="no-data">
             No lineup records found for <strong>{playerName}</strong>.
             <br /><br />
@@ -273,6 +311,11 @@ function StatsSummary({ stats }) {
             <span className="summary-label">Total Matches Played</span>
             <span className="plain-value">{totalMatches}</span>
           </div>
+          {/* ✅ MOTM row under Errors (well, under Total Matches) */}
+          <div className="summary-row">
+            <span className="summary-label">MOTM</span>
+            <span className="plain-value">{totalMotm}</span>
+          </div>
         </div>
 
         <div className="location-section">
@@ -283,12 +326,14 @@ function StatsSummary({ stats }) {
                 <th>Season</th>
                 <th>Matches</th>
                 <th>Avg Rating</th>
+                <th>MOTM</th>   {/* ✅ New column for per-season MOTM */}
               </tr>
             </thead>
             <tbody>
               {seasons.map((season) => {
                 const d = playerData[season];
                 const rClass = d.avgRating < 6 ? "low" : d.avgRating <= 8 ? "mid" : "high";
+                const motmCount = playerMotm[season] || 0;
                 return (
                   <tr key={season}>
                     <td>{season}</td>
@@ -298,6 +343,7 @@ function StatsSummary({ stats }) {
                         {d.avgRating.toFixed(2)}
                       </span>
                     </td>
+                    <td>{motmCount}</td>
                   </tr>
                 );
               })}

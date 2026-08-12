@@ -178,9 +178,20 @@ useEffect(() => {
                 {player.isMotm && <span className="motm-badge">⭐ MOTM</span>}
 
                 {/* Existing symbols for Ryan/Darren */}
-                {readOnly && getPlayerMatchStats && (() => {
-                  // ... existing symbol logic unchanged ...
-                })()}
+                {/* ✅ Goal/Assist Symbols for Ryan & Darren */}
+{readOnly && (() => {
+  const name = (player.Contributor || "").trim().toLowerCase();
+  if (name !== "ryan" && name !== "darren") return null;
+  const goals = player.goals || 0;
+  const assists = player.assists || 0;
+  if (goals === 0 && assists === 0) return null;
+  const symbols = [...Array(goals).fill('⚽'), ...Array(assists).fill('👟')];
+  return (
+    <div className="slot-symbols">
+      {symbols.map((s, i) => <span key={i} className="slot-symbol">{s}</span>)}
+    </div>
+  );
+})()}
 
                 <img src={player.picture || `/${player.Contributor}.jpeg`} alt={player.Contributor} />
                 <div className="slot-info">

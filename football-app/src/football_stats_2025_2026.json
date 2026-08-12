@@ -2301,7 +2301,8 @@
     "Match result": "4-3",
     "Win/Loss?": "Win",
     "Assist to": "Ryan",
-    "Assist to count": 1
+    "Assist to count": 1,
+    "Man of the Match": true
   },
   {
     "Date": "7/29/2026",
@@ -2320,7 +2321,8 @@
     "Other body parts": 0,
     "Season": "2025-2026",
     "Match result": "4-3",
-    "Win/Loss?": "Win"
+    "Win/Loss?": "Win",
+    "Man of the Match": false
   },
   {
     "Date": "8/9/2026",

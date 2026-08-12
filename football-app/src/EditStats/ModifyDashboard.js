@@ -121,23 +121,27 @@ function ModifyDashboard({ contributors, onSave }) {
 
   // ✅ Enrich lineup players with MOTM flag from stats data
   const enrichLineupWithMotm = (lineup) => {
-    if (!lineup || !matchStatsData.length) return lineup;
-    const enriched = JSON.parse(JSON.stringify(lineup)); // deep clone
-    ['teamA', 'teamB'].forEach(team => {
-      if (!enriched[team]?.players) return;
-      Object.keys(enriched[team].players).forEach(slotId => {
-        const player = enriched[team].players[slotId];
-        const stat = getPlayerMatchStats(
-          player.Contributor,
-          enriched.date,
-          enriched.location,
-          enriched.time
-        );
-        player.isMotm = stat?.["Man of the Match"] === true;
-      });
+  if (!lineup || !matchStatsData.length) return lineup;
+  const enriched = JSON.parse(JSON.stringify(lineup)); // deep clone
+  ['teamA', 'teamB'].forEach(team => {
+    if (!enriched[team]?.players) return;
+    Object.keys(enriched[team].players).forEach(slotId => {
+      const player = enriched[team].players[slotId];
+      const stat = getPlayerMatchStats(
+        player.Contributor,
+        enriched.date,
+        enriched.location,
+        enriched.time
+      );
+      // ✅ Add MOTM flag
+      player.isMotm = stat?.["Man of the Match"] === true;
+      // ✅ Add goals and assists for symbol rendering in MatchLineup
+      player.goals = parseInt(stat?.Goal) || 0;
+      player.assists = parseInt(stat?.Assist) || 0;
     });
-    return enriched;
-  };
+  });
+  return enriched;
+};
 
   const fetchAndOpenReport = async (editMode = false) => {
     try {
