@@ -6,6 +6,22 @@ function MatchStatsModal({ open, match, onClose }) {
 
   const goals = Math.max(0, (match.goalContribution || 0) - (match.assist || 0));
   
+  // 判断目标球员（互助攻）
+  const player = match.contributorName;
+  let assistTarget = null;
+  if (player === "Ryan") assistTarget = "Darren";
+  else if (player === "Darren") assistTarget = "Ryan";
+
+  // 获取该场助攻给目标球员的次数（若目标匹配则取 count，否则 0）
+  let assistToTargetCount = 0;
+  if (assistTarget) {
+    const rawAssistTo = match.assistTo || match["Assist to"] || "";
+    const rawCount = parseInt(match.assistToCount || match["Assist to count"] || 0);
+    if (rawAssistTo === assistTarget) {
+      assistToTargetCount = rawCount;
+    }
+  }
+
   return (
     <div className="msm-overlay" onClick={onClose}>
       <div className="msm-container" onClick={(e) => e.stopPropagation()}>
@@ -53,20 +69,10 @@ function MatchStatsModal({ open, match, onClose }) {
               <h3 className="msm-card-title">Performance Rating</h3>
               <div className="msm-rating-hero">{match.rating || "—"}</div>
             </div>
-              {/* NEW: Assists Given Card */}
-            <div className="msm-card">
-              <h3 className="msm-card-title">Assists Given</h3>
-              <div className="msm-overview-row">
-                <div className="msm-ov-item">
-                  <span className="msm-ov-label">Assisted Player</span>
-                  {/* Fallbacks ensure it works whether it reads from the Match class or raw JSON */}
-                  <span className="msm-ov-val">👟 {match.assistTo || match["Assist to"] || "—"}</span>
-                </div>
-                <div className="msm-ov-item">
-                  <span className="msm-ov-label">Assist Count</span>
-                  <span className="msm-ov-val">{match.assistToCount || match["Assist to count"] || 0}</span>
-                </div>
-              </div>
+            {/* 原来的 Assists Given 卡片已移除，现在整合到 Goal Breakdown 中 */}
+            <div className="msm-card msm-source">
+              <span className="msm-source-label">Source:</span>
+              <span className="msm-source-val">{match.source || "—"}</span>
             </div>
           </div>
 
@@ -113,11 +119,13 @@ function MatchStatsModal({ open, match, onClose }) {
                   <span className="msm-chip-label">Other</span>
                 </div>
               </div>
-            </div>
-
-            <div className="msm-card msm-source">
-              <span className="msm-source-label">Source:</span>
-              <span className="msm-source-val">{match.source || "—"}</span>
+              {/* ---- 新增：助攻给 Ryan/Darren 的行 ---- */}
+              {assistTarget && (
+                <div className="msm-assist-to-row">
+                  <span className="msm-assist-to-label">Assists to {assistTarget}</span>
+                  <span className="msm-assist-to-value">{assistToTargetCount}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

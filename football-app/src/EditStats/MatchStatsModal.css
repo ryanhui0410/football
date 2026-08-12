@@ -87,3 +87,23 @@
   .msm-player { font-size: 28px; }
   .msm-container { padding: 20px; }
 }
+.msm-assist-to-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 14px;
+}
+.msm-assist-to-label {
+  color: rgba(238, 244, 238, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.msm-assist-to-value {
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #f2c14e;
+}
