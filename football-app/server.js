@@ -55,13 +55,20 @@ function formatStat(raw) {
   const other     = raw["Other body parts"] ?? raw.OtherBodyParts ?? 0;
   const assist    = raw.Assist             ?? 0;
   const rating    = raw.Rating             ?? 0;
-    // Assist-to recipient (Ryan ↔ Darren), saved only when meaningful
+
+  // ✅ 获取 Man of the Match（支持两种字段名）
+  const motm = raw["Man of the Match"] ?? raw.ManOfTheMatch ?? false;
+
+  // 助攻目标逻辑（Ryan ↔ Darren）
   const cName = (raw.Contributor || "").trim().toLowerCase();
   const assistRecipient = cName === "ryan" ? "Darren" : cName === "darren" ? "Ryan" : "";
-  const assistToCount = assistRecipient ? (parseFloat(raw.AssistTo) || 0) : 0;
+  // 注意：这里从 raw.AssistTo 或 raw.AssistToCount 读取次数，确保字段正确
+  const assistToCount = parseFloat(raw.AssistToCount ?? raw["Assist to count"] ?? 0) || 0;
+  // 只有当目标匹配且计数 > 0 时才保存
+  const finalAssistTo = (assistRecipient && assistToCount > 0) ? assistRecipient : "";
+
   const goal = computeGoal(leftFoot, rightFoot, head, other);
 
-  // ✅ Fixed field order matching 8/3/2025 format
   return {
     Date:              raw.Date,
     Contributor:       raw.Contributor,
@@ -78,11 +85,11 @@ function formatStat(raw) {
     Head:              parseFloat(head) || 0,
     "Other body parts": parseFloat(other) || 0,
     Season:            computeSeason(raw.Date),
-    "Match result":    raw["Match result"] ?? raw.MatchResult ?? "",   // ← new
-    "Win/Loss?":       raw["Win/Loss?"]    ?? raw.WinLoss    ?? "",   // ← new
-    "Assist to":       assistToCount > 0 ? assistRecipient : "",
+    "Match result":    raw["Match result"] ?? raw.MatchResult ?? "",
+    "Win/Loss?":       raw["Win/Loss?"]    ?? raw.WinLoss    ?? "",
+    "Assist to":       finalAssistTo,
     "Assist to count": assistToCount,
-    "Man of the Match": motm, 
+    "Man of the Match": motm,   // ✅ 现在 motm 已定义
   };
 }
 

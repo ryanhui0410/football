@@ -37,7 +37,6 @@ function MatchStatsModal({ open, match, onClose }) {
             {match.season && <span className="msm-season">{match.season}</span>}
           </div>
         </div>
-
         <div className="msm-grid">
           {/* LEFT COLUMN */}
           <div className="msm-col">
