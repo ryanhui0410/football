@@ -221,15 +221,30 @@ function ModifyDashboard({ contributors, onSave }) {
     }
   };
 
-  const handleSaveReportLineup = async () => {
+    const handleSaveReportLineup = async () => {
     if (!editedLineup) return;
+
+    // ✨ Same sanitization logic
+    const sanitizeTeam = (teamObj) => {
+      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null) };
+      const cleanPlayers = (teamObj.players || []).map(p => {
+        if (!p) return null;
+        return {
+          Contributor: p.Contributor,
+          rating: parseFloat(p.rating) || 0,
+          picture: p.picture || `/${p.Contributor}.jpeg`
+        };
+      });
+      while (cleanPlayers.length < 11) cleanPlayers.push(null);
+      return { formation: teamObj.formation || "4-4-2", players: cleanPlayers.slice(0, 11) };
+    };
 
     const payload = {
       date: editedLineup.date,
       location: editedLineup.location,
       time: editedLineup.time,
-      teamA: editedLineup.teamA,
-      teamB: editedLineup.teamB,
+      teamA: sanitizeTeam(editedLineup.teamA),
+      teamB: sanitizeTeam(editedLineup.teamB),
     };
 
     try {
@@ -243,8 +258,8 @@ function ModifyDashboard({ contributors, onSave }) {
       alert("✅ Match Report saved!");
       
       setIsEditingReport(false);
-      setMatchReport(JSON.parse(JSON.stringify(editedLineup))); // Update view mode
-      setLineupVersion(v => v + 1); // Refresh pitch
+      setMatchReport(JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB }))); 
+      setLineupVersion(v => v + 1); 
     } catch (err) {
       console.error("Save failed:", err);
       alert("❌ Failed to save match report");
@@ -497,7 +512,7 @@ function ModifyDashboard({ contributors, onSave }) {
             <button className="slot-edit-close" onClick={() => setSlotToEdit(null)}>✕</button>
             <h3>{slotToEdit.player ? "Edit Player" : "Add Player"}</h3>
             
-            <div style={{ marginBottom: '16px' }}>
+                        <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Select Player:</label>
               <select 
                 style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '15px' }}
@@ -511,9 +526,9 @@ function ModifyDashboard({ contributors, onSave }) {
                     setSlotToEdit(prev => ({
                       ...prev,
                       player: { 
-                        ...selected, 
-                        rating: prev.player?.rating || 50,
-                        picture: selected.picture || `/${selected.Contributor}.jpeg`
+                        Contributor: selected.Contributor,
+                        picture: selected.picture || `/${selected.Contributor}.jpeg`,
+                        rating: prev.player?.rating !== undefined ? prev.player.rating : "" // FIX: Changed from 50 to ""
                       }
                     }));
                   }
@@ -528,15 +543,34 @@ function ModifyDashboard({ contributors, onSave }) {
             
             {slotToEdit.player && (
               <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Match Rating (0-10.0):</label>
+                <input 
+                  type="number" min="0" max="10" step="0.1"
+                  value={slotToEdit.player.rating !== "" && slotToEdit.player.rating !== undefined ? slotToEdit.player.rating : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSlotToEdit(prev => ({
+                      ...prev,
+                      player: { ...prev.player, rating: val === "" ? "" : parseFloat(val) }
+                    }));
+                  }}
+                />
+              </div>
+            )}
+            
+            {slotToEdit.player && (
+              <div style={{ marginBottom: '24px' }}>
                 <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Match Rating (1-99):</label>
                 <input 
-                  type="number" min="1" max="99"
-                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '15px' }}
-                  value={slotToEdit.player.rating || ""}
-                  onChange={(e) => setSlotToEdit(prev => ({
-                    ...prev,
-                    player: { ...prev.player, rating: parseInt(e.target.value) || 0 }
-                  }))}
+                  type="number" min="0" max="10" step="0.1"
+                  value={slotToEdit.player.rating !== "" && slotToEdit.player.rating !== undefined ? slotToEdit.player.rating : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSlotToEdit(prev => ({
+                      ...prev,
+                      player: { ...prev.player, rating: val === "" ? "" : parseFloat(val) }
+                    }));
+                  }}
                 />
               </div>
             )}

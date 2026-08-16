@@ -70,7 +70,7 @@ function TacticalDashboard() {
     setMatchDetails({ ...matchDetails, [e.target.name]: e.target.value });
   };
 
-  const handleSaveLineup = async () => {
+    const handleSaveLineup = async () => {
     if (!matchDetails.Date || !matchDetails.Location || !matchDetails.Time) {
       setMessage("⚠️ Please fill in Date, Location, and Time before saving.");
       setTimeout(() => setMessage(""), 3000);
@@ -78,12 +78,35 @@ function TacticalDashboard() {
     }
 
     setSaving(true);
+
+    // ✨ SANITIZE PAYLOAD: Strip EA stats, handle empty slots, ensure 11 items
+    const sanitizeTeam = (teamObj) => {
+      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null) };
+      
+      const cleanPlayers = (teamObj.players || []).map(p => {
+        if (!p) return null; // Keep empty slots as null safely
+        return {
+          Contributor: p.Contributor,
+          rating: parseFloat(p.rating) || 0,
+          picture: p.picture || `/${p.Contributor}.jpeg`
+        };
+      });
+      
+      // Ensure exactly 11 slots to prevent UI breaking later
+      while (cleanPlayers.length < 11) cleanPlayers.push(null);
+      
+      return {
+        formation: teamObj.formation || "4-4-2",
+        players: cleanPlayers.slice(0, 11)
+      };
+    };
+
     const payload = {
       date: matchDetails.Date,
       location: matchDetails.Location,
       time: matchDetails.Time,
-      teamA: lineupData.teamA,
-      teamB: lineupData.teamB,
+      teamA: sanitizeTeam(lineupData.teamA),
+      teamB: sanitizeTeam(lineupData.teamB),
     };
 
     try {
@@ -94,9 +117,11 @@ function TacticalDashboard() {
       });
       const result = await res.json();
       if (result.isNew) {
-        setAllLineups(prev => [...prev, payload]); // Add to local state
+        setAllLineups(prev => [...prev, payload]);
       } else {
-        setAllLineups(prev => prev.map(l => l.date === payload.date && l.location === payload.location ? payload : l));
+        setAllLineups(prev => prev.map(l => 
+          l.date === payload.date && l.location === payload.location && l.time === payload.time ? payload : l
+        ));
       }
       setMessage("✅ Tactical Lineup saved successfully!");
       setTimeout(() => setMessage(""), 3000);
@@ -172,7 +197,7 @@ function TacticalDashboard() {
             <button className="td-slot-close" onClick={() => setSlotToEdit(null)}>✕</button>
             <h3>{slotToEdit.player ? "Edit Player" : "Add Player"}</h3>
             
-            <div className="td-modal-field">
+                        <div className="td-modal-field">
               <label>Select Player:</label>
               <select 
                 value={slotToEdit.player?.Contributor || ""}
@@ -185,9 +210,10 @@ function TacticalDashboard() {
                     setSlotToEdit(prev => ({
                       ...prev,
                       player: { 
-                        ...selected, 
-                        rating: prev.player?.rating || 50,
-                        picture: selected.picture || `/${selected.Contributor}.jpeg`
+                        Contributor: selected.Contributor,
+                        picture: selected.picture || `/${selected.Contributor}.jpeg`,
+                        // Keep existing rating if editing, otherwise start empty
+                        rating: prev.player?.rating !== undefined ? prev.player.rating : "" 
                       }
                     }));
                   }
@@ -202,14 +228,20 @@ function TacticalDashboard() {
             
             {slotToEdit.player && (
               <div className="td-modal-field">
-                <label>Match Rating (1-99):</label>
+                <label>Match Rating (0-10.0):</label>
                 <input 
-                  type="number" min="1" max="99"
-                  value={slotToEdit.player.rating || ""}
-                  onChange={(e) => setSlotToEdit(prev => ({
-                    ...prev,
-                    player: { ...prev.player, rating: parseInt(e.target.value) || 0 }
-                  }))}
+                  type="number" min="0" max="10" step="0.1"
+                  value={slotToEdit.player.rating !== "" && slotToEdit.player.rating !== undefined ? slotToEdit.player.rating : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSlotToEdit(prev => ({
+                      ...prev,
+                      player: { 
+                        ...prev.player, 
+                        rating: val === "" ? "" : parseFloat(val) 
+                      }
+                    }));
+                  }}
                 />
               </div>
             )}
