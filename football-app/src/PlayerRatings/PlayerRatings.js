@@ -20,20 +20,11 @@ function PlayerRatings() {
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [activeFilters, setActiveFilters] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState("All"); 
 
   useEffect(() => {
     fetchData();
   }, []);
-
-  const toggleFilter = (group) => {
-    setActiveFilters(prev =>
-      prev.includes(group)
-        ? prev.filter(g => g !== group)
-        : [...prev, group]
-    );
-  };
 
   const fetchData = async () => {
     try {
@@ -98,16 +89,10 @@ function PlayerRatings() {
     .filter(name => {
       const profile = profiles.find(p => p.Contributor === name);
       
-      // 1. Apply Dropdown Filter (selectedGroup)
+      // Apply Dropdown Filter (selectedGroup)
       if (selectedGroup !== "All") {
         const matchesDropdown = profile?.filterGroup === selectedGroup || FILTER_GROUPS[selectedGroup]?.includes(name);
         if (!matchesDropdown) return false;
-      }
-
-      // 2. Apply Button Filters (activeFilters)
-      if (activeFilters.length > 0) {
-        const matchesButtons = activeFilters.some(group => FILTER_GROUPS[group]?.includes(name));
-        if (!matchesButtons) return false;
       }
 
       return true;
@@ -123,27 +108,6 @@ function PlayerRatings() {
   return (
     <div className="pr-page">
       <h2 className="pr-title">⚽ Player Ratings</h2>
-
-      {/* ---- Filter Bar ---- */}
-      <div className="pr-filters">
-        {Object.keys(FILTER_GROUPS).map(group => (
-          <button
-            key={group}
-            onClick={() => toggleFilter(group)}
-            className={`pr-filter-btn${activeFilters.includes(group) ? ' active' : ''}`}
-          >
-            {group}
-          </button>
-        ))}
-        {activeFilters.length > 0 && (
-          <button
-            onClick={() => setActiveFilters([])}
-            className="pr-filter-btn clear"
-          >
-            ✕ Clear
-          </button>
-        )}
-      </div>
 
       {/* ---- Filter Dropdown ---- */}
       <div style={{ marginBottom: "24px", textAlign: "center" }}>

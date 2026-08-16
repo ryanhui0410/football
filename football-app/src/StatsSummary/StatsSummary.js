@@ -7,17 +7,10 @@ import "./StatsSummary.css";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const FILTER_GROUPS = {
-  Barry: ['Lu', 'Nick', 'Jacob', '普巴', 'Chris', '局長', 'Eugene', '大嚿', 'Barry', 'Chun', '子睿', 'Steve', 'Alex', 'hong', 'R', 'Ken', 'Derek', 'Marco', 'Nin', 'Dave', 'S Joe', 'Po', 'QC', 'Raymond'],
-  'The Bros': ['Ryan', 'Darren'],
-  馬哲: ['Tony', '馬俊翔'],
-};
-
 // ✅ FIXED: Robust date parser that handles "8/9/2026" format
 function getSeasonFromDate(dateStr) {
   if (!dateStr) return "";
   
-  // Try splitting by "/" first (handles "8/9/2026")
   const parts = dateStr.split("/");
   let month, year;
   
@@ -25,7 +18,6 @@ function getSeasonFromDate(dateStr) {
     month = parseInt(parts[0], 10);
     year = parseInt(parts[2], 10);
   } else {
-    // Fallback to Date object
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return "";
     month = d.getMonth() + 1;
@@ -40,7 +32,7 @@ function StatsSummary({ stats }) {
   const [filterSeason, setFilterSeason] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState("Ryan");
   const [lineups, setLineups] = useState([]);
-  const [debugInfo, setDebugInfo] = useState(""); // ✅ Visible debug
+  const [debugInfo, setDebugInfo] = useState(""); 
 
   // ✅ Fetch lineups with error handling
   useEffect(() => {
@@ -49,24 +41,37 @@ function StatsSummary({ stats }) {
       .then((data) => {
         const arr = Array.isArray(data) ? data : [];
         setLineups(arr);
-        setDebugInfo(`✅ Loaded ${arr.length} lineup records`);
       })
       .catch((err) => {
         setDebugInfo(`❌ Fetch error: ${err.message}`);
       });
   }, []);
 
-  // ✅ Build dropdown player list
+  // ✅ DYNAMICALLY Build dropdown player list from actual data
   const dropdownPlayers = useMemo(() => {
-    const allNames = [
-      ...(FILTER_GROUPS['Barry'] || []),
-      ...(FILTER_GROUPS['馬哲'] || []),
-      ...(FILTER_GROUPS['The Bros'] || []),
-    ];
-    return [...new Set(allNames)].sort();
-  }, []);
+    const names = new Set();
+    
+    // 1. Get names from stats
+    stats.forEach(s => {
+      if (s.Contributor) names.add(s.Contributor.trim());
+    });
+    
+    // 2. Get names from lineups
+    lineups.forEach(match => {
+      const teams = [match.teamA, match.teamB].filter(Boolean);
+      teams.forEach(team => {
+        // Handle both new Array format and old Object format
+        const players = Array.isArray(team.players) ? team.players : Object.values(team.players || {});
+        players.forEach(p => {
+          if (p && p.Contributor) names.add(p.Contributor.trim());
+        });
+      });
+    });
 
-  // ✅ FIXED: Build lineup stats with explicit teamA/teamB access
+    return Array.from(names).sort();
+  }, [stats, lineups]);
+
+  // ✅ FIXED: Build lineup stats with Array support
   const lineupStats = useMemo(() => {
     const map = {};
 
@@ -76,20 +81,16 @@ function StatsSummary({ stats }) {
       const season = getSeasonFromDate(match.date);
       if (!season) return;
 
-      // ✅ Explicitly check teamA and teamB
       const teams = [];
-      if (match.teamA && match.teamA.players) teams.push(match.teamA);
-      if (match.teamB && match.teamB.players) teams.push(match.teamB);
-      // Also check any other team keys generically
-      Object.keys(match).forEach((key) => {
-        if (key !== "teamA" && key !== "teamB" && match[key] && match[key].players) {
-          teams.push(match[key]);
-        }
-      });
+      if (match.teamA) teams.push(match.teamA);
+      if (match.teamB) teams.push(match.teamB);
 
       teams.forEach((team) => {
-        Object.values(team.players).forEach((player) => {
-          if (!player || !player.Contributor) return;
+        // ✅ Support both new Array format and old Object format
+        const players = Array.isArray(team.players) ? team.players : Object.values(team.players || {});
+        
+        players.forEach((player) => {
+          if (!player || !player.Contributor) return; // Safely skip null/empty slots
 
           const name = player.Contributor.trim();
           const rating = parseFloat(player.rating) || 0;
@@ -120,7 +121,7 @@ function StatsSummary({ stats }) {
     ? stats.filter((s) => getSeasonFromDate(s.Date) === filterSeason)
     : stats;
 
-  // ===== ✅ NEW: Compute MOTM stats per player per season =====
+  // ===== ✅ Compute MOTM stats per player per season =====
   const motmStats = useMemo(() => {
     const map = {};
     stats.forEach((s) => {
@@ -130,7 +131,6 @@ function StatsSummary({ stats }) {
       if (!season) return;
       if (!map[name]) map[name] = {};
       if (!map[name][season]) map[name][season] = 0;
-      // Field name is "Man of the Match" (with spaces) as per your JSON
       if (s["Man of the Match"] === true) {
         map[name][season] += 1;
       }
@@ -176,112 +176,111 @@ function StatsSummary({ stats }) {
 
   // ===== Render: Detailed profile (Ryan/Darren) =====
   const renderDetailedProfile = (playerName) => {
-  const statsData = getDetailedPlayerStats(playerName);
-  if (!statsData) return null;
+    const statsData = getDetailedPlayerStats(playerName);
+    if (!statsData) return null;
 
-  const avgRating = statsData.ratings.reduce((sum, r) => sum + r, 0) / (statsData.ratings.length || 1);
-  const totalGoals = statsData.left + statsData.right + statsData.head + statsData.other;
-  const percentages = totalGoals > 0 ? [
-    ((statsData.left / totalGoals) * 100).toFixed(1),
-    ((statsData.right / totalGoals) * 100).toFixed(1),
-    ((statsData.head / totalGoals) * 100).toFixed(1),
-    ((statsData.other / totalGoals) * 100).toFixed(1),
-  ] : [0, 0, 0, 0];
+    const avgRating = statsData.ratings.reduce((sum, r) => sum + r, 0) / (statsData.ratings.length || 1);
+    const totalGoals = statsData.left + statsData.right + statsData.head + statsData.other;
+    const percentages = totalGoals > 0 ? [
+      ((statsData.left / totalGoals) * 100).toFixed(1),
+      ((statsData.right / totalGoals) * 100).toFixed(1),
+      ((statsData.head / totalGoals) * 100).toFixed(1),
+      ((statsData.other / totalGoals) * 100).toFixed(1),
+    ] : [0, 0, 0, 0];
 
-  const pieData = {
-    labels: [`Left Foot (${percentages[0]}%)`, `Right Foot (${percentages[1]}%)`, `Head (${percentages[2]}%)`, `Other (${percentages[3]}%)`],
-    datasets: [{ data: [statsData.left, statsData.right, statsData.head, statsData.other], backgroundColor: ["#4CAF50", "#2196F3", "#FFC107", "#9C27B0"], borderColor: "#ffffff", borderWidth: 3 }],
-  };
+    const pieData = {
+      labels: [`Left Foot (${percentages[0]}%)`, `Right Foot (${percentages[1]}%)`, `Head (${percentages[2]}%)`, `Other (${percentages[3]}%)`],
+      datasets: [{ data: [statsData.left, statsData.right, statsData.head, statsData.other], backgroundColor: ["#4CAF50", "#2196F3", "#FFC107", "#9C27B0"], borderColor: "#ffffff", borderWidth: 3 }],
+    };
 
-  const totalMatches = statsData.ratings.length;
-  const winRate = totalMatches > 0 ? ((statsData.wins || 0) / totalMatches) * 100 : 0;
-  const ratingClass = avgRating < 6 ? "low" : avgRating <= 8 ? "mid" : "high";
-  const errorClass = statsData.errors === 0 ? "none" : statsData.errors <= 3 ? "low" : "high";
-  const winRateClass = winRate >= 50 ? "high" : winRate > 0 ? "mid" : "low";
+    const totalMatches = statsData.ratings.length;
+    const winRate = totalMatches > 0 ? ((statsData.wins || 0) / totalMatches) * 100 : 0;
+    const ratingClass = avgRating < 6 ? "low" : avgRating <= 8 ? "mid" : "high";
+    const errorClass = statsData.errors === 0 ? "none" : statsData.errors <= 3 ? "low" : "high";
+    const winRateClass = winRate >= 50 ? "high" : winRate > 0 ? "mid" : "low";
 
-  const playerMotm = motmStats[playerName] || {};
-  const totalMotm = filterSeason
-    ? (playerMotm[filterSeason] || 0)
-    : Object.values(playerMotm).reduce((a, b) => a + b, 0);
+    const playerMotm = motmStats[playerName] || {};
+    const totalMotm = filterSeason
+      ? (playerMotm[filterSeason] || 0)
+      : Object.values(playerMotm).reduce((a, b) => a + b, 0);
 
-  // ---- 新增：计算助攻给对方的总数 ----
-  const targetAssistPlayer = (playerName === "Ryan") ? "Darren" : (playerName === "Darren") ? "Ryan" : null;
-  let totalAssistTo = 0;
-  if (targetAssistPlayer) {
-    const relevantStats = filterSeason
-      ? stats.filter(s => getSeasonFromDate(s.Date) === filterSeason)
-      : stats;
-    relevantStats.forEach(s => {
-      if (s.Contributor?.trim() === playerName && s["Assist to"]?.trim() === targetAssistPlayer) {
-        totalAssistTo += parseInt(s["Assist to count"]) || 0;
-      }
+    // ---- 新增：计算助攻给对方的总数 ----
+    const targetAssistPlayer = (playerName === "Ryan") ? "Darren" : (playerName === "Darren") ? "Ryan" : null;
+    let totalAssistTo = 0;
+    if (targetAssistPlayer) {
+      const relevantStats = filterSeason
+        ? stats.filter(s => getSeasonFromDate(s.Date) === filterSeason)
+        : stats;
+      relevantStats.forEach(s => {
+        if (s.Contributor?.trim() === playerName && s["Assist to"]?.trim() === targetAssistPlayer) {
+          totalAssistTo += parseInt(s["Assist to count"]) || 0;
+        }
+      });
+    }
+    // ---- 新增结束 ----
+
+    const locationEntries = Object.entries(statsData.locationStats).filter(([loc]) => loc !== "Unknown").sort((a, b) => a[0].localeCompare(b[0]));
+    const locationData = locationEntries.map(([loc, data]) => {
+      const avgGoals = data.count > 0 ? data.goals / data.count : 0;
+      const avgAssists = data.count > 0 ? data.assists / data.count : 0;
+      const avgContrib = data.count > 0 ? (data.goals + data.assists) / data.count : 0;
+      return { loc, data, avgGoals, avgAssists, avgContrib };
     });
-  }
-  // ---- 新增结束 ----
+    const maxContrib = locationData.length > 0 ? Math.max(...locationData.map((d) => d.avgContrib)) : 0;
 
-  const locationEntries = Object.entries(statsData.locationStats).filter(([loc]) => loc !== "Unknown").sort((a, b) => a[0].localeCompare(b[0]));
-  const locationData = locationEntries.map(([loc, data]) => {
-    const avgGoals = data.count > 0 ? data.goals / data.count : 0;
-    const avgAssists = data.count > 0 ? data.assists / data.count : 0;
-    const avgContrib = data.count > 0 ? (data.goals + data.assists) / data.count : 0;
-    return { loc, data, avgGoals, avgAssists, avgContrib };
-  });
-  const maxContrib = locationData.length > 0 ? Math.max(...locationData.map((d) => d.avgContrib)) : 0;
-
-  return (
-    <div className="player-card">
-      <h3 className="player-name">⚔️ {playerName} - Attacking Stats</h3>
-      <div className="summary-list">
-        <div className="summary-row"><span className="summary-label">Avg Rating</span><span className={`badge badge-rating-${ratingClass}`}>{avgRating.toFixed(2)}</span></div>
-        <div className="summary-row"><span className="summary-label">Matches</span><span className="plain-value">{totalMatches}</span></div>
-        <div className="summary-row"><span className="summary-label">Total Goals</span><span className="plain-value">{totalGoals}</span></div>
-        <div className="summary-row"><span className="summary-label">Assists</span><span className="plain-value">{statsData.assists}</span></div>
-        {/* ---- 新增：助攻给对方的行 ---- */}
-        {targetAssistPlayer && (
+    return (
+      <div className="player-card">
+        <h3 className="player-name">⚔️ {playerName} - Attacking Stats</h3>
+        <div className="summary-list">
+          <div className="summary-row"><span className="summary-label">Avg Rating</span><span className={`badge badge-rating-${ratingClass}`}>{avgRating.toFixed(2)}</span></div>
+          <div className="summary-row"><span className="summary-label">Matches</span><span className="plain-value">{totalMatches}</span></div>
+          <div className="summary-row"><span className="summary-label">Total Goals</span><span className="plain-value">{totalGoals}</span></div>
+          <div className="summary-row"><span className="summary-label">Assists</span><span className="plain-value">{statsData.assists}</span></div>
+          {/* ---- 新增：助攻给对方的行 ---- */}
+          {targetAssistPlayer && (
+            <div className="summary-row">
+              <span className="summary-label">Assists to {targetAssistPlayer}</span>
+              <span className="plain-value">{totalAssistTo}</span>
+            </div>
+          )}
+          {/* ---- 新增结束 ---- */}
+          <div className="summary-row"><span className="summary-label">Win Rate</span><span className={`badge badge-winrate-${winRateClass}`}>{winRate.toFixed(1)}%</span></div>
+          <div className="summary-row"><span className="summary-label">Errors</span><span className={`badge badge-error-${errorClass}`}>{statsData.errors}</span></div>
           <div className="summary-row">
-            <span className="summary-label">Assists to {targetAssistPlayer}</span>
-            <span className="plain-value">{totalAssistTo}</span>
+            <span className="summary-label">MOTM</span>
+            <span className="plain-value">{totalMotm}</span>
+          </div>
+        </div>
+        {totalGoals > 0 ? (
+          <div className="chart-container">
+            <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { color: "#475569", font: { family: "'Barlow', sans-serif", size: 12 } } } } }} />
+          </div>
+        ) : (<p className="no-data">No goal source data</p>)}
+        <FormTrendGraph matches={statsData.matches} />
+        <StreakTracker matches={statsData.matches} />
+        {locationData.length > 0 && (
+          <div className="location-section">
+            <div className="location-title">📍 地点表现</div>
+            <table className="location-table">
+              <thead><tr><th>Location</th><th>Matches</th><th>Avg Goals</th><th>Avg Assists</th><th>Avg Contrib</th></tr></thead>
+              <tbody>
+                {locationData.map(({ loc, data, avgGoals, avgAssists, avgContrib }) => (
+                  <tr key={loc} className={avgContrib === maxContrib && maxContrib > 0 ? "highlight" : ""}>
+                    <td>{loc}</td><td>{data.count}</td><td>{avgGoals.toFixed(2)}</td><td>{avgAssists.toFixed(2)}</td><td>{avgContrib.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-        {/* ---- 新增结束 ---- */}
-        <div className="summary-row"><span className="summary-label">Win Rate</span><span className={`badge badge-winrate-${winRateClass}`}>{winRate.toFixed(1)}%</span></div>
-        <div className="summary-row"><span className="summary-label">Errors</span><span className={`badge badge-error-${errorClass}`}>{statsData.errors}</span></div>
-        <div className="summary-row">
-          <span className="summary-label">MOTM</span>
-          <span className="plain-value">{totalMotm}</span>
-        </div>
       </div>
-      {totalGoals > 0 ? (
-        <div className="chart-container">
-          <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { color: "#475569", font: { family: "'Barlow', sans-serif", size: 12 } } } } }} />
-        </div>
-      ) : (<p className="no-data">No goal source data</p>)}
-      <FormTrendGraph matches={statsData.matches} />
-      <StreakTracker matches={statsData.matches} />
-      {locationData.length > 0 && (
-        <div className="location-section">
-          <div className="location-title">📍 地点表现</div>
-          <table className="location-table">
-            <thead><tr><th>Location</th><th>Matches</th><th>Avg Goals</th><th>Avg Assists</th><th>Avg Contrib</th></tr></thead>
-            <tbody>
-              {locationData.map(({ loc, data, avgGoals, avgAssists, avgContrib }) => (
-                <tr key={loc} className={avgContrib === maxContrib && maxContrib > 0 ? "highlight" : ""}>
-                  <td>{loc}</td><td>{data.count}</td><td>{avgGoals.toFixed(2)}</td><td>{avgAssists.toFixed(2)}</td><td>{avgContrib.toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-};
+    );
+  };
 
   // ===== Render: Seasonal profile (other players) =====
   const renderSeasonalProfile = (playerName) => {
     const playerData = lineupStats[playerName];
-    const availablePlayers = Object.keys(lineupStats);
-
+    
     // ✅ Calculate total MOTM across all seasons
     const playerMotm = motmStats[playerName] || {};
     const totalMotm = Object.values(playerMotm).reduce((a, b) => a + b, 0);
@@ -291,7 +290,6 @@ function StatsSummary({ stats }) {
         <div className="player-card simple-card">
           <h3 className="player-name">{playerName}</h3>
           <div className="summary-list">
-            {/* ✅ Show MOTM even when no lineup records */}
             <div className="summary-row">
               <span className="summary-label">MOTM</span>
               <span className="plain-value">{totalMotm}</span>
@@ -299,10 +297,6 @@ function StatsSummary({ stats }) {
           </div>
           <div className="no-data">
             No lineup records found for <strong>{playerName}</strong>.
-            <br /><br />
-            <small style={{ color: "#94a3b8" }}>
-              Players found in lineups: {availablePlayers.length > 0 ? availablePlayers.join(", ") : "(none)"}
-            </small>
           </div>
         </div>
       );
@@ -318,12 +312,63 @@ function StatsSummary({ stats }) {
     });
     const overallAvg = totalMatches > 0 ? totalRating / totalMatches : 0;
     const ratingClass = overallAvg < 6 ? "low" : overallAvg <= 8 ? "mid" : "high";
+
+    // ✅ ADD THE MISSING RETURN STATEMENT HERE!
+    return (
+      <div className="player-card simple-card">
+        <h3 className="player-name">🛡️ {playerName} - Lineup Stats</h3>
+        <div className="summary-list">
+          <div className="summary-row">
+            <span className="summary-label">Overall Avg Rating</span>
+            <span className={`badge badge-rating-${ratingClass}`}>{overallAvg.toFixed(2)}</span>
+          </div>
+          <div className="summary-row">
+            <span className="summary-label">Total Lineup Matches</span>
+            <span className="plain-value">{totalMatches}</span>
+          </div>
+          <div className="summary-row">
+            <span className="summary-label">MOTM</span>
+            <span className="plain-value">{totalMotm}</span>
+          </div>
+        </div>
+        
+        {seasons.length > 0 && (
+          <div className="location-section">
+            <div className="location-title">📅 Season Breakdown</div>
+            <table className="location-table">
+              <thead>
+                <tr>
+                  <th>Season</th>
+                  <th>Matches</th>
+                  <th>Avg Rating</th>
+                </tr>
+              </thead>
+              <tbody>
+                {seasons.map(season => {
+                  const sData = playerData[season];
+                  const avg = sData.matches > 0 ? sData.totalRating / sData.matches : 0;
+                  const sRatingClass = avg < 6 ? "low" : avg <= 8 ? "mid" : "high";
+                  return (
+                    <tr key={season}>
+                      <td>{season}</td>
+                      <td>{sData.matches}</td>
+                      <td><span className={`badge badge-rating-${sRatingClass}`}>{avg.toFixed(2)}</span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
   };
 
   // ===== Main Render =====
   return (
     <div className="stats-summary-wrap">
       <h2 className="stats-header">Stats Summary</h2>
+      {debugInfo && <div style={{textAlign: "center", color: "#94a3b8", fontSize: "12px", marginBottom: "10px"}}>{debugInfo}</div>}
       <div className="stats-layout">
         {/* Filter Panel */}
         <div className="filter-panel">
