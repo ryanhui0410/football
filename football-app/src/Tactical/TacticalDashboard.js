@@ -166,7 +166,7 @@ function TacticalDashboard() {
             <MatchLineup 
               matchData={matchDetails} 
               initialLineup={lineupData}
-              layout="vertical" 
+              layout="horizontal" 
               editMode={true}
               availablePlayers={availablePlayers}
               onLineupChange={(newLineup) => {
