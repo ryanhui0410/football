@@ -657,3 +657,30 @@
   background: #c62828 !important;
   border: 1px solid #ef5350;
 }
+/* Edit Report Button in Choice Modal */
+.choice-btn.edit-report:hover { 
+  border-color: #f59e0b; 
+  background: #fffbeb; 
+  color: #b45309; 
+}
+
+/* Slot Edit Modal (Appears when clicking a player on the pitch) */
+.slot-edit-overlay {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); 
+  backdrop-filter: blur(4px); display: flex; align-items: center; 
+  justify-content: center; z-index: 4000; animation: fadeIn 0.2s ease;
+}
+.slot-edit-modal {
+  background: #fff; padding: 32px; border-radius: 16px; width: 400px; 
+  text-align: left; box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
+  position: relative; animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.slot-edit-modal h3 { 
+  margin-top: 0; margin-bottom: 20px; 
+  font-family: 'Oswald', sans-serif; color: #0f172a; font-size: 22px; 
+}
+.slot-edit-close {
+  position: absolute; top: 12px; right: 16px; background: none; border: none; 
+  font-size: 24px; color: #94a3b8; cursor: pointer;
+}
+.slot-edit-close:hover { color: #ef4444; }

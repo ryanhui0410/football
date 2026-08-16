@@ -15,8 +15,11 @@ function ModifyDashboard({ contributors, onSave }) {
   const [matchReport, setMatchReport] = useState(null);
   const [matchStatsData, setMatchStatsData] = useState([]);
   const [activeFilter, setActiveFilter] = useState("All");
-  const [reportEditMode, setReportEditMode] = useState(false);
-
+  const [isEditingReport, setIsEditingReport] = useState(false);
+  const [availablePlayers, setAvailablePlayers] = useState([]);
+  const [slotToEdit, setSlotToEdit] = useState(null);
+  const [editedLineup, setEditedLineup] = useState(null);
+  const [lineupVersion, setLineupVersion] = useState(0);
   const contributorNames = ["All", ...contributors.map(c => c.name)];
   const filteredContributors = activeFilter === "All" ? contributors : contributors.filter(c => c.name === activeFilter);
 
@@ -99,14 +102,13 @@ function ModifyDashboard({ contributors, onSave }) {
     return '#dc2626';
   };
 
-  // 评分背景色（新规则）
   const getRatingBgColor = (rating) => {
     const r = parseFloat(rating);
     if (isNaN(r)) return '#e2e8f0';
-    if (r > 9) return '#3b82f6';    // blue
-    if (r >= 7) return '#22c55e';   // green
-    if (r >= 5) return '#eab308';   // yellow
-    return '#ef4444';               // red
+    if (r > 9) return '#3b82f6';
+    if (r >= 7) return '#22c55e';
+    if (r >= 5) return '#eab308';
+    return '#ef4444';
   };
 
   const splitSymbols = (symbolStr) => {
@@ -140,28 +142,44 @@ function ModifyDashboard({ contributors, onSave }) {
     ) || null;
   };
 
-  const enrichLineupWithMotm = (lineup) => {
+    const enrichLineupWithMotm = (lineup) => {
     if (!lineup || !matchStatsData.length) return lineup;
     const enriched = JSON.parse(JSON.stringify(lineup));
     ['teamA', 'teamB'].forEach(team => {
       if (!enriched[team]?.players) return;
-      Object.keys(enriched[team].players).forEach(slotId => {
-        const player = enriched[team].players[slotId];
-        const stat = getPlayerMatchStats(
-          player.Contributor,
-          enriched.date,
-          enriched.location,
-          enriched.time
-        );
-        player.isMotm = stat?.["Man of the Match"] === true;
-        player.goals = parseInt(stat?.Goal) || 0;
-        player.assists = parseInt(stat?.Assist) || 0;
-      });
+      
+      // NEW ARRAY LOGIC
+      if (Array.isArray(enriched[team].players)) {
+        enriched[team].players = enriched[team].players.map(player => {
+          if (!player) return null;
+          const stat = getPlayerMatchStats(
+            player.Contributor,
+            enriched.date,
+            enriched.location,
+            enriched.time
+          );
+          return {
+            ...player,
+            isMotm: stat?.["Man of the Match"] === true,
+            goals: parseInt(stat?.Goal) || 0,
+            assists: parseInt(stat?.Assist) || 0,
+          };
+        });
+      } else {
+        // Fallback for old object format just in case
+        Object.keys(enriched[team].players).forEach(slotId => {
+          const player = enriched[team].players[slotId];
+          const stat = getPlayerMatchStats(player.Contributor, enriched.date, enriched.location, enriched.time);
+          player.isMotm = stat?.["Man of the Match"] === true;
+          player.goals = parseInt(stat?.Goal) || 0;
+          player.assists = parseInt(stat?.Assist) || 0;
+        });
+      }
     });
     return enriched;
   };
 
-  const fetchAndOpenReport = async (editMode = false) => {
+    const fetchAndOpenReport = async (isEditMode = false) => {
     try {
       const [lineupsRes, statsRes] = await Promise.all([
         fetch("http://localhost:5000/match-lineups"),
@@ -182,27 +200,54 @@ function ModifyDashboard({ contributors, onSave }) {
 
       if (found) {
         setMatchReport(found);
+        setEditedLineup(JSON.parse(JSON.stringify(found)));
         setMatchStatsData(stats);
-        setReportEditMode(editMode);
-      } else {
-        if (editMode) {
-          setMatchReport({
-            date: targetDate,
-            location: targetLocation,
-            time: targetTime,
-            teamA: { formation: "4-4-2", players: {} },
-            teamB: { formation: "4-4-2", players: {} }
-          });
-          setMatchStatsData(stats);
-          setReportEditMode(true);
-        } else {
-          alert(`No tactical report found.`);
+        setIsEditingReport(isEditMode);
+        setLineupVersion(v => v + 1);
+        
+        // Fetch player cards if entering edit mode
+        if (isEditMode && availablePlayers.length === 0) {
+          const pRes = await fetch("http://localhost:5000/player-attributes");
+          const pData = await pRes.json();
+          setAvailablePlayers(Array.isArray(pData) ? pData : []);
         }
+      } else {
+        alert(`No tactical report found.`);
       }
       setChoiceMatch(null);
     } catch (err) {
       console.error("Fetch error:", err);
       alert("Failed to fetch match report.");
+    }
+  };
+
+  const handleSaveReportLineup = async () => {
+    if (!editedLineup) return;
+
+    const payload = {
+      date: editedLineup.date,
+      location: editedLineup.location,
+      time: editedLineup.time,
+      teamA: editedLineup.teamA,
+      teamB: editedLineup.teamB,
+    };
+
+    try {
+      const res = await fetch("http://localhost:5000/match-lineups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+      console.log("📥 Server response:", result);
+      alert("✅ Match Report saved!");
+      
+      setIsEditingReport(false);
+      setMatchReport(JSON.parse(JSON.stringify(editedLineup))); // Update view mode
+      setLineupVersion(v => v + 1); // Refresh pitch
+    } catch (err) {
+      console.error("Save failed:", err);
+      alert("❌ Failed to save match report");
     }
   };
 
@@ -329,17 +374,14 @@ function ModifyDashboard({ contributors, onSave }) {
             <button className="choice-close" onClick={() => setChoiceMatch(null)}>✕</button>
             <h3>Match on {choiceMatch.match.date}</h3>
             <p className="choice-subtitle">What would you like to view for <strong>{choiceMatch.name}</strong>?</p>
-            <div className="choice-buttons">
+                        <div className="choice-buttons">
               <button className="choice-btn stats" onClick={() => { openStatsModal(choiceMatch.match, choiceMatch.name); setChoiceMatch(null); }}>
                 📊 <span>View Individual Stats</span>
               </button>
-              <button className="choice-btn report" onClick={() => fetchAndOpenReport()}>
+              <button className="choice-btn report" onClick={() => fetchAndOpenReport(false)}>
                 ⚽ <span>View Match Report</span>
               </button>
-              <button
-                className="choice-btn edit-report"
-                onClick={() => fetchAndOpenReport(true)}
-              >
+              <button className="choice-btn edit-report" onClick={() => fetchAndOpenReport(true)}>
                 ✏️ <span>Edit Match Report</span>
               </button>
             </div>
@@ -347,18 +389,16 @@ function ModifyDashboard({ contributors, onSave }) {
         </div>
       )}
 
-      {/* VIEW/EDIT MODE OVERLAY */}
+      {/* VIEW MATCH REPORT OVERLAY (Read-only) */}
       {matchReport && (
-        <div className="report-overlay" onClick={() => { setMatchReport(null); setReportEditMode(false); }}>
+        <div className="report-overlay" onClick={() => { setMatchReport(null); }}>
           <div className="report-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '1000px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: '25px' }}>
-            <button className="report-close" onClick={() => { setMatchReport(null); setReportEditMode(false); }}>✕</button>
-            <h2 className="report-title">
-              {reportEditMode ? '✏️ Edit Match Report' : '⚽ Match Report'}: {matchReport.date}
-            </h2>
+            <button className="report-close" onClick={() => { setMatchReport(null); }}>✕</button>
+            <h2 className="report-title">⚽ Match Report: {matchReport.date}</h2>
             {matchReport.location && <p className="report-meta">📍 {matchReport.location} {matchReport.time && `• 🕒 ${matchReport.time}`}</p>}
 
-            {/* SMART RESULT HEADER (only in view mode) */}
-            {!reportEditMode && (() => {
+            {/* SMART RESULT HEADER */}
+            {(() => {
               const allPlayers = [
                 ...Object.values(matchReport.teamA?.players || {}),
                 ...Object.values(matchReport.teamB?.players || {})
@@ -407,49 +447,122 @@ function ModifyDashboard({ contributors, onSave }) {
               );
             })()}
 
-            {/* TACTICAL PITCH LINEUP */}
+            {/* TACTICAL PITCH LINEUP (Read-only / Editable) */}
             <div style={{ marginTop: '20px' }}>
               <h3 style={{ textAlign: 'center', marginBottom: '15px', color: '#444' }}>
-                {reportEditMode ? 'Edit Lineup & Ratings' : 'Tactical Lineup'}
+                {isEditingReport ? "✏️ Edit Tactical Lineup" : "Tactical Lineup"}
               </h3>
               <MatchLineup
+                key={`lineup-${isEditingReport ? 'edit' : 'view'}-${lineupVersion}`}
                 matchData={{ Date: matchReport.date, Location: matchReport.location, Time: matchReport.time }}
-                initialLineup={reportEditMode ? matchReport : enrichLineupWithMotm(matchReport)}
-                readOnly={!reportEditMode}
-                editMode={reportEditMode}
+                initialLineup={enrichLineupWithMotm(isEditingReport ? editedLineup : matchReport)}
+                readOnly={!isEditingReport}
+                editMode={isEditingReport}
                 layout="horizontal"
+                availablePlayers={availablePlayers}
                 getRatingColor={getRatingColor}
-                availablePlayers={reportEditMode ? contributors.flatMap(c => c.matches.map(m => ({ Contributor: c.name, position: m.position }))) : []}
                 getPlayerMatchStats={getPlayerMatchStats}
+                onLineupChange={(newLineup) => {
+                  setEditedLineup(prev => ({ ...prev, ...newLineup }));
+                }}
+                onSlotClick={(team, idx, player) => {
+                  setSlotToEdit({ team, idx, player });
+                }}
               />
-            </div>
 
-            {/* SAVE BUTTON (only in edit mode) */}
-            {reportEditMode && (
-              <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <button
-                  className="md-edit-btn"
-                  style={{ padding: '12px 32px', fontSize: '16px' }}
-                  onClick={async () => {
-                    try {
-                      await fetch("http://localhost:5000/match-lineups", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(matchReport)
-                      });
-                      alert("✅ Match report saved!");
-                      setReportEditMode(false);
-                      setMatchReport(null);
-                      onSave();
-                    } catch (err) {
-                      alert("❌ Failed to save");
-                    }
-                  }}
-                >
-                  💾 Save Match Report
-                </button>
+              {isEditingReport && (
+                <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                  <button 
+                    onClick={() => { setIsEditingReport(false); setEditedLineup(null); setLineupVersion(v => v + 1); }}
+                    style={{ padding: '10px 20px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleSaveReportLineup}
+                    style={{ 
+                      padding: '10px 20px', background: '#10b981', color: '#fff', border: 'none', 
+                      borderRadius: '6px', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(16,185,129,0.3)'
+                    }}
+                  >
+                    💾 Save Lineup
+                  </button>
+                </div>
+              )}
+            </div>
+                  {/* SLOT EDIT MODAL */}
+      {slotToEdit && (
+        <div className="slot-edit-overlay" onClick={() => setSlotToEdit(null)}>
+          <div className="slot-edit-modal" onClick={e => e.stopPropagation()}>
+            <button className="slot-edit-close" onClick={() => setSlotToEdit(null)}>✕</button>
+            <h3>{slotToEdit.player ? "Edit Player" : "Add Player"}</h3>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Select Player:</label>
+              <select 
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '15px' }}
+                value={slotToEdit.player?.Contributor || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (!val) {
+                    setSlotToEdit(prev => ({ ...prev, player: null }));
+                  } else {
+                    const selected = availablePlayers.find(p => p.Contributor === val);
+                    setSlotToEdit(prev => ({
+                      ...prev,
+                      player: { 
+                        ...selected, 
+                        rating: prev.player?.rating || 50,
+                        picture: selected.picture || `/${selected.Contributor}.jpeg`
+                      }
+                    }));
+                  }
+                }}
+              >
+                <option value="">-- Empty Slot --</option>
+                {availablePlayers.map(p => (
+                  <option key={p.Contributor} value={p.Contributor}>{p.Contributor}</option>
+                ))}
+              </select>
+            </div>
+            
+            {slotToEdit.player && (
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Match Rating (1-99):</label>
+                <input 
+                  type="number" min="1" max="99"
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '15px' }}
+                  value={slotToEdit.player.rating || ""}
+                  onChange={(e) => setSlotToEdit(prev => ({
+                    ...prev,
+                    player: { ...prev.player, rating: parseInt(e.target.value) || 0 }
+                  }))}
+                />
               </div>
             )}
+            
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setSlotToEdit(null)} style={{ padding: '10px 16px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+              <button onClick={() => {
+                const { team, idx, player } = slotToEdit;
+                const teamKey = team === 'A' ? 'teamA' : 'teamB';
+                setEditedLineup(prev => {
+                  const newLineup = JSON.parse(JSON.stringify(prev));
+                  if (!Array.isArray(newLineup[teamKey].players)) {
+                    newLineup[teamKey].players = Array(11).fill(null);
+                  }
+                  newLineup[teamKey].players[idx] = player;
+                  return newLineup;
+                });
+                setLineupVersion(v => v + 1); // Refresh the pitch visually
+                setSlotToEdit(null);
+              }} style={{ padding: '10px 16px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>
+                Save to Pitch
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
           </div>
         </div>
       )}
