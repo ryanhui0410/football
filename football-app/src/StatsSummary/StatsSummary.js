@@ -318,61 +318,6 @@ function StatsSummary({ stats }) {
     });
     const overallAvg = totalMatches > 0 ? totalRating / totalMatches : 0;
     const ratingClass = overallAvg < 6 ? "low" : overallAvg <= 8 ? "mid" : "high";
-
-    return (
-      <div className="player-card simple-card">
-        <h3 className="player-name">{playerName}</h3>
-
-        <div className="summary-list">
-          <div className="summary-row">
-            <span className="summary-label">Overall Avg Rating</span>
-            <span className={`badge badge-rating-${ratingClass}`}>{overallAvg.toFixed(2)}</span>
-          </div>
-          <div className="summary-row">
-            <span className="summary-label">Total Matches Played</span>
-            <span className="plain-value">{totalMatches}</span>
-          </div>
-          {/* ✅ MOTM row under Errors (well, under Total Matches) */}
-          <div className="summary-row">
-            <span className="summary-label">MOTM</span>
-            <span className="plain-value">{totalMotm}</span>
-          </div>
-        </div>
-
-        <div className="location-section">
-          <div className="location-title">📅 Seasonal Performance</div>
-          <table className="location-table season-table">
-            <thead>
-              <tr>
-                <th>Season</th>
-                <th>Matches</th>
-                <th>Avg Rating</th>
-                <th>MOTM</th>   {/* ✅ New column for per-season MOTM */}
-              </tr>
-            </thead>
-            <tbody>
-              {seasons.map((season) => {
-                const d = playerData[season];
-                const rClass = d.avgRating < 6 ? "low" : d.avgRating <= 8 ? "mid" : "high";
-                const motmCount = playerMotm[season] || 0;
-                return (
-                  <tr key={season}>
-                    <td>{season}</td>
-                    <td>{d.matches}</td>
-                    <td>
-                      <span className={`badge badge-rating-${rClass}`} style={{ padding: "2px 8px", fontSize: "14px" }}>
-                        {d.avgRating.toFixed(2)}
-                      </span>
-                    </td>
-                    <td>{motmCount}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
   };
 
   // ===== Main Render =====
