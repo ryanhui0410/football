@@ -122,11 +122,19 @@ function ModifyDashboard({ contributors, onSave }) {
     return rows;
   };
 
-  const calcTeamAverage = (teamObj) => {
+    const calcTeamAverage = (teamObj) => {
     if (!teamObj?.players) return null;
-    const ratings = Object.values(teamObj.players)
+    
+    // Handle both new Array format and old Object format
+    const playersArr = Array.isArray(teamObj.players) 
+      ? teamObj.players 
+      : Object.values(teamObj.players);
+      
+    const ratings = playersArr
+      .filter(p => p && p.rating != null) // ✨ Safely ignore null/empty slots
       .map(p => parseFloat(p.rating))
       .filter(r => !isNaN(r));
+      
     if (ratings.length === 0) return null;
     return (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1);
   };
@@ -179,7 +187,7 @@ function ModifyDashboard({ contributors, onSave }) {
     return enriched;
   };
 
-    const fetchAndOpenReport = async (isEditMode = false) => {
+      const fetchAndOpenReport = async (isEditMode = false) => {
     try {
       const [lineupsRes, statsRes] = await Promise.all([
         fetch("http://localhost:5000/match-lineups"),
@@ -198,6 +206,7 @@ function ModifyDashboard({ contributors, onSave }) {
         (l.time || "").trim() === targetTime
       );
 
+      // ✨ RESTORED IF/ELSE BLOCK
       if (found) {
         setMatchReport(found);
         setEditedLineup(JSON.parse(JSON.stringify(found)));
@@ -205,8 +214,8 @@ function ModifyDashboard({ contributors, onSave }) {
         setIsEditingReport(isEditMode);
         setLineupVersion(v => v + 1);
         
-        // Fetch player cards if entering edit mode
-        if (isEditMode && availablePlayers.length === 0) {
+        // Always fetch latest player cards when entering edit mode
+        if (isEditMode) { 
           const pRes = await fetch("http://localhost:5000/player-attributes");
           const pData = await pRes.json();
           setAvailablePlayers(Array.isArray(pData) ? pData : []);
@@ -414,10 +423,16 @@ function ModifyDashboard({ contributors, onSave }) {
 
             {/* SMART RESULT HEADER */}
             {(() => {
-              const allPlayers = [
-                ...Object.values(matchReport.teamA?.players || {}),
-                ...Object.values(matchReport.teamB?.players || {})
-              ];
+              // ✨ Safely extract players, handling both Arrays and Objects, and filtering out nulls
+              const playersA = Array.isArray(matchReport.teamA?.players) 
+                ? matchReport.teamA.players 
+                : Object.values(matchReport.teamA?.players || {});
+              const playersB = Array.isArray(matchReport.teamB?.players) 
+                ? matchReport.teamB.players 
+                : Object.values(matchReport.teamB?.players || {});
+                
+              const allPlayers = [...playersA, ...playersB].filter(p => p != null);
+              
               let matchResult = '', winLoss = '';
               for (const p of allPlayers) {
                 const stat = getPlayerMatchStats(p.Contributor, matchReport.date, matchReport.location, matchReport.time);
@@ -427,6 +442,7 @@ function ModifyDashboard({ contributors, onSave }) {
                   break;
                 }
               }
+              
               const avgA = calcTeamAverage(matchReport.teamA);
               const avgB = calcTeamAverage(matchReport.teamB);
               let leftLabel = 'Team A', rightLabel = 'Team B';
@@ -557,24 +573,6 @@ function ModifyDashboard({ contributors, onSave }) {
                 />
               </div>
             )}
-            
-            {slotToEdit.player && (
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Match Rating (1-99):</label>
-                <input 
-                  type="number" min="0" max="10" step="0.1"
-                  value={slotToEdit.player.rating !== "" && slotToEdit.player.rating !== undefined ? slotToEdit.player.rating : ""}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setSlotToEdit(prev => ({
-                      ...prev,
-                      player: { ...prev.player, rating: val === "" ? "" : parseFloat(val) }
-                    }));
-                  }}
-                />
-              </div>
-            )}
-            
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button onClick={() => setSlotToEdit(null)} style={{ padding: '10px 16px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
               <button onClick={() => {

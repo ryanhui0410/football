@@ -110,7 +110,7 @@ function MatchLineup({
     }
   };
 
-  const renderSlots = (formation, team, playersArr) => {
+    const renderSlots = (formation, team, playersArr) => {
     const formationDef = FORMATIONS[formation] || FORMATIONS["4-4-2"];
     
     return formationDef.coords.map((pos, idx) => {
@@ -153,7 +153,17 @@ function MatchLineup({
               </div>
             </div>
           ) : (
-            <span className="slot-label">{label}</span>
+            // ✨ NEW EMPTY SLOT DESIGN
+            <div className="empty-slot-card">
+              <div className="empty-slot-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <span className="empty-slot-label">{label}</span>
+              {editMode && <span className="empty-slot-hint">Click to add</span>}
+            </div>
           )}
         </div>
       );

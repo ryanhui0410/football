@@ -443,3 +443,58 @@
   box-shadow: 0 2px 6px rgba(242, 193, 78, 0.5);
   white-space: nowrap;
 }
+/* --- Empty Slot Profile Placeholder --- */
+.empty-slot-card {
+  width: 75px;
+  height: 95px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s ease;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Hover effect when in Edit Mode */
+.pitch-slot.editable:hover .empty-slot-card {
+  background: rgba(242, 193, 78, 0.15);
+  border-color: #f2c14e;
+  color: #f2c14e;
+  transform: scale(1.05);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(242, 193, 78, 0.2);
+}
+
+.empty-slot-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.empty-slot-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.empty-slot-hint {
+  font-family: 'Barlow', sans-serif;
+  font-size: 10px;
+  text-transform: none;
+  letter-spacing: normal;
+  opacity: 0;
+  transition: opacity 0.2s;
+  margin-top: 2px;
+}
+
+.pitch-slot.editable:hover .empty-slot-hint {
+  opacity: 1;
+}

@@ -7,16 +7,36 @@
       "formation": "4-4-2",
       "players": [
         null,
+        {
+          "Contributor": "Vince",
+          "rating": 6.6,
+          "picture": "/images/Vince.jpeg"
+        },
+        {
+          "Contributor": "John",
+          "rating": 7.4,
+          "picture": "/images/John.jpeg"
+        },
+        null,
+        null,
+        {
+          "Contributor": "Howard",
+          "rating": 6.2,
+          "picture": "/images/Howard.jpeg"
+        },
         null,
         null,
         null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        {
+          "Contributor": "Ryan",
+          "rating": 10,
+          "picture": "/Ryan.jpeg"
+        },
+        {
+          "Contributor": "Darren",
+          "rating": 10,
+          "picture": "/Darren.jpeg"
+        }
       ]
     },
     "teamB": {
@@ -35,16 +55,8 @@
           "rating": 60,
           "picture": "/Tony.jpeg"
         },
-        {
-          "Contributor": "Darren",
-          "rating": 10,
-          "picture": "/Darren.jpeg"
-        },
-        {
-          "Contributor": "Ryan",
-          "rating": 10,
-          "picture": "/Ryan.jpeg"
-        }
+        null,
+        null
       ]
     }
   },
