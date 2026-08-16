@@ -211,3 +211,91 @@
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+/* =========================================
+   FIX 1: PITCH DIMENSIONS (Stretch Horizontally)
+   ========================================= */
+.pitch-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.6 / 1 !important; /* Forces a wide horizontal pitch */
+  min-height: 500px !important;     /* Prevents vertical squishing */
+  background: linear-gradient(90deg, #1b4332 0%, #2d6a4f 50%, #1b4332 100%) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.4) !important;
+  margin-top: 20px !important;
+}
+
+/* Ensure vertical layout remains tall if ever used */
+.pitch-wrapper.vertical {
+  aspect-ratio: 1 / 1.6 !important;
+  min-height: 750px !important;
+}
+
+/* =========================================
+   FIX 2: PLAYER CARD LEGIBILITY 
+   ========================================= */
+.slot-card {
+  background: rgba(15, 23, 42, 0.92) !important; /* Solid dark slate background */
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 8px !important;
+  padding: 5px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  width: 75px !important;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.6) !important;
+  backdrop-filter: blur(4px);
+}
+
+.slot-card img {
+  width: 45px !important;
+  height: 45px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 2px solid rgba(255,255,255,0.8) !important;
+  margin-bottom: 2px !important;
+}
+
+.slot-info {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+.slot-name {
+  font-family: 'Oswald', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #ffffff !important; /* Pure white text */
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.9) !important; /* Heavy shadow for contrast */
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 70px !important;
+}
+
+.slot-rating {
+  font-family: 'Oswald', sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important; /* Pure white text */
+  text-shadow: 0 2px 4px rgba(0,0,0,0.9) !important;
+  line-height: 1.2 !important;
+}
+
+/* MOTM Badge visibility fix */
+.motm-badge {
+  background: #facc15 !important;
+  color: #000 !important;
+  font-size: 9px !important;
+  padding: 2px 4px !important;
+  border-radius: 4px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5) !important;
+  z-index: 10 !important;
+}

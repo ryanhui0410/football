@@ -22,7 +22,7 @@ function ModifyDashboard({ contributors, onSave }) {
   const [lineupVersion, setLineupVersion] = useState(0);
   const contributorNames = ["All", ...contributors.map(c => c.name)];
   const filteredContributors = activeFilter === "All" ? contributors : contributors.filter(c => c.name === activeFilter);
-
+  const [reportPerspective, setReportPerspective] = useState(""); // ✨ ADD THIS
   const openModal = (match, contributorName) => setSelectedMatch({ ...match, contributorName });
   const openStatsModal = (match, contributorName) => {
     setSelectedStats({ ...match, contributorName });
@@ -212,6 +212,7 @@ function ModifyDashboard({ contributors, onSave }) {
         setEditedLineup(JSON.parse(JSON.stringify(found)));
         setMatchStatsData(stats);
         setIsEditingReport(isEditMode);
+        setReportPerspective(choiceMatch.name); 
         setLineupVersion(v => v + 1);
         
         // Always fetch latest player cards when entering edit mode
@@ -421,106 +422,102 @@ function ModifyDashboard({ contributors, onSave }) {
             <h2 className="report-title">⚽ Match Report: {matchReport.date}</h2>
             {matchReport.location && <p className="report-meta">📍 {matchReport.location} {matchReport.time && `• 🕒 ${matchReport.time}`}</p>}
 
-            {/* SMART RESULT HEADER */}
-            {(() => {
-              // ✨ Safely extract players, handling both Arrays and Objects, and filtering out nulls
-              const playersA = Array.isArray(matchReport.teamA?.players) 
-                ? matchReport.teamA.players 
-                : Object.values(matchReport.teamA?.players || {});
-              const playersB = Array.isArray(matchReport.teamB?.players) 
-                ? matchReport.teamB.players 
-                : Object.values(matchReport.teamB?.players || {});
-                
-              const allPlayers = [...playersA, ...playersB].filter(p => p != null);
-              
-              let matchResult = '', winLoss = '';
-              for (const p of allPlayers) {
-                const stat = getPlayerMatchStats(p.Contributor, matchReport.date, matchReport.location, matchReport.time);
-                if (stat && stat["Match result"]) {
-                  matchResult = stat["Match result"];
-                  winLoss = stat["Win/Loss?"] || '';
-                  break;
-                }
-              }
-              
+                                                                        {(() => {
+              // ✨ Calculate averages once for the badges
               const avgA = calcTeamAverage(matchReport.teamA);
               const avgB = calcTeamAverage(matchReport.teamB);
-              let leftLabel = 'Team A', rightLabel = 'Team B';
-              let leftAvg = avgA, rightAvg = avgB;
-              let leftColor = getRatingColor(avgA), rightColor = getRatingColor(avgB);
-              if (matchResult) {
-                const parts = matchResult.split('-').map(s => parseInt(s.trim(), 10));
-                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-                  if (parts[0] >= parts[1]) {
-                    leftLabel = 'Team A'; leftAvg = avgA; leftColor = getRatingColor(avgA);
-                    rightLabel = 'Team B'; rightAvg = avgB; rightColor = getRatingColor(avgB);
-                  } else {
-                    leftLabel = 'Team B'; leftAvg = avgB; leftColor = getRatingColor(avgB);
-                    rightLabel = 'Team A'; rightAvg = avgA; rightColor = getRatingColor(avgA);
+
+              let matchResult = '', winLoss = '';
+              
+              // 1. Fetch the exact result for the player whose row was clicked
+              const perspectiveStat = getPlayerMatchStats(reportPerspective, matchReport.date, matchReport.location, matchReport.time);
+              if (perspectiveStat && perspectiveStat["Match result"]) {
+                matchResult = perspectiveStat["Match result"];
+                winLoss = perspectiveStat["Win/Loss?"] || '';
+              } else {
+                // 2. Fallback: If the clicked player doesn't have a stats record yet
+                const playersA = Array.isArray(matchReport.teamA?.players) ? matchReport.teamA.players : Object.values(matchReport.teamA?.players || {});
+                const playersB = Array.isArray(matchReport.teamB?.players) ? matchReport.teamB.players : Object.values(matchReport.teamB?.players || {});
+                const allPlayers = [...playersA, ...playersB].filter(p => p != null);
+                
+                for (const p of allPlayers) {
+                  const stat = getPlayerMatchStats(p.Contributor, matchReport.date, matchReport.location, matchReport.time);
+                  if (stat && stat["Match result"]) {
+                    matchResult = stat["Match result"];
+                    winLoss = stat["Win/Loss?"] || '';
+                    break;
                   }
                 }
               }
+
               return (
-                <div className="report-result-header">
-                  <div className="result-team-side">
-                    <span className="result-team-name">{leftLabel}</span>
-                    <span className="result-team-avg" style={{ color: leftColor }}>{leftAvg ?? '—'}</span>
+                <>
+                  {/* SMART RESULT HEADER (Simplified to just the Score) */}
+                  <div className="report-result-header" style={{ justifyContent: 'center', border: 'none', background: 'transparent', padding: '10px 0', marginBottom: '10px' }}>
+                    <div className="result-score-center">
+                      <span className="result-score">{matchResult || '—'}</span>
+                      {winLoss && <span className={`result-wl ${winLoss.toLowerCase()}`}>{winLoss}</span>}
+                    </div>
                   </div>
-                  <div className="result-score-center">
-                    <span className="result-score">{matchResult || '—'}</span>
-                    {winLoss && <span className={`result-wl ${winLoss.toLowerCase()}`}>{winLoss}</span>}
+
+                  {/* TACTICAL PITCH LINEUP (Read-only / Editable) */}
+                  <div style={{ marginTop: '10px' }}>
+                    <h3 style={{ textAlign: 'center', marginBottom: '15px', color: '#444' }}>
+                      {isEditingReport ? "✏️ Edit Tactical Lineup" : "Tactical Lineup"}
+                    </h3>
+                    
+                    {/* ✨ Pitch Container with Floating Avg Badges */}
+                    <div style={{ position: 'relative' }}>
+                      <div className="pitch-avg-badge pitch-avg-left" style={{ color: getRatingColor(avgA) }}>
+                        Avg: {avgA ?? '—'}
+                      </div>
+                      <div className="pitch-avg-badge pitch-avg-right" style={{ color: getRatingColor(avgB) }}>
+                        Avg: {avgB ?? '—'}
+                      </div>
+
+                      <MatchLineup
+                        key={`lineup-${isEditingReport ? 'edit' : 'view'}-${lineupVersion}`}
+                        matchData={{ Date: matchReport.date, Location: matchReport.location, Time: matchReport.time }}
+                        initialLineup={enrichLineupWithMotm(isEditingReport ? editedLineup : matchReport)}
+                        readOnly={!isEditingReport}
+                        editMode={isEditingReport}
+                        layout="horizontal"
+                        availablePlayers={availablePlayers}
+                        getRatingColor={getRatingColor}
+                        getPlayerMatchStats={getPlayerMatchStats}
+                        onLineupChange={(newLineup) => {
+                          setEditedLineup(prev => ({ ...prev, ...newLineup }));
+                        }}
+                        onSlotClick={(team, idx, player) => {
+                          setSlotToEdit({ team, idx, player });
+                        }}
+                      />
+                    </div>
+
+                    {isEditingReport && (
+                      <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                        <button 
+                          onClick={() => { setIsEditingReport(false); setEditedLineup(null); setLineupVersion(v => v + 1); }}
+                          style={{ padding: '10px 20px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={handleSaveReportLineup}
+                          style={{ 
+                            padding: '10px 20px', background: '#10b981', color: '#fff', border: 'none', 
+                            borderRadius: '6px', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(16,185,129,0.3)'
+                          }}
+                        >
+                          💾 Save Lineup
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className="result-team-side right">
-                    <span className="result-team-name">{rightLabel}</span>
-                    <span className="result-team-avg" style={{ color: rightColor }}>{rightAvg ?? '—'}</span>
-                  </div>
-                </div>
+                </>
               );
             })()}
 
-            {/* TACTICAL PITCH LINEUP (Read-only / Editable) */}
-            <div style={{ marginTop: '20px' }}>
-              <h3 style={{ textAlign: 'center', marginBottom: '15px', color: '#444' }}>
-                {isEditingReport ? "✏️ Edit Tactical Lineup" : "Tactical Lineup"}
-              </h3>
-              <MatchLineup
-                key={`lineup-${isEditingReport ? 'edit' : 'view'}-${lineupVersion}`}
-                matchData={{ Date: matchReport.date, Location: matchReport.location, Time: matchReport.time }}
-                initialLineup={enrichLineupWithMotm(isEditingReport ? editedLineup : matchReport)}
-                readOnly={!isEditingReport}
-                editMode={isEditingReport}
-                layout="horizontal"
-                availablePlayers={availablePlayers}
-                getRatingColor={getRatingColor}
-                getPlayerMatchStats={getPlayerMatchStats}
-                onLineupChange={(newLineup) => {
-                  setEditedLineup(prev => ({ ...prev, ...newLineup }));
-                }}
-                onSlotClick={(team, idx, player) => {
-                  setSlotToEdit({ team, idx, player });
-                }}
-              />
-
-              {isEditingReport && (
-                <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                  <button 
-                    onClick={() => { setIsEditingReport(false); setEditedLineup(null); setLineupVersion(v => v + 1); }}
-                    style={{ padding: '10px 20px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={handleSaveReportLineup}
-                    style={{ 
-                      padding: '10px 20px', background: '#10b981', color: '#fff', border: 'none', 
-                      borderRadius: '6px', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(16,185,129,0.3)'
-                    }}
-                  >
-                    💾 Save Lineup
-                  </button>
-                </div>
-              )}
-            </div>
                   {/* SLOT EDIT MODAL */}
       {slotToEdit && (
         <div className="slot-edit-overlay" onClick={() => setSlotToEdit(null)}>

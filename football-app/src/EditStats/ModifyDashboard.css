@@ -684,3 +684,28 @@
   font-size: 24px; color: #94a3b8; cursor: pointer;
 }
 .slot-edit-close:hover { color: #ef4444; }
+/* --- Pitch Average Rating Badges --- */
+.pitch-avg-badge {
+  position: absolute;
+  top: -35px;
+  z-index: 100; /* Sits on top of the pitch */
+  background: rgba(15, 23, 42, 0.85); /* Dark slate glass effect */
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  border: 2px solid rgba(255,255,255,0.15);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8); /* Ensures text pops against any background */
+}
+
+.pitch-avg-left {
+  left: 15px;
+}
+
+.pitch-avg-right {
+  right: 15px;
+}

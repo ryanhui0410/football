@@ -163,6 +163,10 @@ function TacticalDashboard() {
       {lineupData && matchDetails.Date.trim() ? (
         <>
           <div className="td-pitch-container">
+            {/* ✨ VISUAL REMARK */}
+            <div className="td-remark">
+              💡 <strong>Tactical Rule:</strong> Ryan is always assigned to <strong>Team A (Left Side)</strong>.
+            </div>
             <MatchLineup 
               matchData={matchDetails} 
               initialLineup={lineupData}
@@ -248,17 +252,42 @@ function TacticalDashboard() {
             
             <div className="td-modal-actions">
               <button className="td-modal-cancel" onClick={() => setSlotToEdit(null)}>Cancel</button>
-              <button className="td-modal-save" onClick={() => {
+                            <button className="td-modal-save" onClick={() => {
                 const { team, idx, player } = slotToEdit;
-                const teamKey = team === 'A' ? 'teamA' : 'teamB';
+                
+                // ✨ ENFORCE RYAN RULE
+                let targetTeam = team;
+                let targetIdx = idx;
+                let forcedMove = false;
+
+                // If the user selected Ryan while clicking a Team B slot
+                if (player && player.Contributor?.trim().toLowerCase() === 'ryan' && team === 'B') {
+                  targetTeam = 'A'; // Force him to Team A
+                  forcedMove = true;
+                  
+                  // Find the first empty slot in Team A, or fallback to the same index
+                  const teamAPlayers = lineupData.teamA?.players || Array(11).fill(null);
+                  const emptyIdx = teamAPlayers.findIndex(p => p === null);
+                  targetIdx = emptyIdx !== -1 ? emptyIdx : idx; 
+                }
+
+                const teamKey = targetTeam === 'A' ? 'teamA' : 'teamB';
+                
                 setLineupData(prev => {
                   const newLineup = JSON.parse(JSON.stringify(prev));
                   if (!Array.isArray(newLineup[teamKey].players)) {
                     newLineup[teamKey].players = Array(11).fill(null);
                   }
-                  newLineup[teamKey].players[idx] = player;
+                  newLineup[teamKey].players[targetIdx] = player;
                   return newLineup;
                 });
+                
+                // Show a notification if we had to auto-move him
+                if (forcedMove) {
+                  setMessage("💡 Ryan is always on Team A. Moved automatically!");
+                  setTimeout(() => setMessage(""), 3000);
+                }
+                
                 setSlotToEdit(null);
               }}>
                 Save to Pitch
