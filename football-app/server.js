@@ -402,10 +402,18 @@ app.get("/stats-history", (req, res) => {
 
 // ===================== Static serving =====================
 
-app.use(express.static(path.join(__dirname, "build")));
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "build", "index.html"));
-});
+// ===================== Static serving =====================
+// Only serve frontend files if the build folder exists
+// (This is skipped when deployed as a pure API backend for the APK)
 
+const buildPath = path.join(__dirname, "build");
+if (fs.existsSync(buildPath)) {
+  app.use(express.static(buildPath));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(buildPath, "index.html"));
+  });
+} else {
+  console.log("ℹ️  Running in API-only mode (no frontend build folder found)");
+}
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
