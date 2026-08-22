@@ -448,3 +448,171 @@
 .motm-text {
   font-weight: 600;
 }
+/* =========================================================
+   MOBILE RESPONSIVE FIXES
+   Ensure all content fits within screen space
+   ========================================================= */
+@media (max-width: 768px) {
+  /* Reduce container padding on mobile */
+  .form-container {
+    padding: 20px 16px 24px;
+    margin: 0 8px;
+  }
+
+  .form-title {
+    font-size: 24px;
+  }
+
+  .section-title {
+    font-size: 12px;
+  }
+
+  /* ✨ Force outcome grid to stack vertically on mobile */
+  .outcome-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  /* ✨ Make scoreline stack vertically instead of horizontally */
+  .scoreline-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Hide the dash between Us and Them on mobile */
+  .score-dash {
+    display: none;
+  }
+
+  /* Make each score side full width */
+  .score-side {
+    width: 100%;
+  }
+
+  /* Reduce stepper controls size */
+  .stepper-controls {
+    gap: 6px;
+  }
+
+  .step-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+
+  .step-value {
+    width: 48px;
+    font-size: 22px;
+  }
+
+  /* Reduce stat grid to fit screen */
+  .stat-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+  }
+
+  .stepper {
+    padding: 12px 8px 10px;
+  }
+
+  .stepper-label {
+    font-size: 10px;
+  }
+
+  /* Info grid - ensure inputs don't overflow */
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .info-label input {
+    font-size: 14px;
+    padding: 9px 11px;
+  }
+
+  /* Rating slider adjustments */
+  .rating-block {
+    padding: 14px 16px;
+  }
+
+  .rating-badge {
+    font-size: 18px;
+    padding: 2px 12px;
+  }
+
+  /* Result toggle buttons - ensure they wrap */
+  .result-options {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .result-btn {
+    font-size: 12px;
+    padding: 10px 0;
+    min-width: 70px;
+  }
+
+  /* Assist-to grid - stack vertically */
+  .assist-to-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  /* MOTM button */
+  .motm-btn {
+    font-size: 13px;
+    padding: 12px 0;
+  }
+
+  .motm-icon {
+    font-size: 18px;
+  }
+
+  /* Tally bar */
+  .tally-bar {
+    font-size: 12px;
+    padding: 11px 14px;
+  }
+
+  .tally-bar strong {
+    font-size: 11px;
+  }
+
+  /* Action buttons - stack vertically on very small screens */
+  .form-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-save,
+  .btn-cancel {
+    width: 100%;
+    padding: 11px 24px;
+  }
+}
+
+/* =========================================================
+   EXTRA SMALL SCREENS (iPhone SE, narrow devices)
+   ========================================================= */
+@media (max-width: 400px) {
+  .form-container {
+    padding: 16px 12px 20px;
+    margin: 0 4px;
+  }
+
+  .step-value {
+    width: 40px;
+    font-size: 20px;
+  }
+
+  .step-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 15px;
+  }
+
+  .result-btn {
+    font-size: 11px;
+    padding: 9px 0;
+  }
+}
