@@ -29,8 +29,8 @@ function PlayerRatings() {
   const fetchData = async () => {
     try {
       const [attrRes, statsRes] = await Promise.all([
-        fetch('http://localhost:5000/player-attributes'),
-        fetch('http://localhost:5000/stats'),
+        fetch('https://football-stats-xbx6.onrender.com/player-attributes'),
+        fetch('https://football-stats-xbx6.onrender.com/stats'),
       ]);
       const profilesData = await attrRes.json();
       const statsData = await statsRes.json();

@@ -19,9 +19,9 @@ function TacticalDashboard() {
   // 1. Fetch initial data on mount
   useEffect(() => {
     Promise.all([
-      fetch("http://localhost:5000/stats-history").then(res => res.json()),
-      fetch("http://localhost:5000/match-lineups").then(res => res.json()),
-      fetch("http://localhost:5000/player-attributes").then(res => res.json())
+      fetch("https://football-stats-xbx6.onrender.com/stats-history").then(res => res.json()),
+      fetch("https://football-stats-xbx6.onrender.com/match-lineups").then(res => res.json()),
+      fetch("https://football-stats-xbx6.onrender.com/player-attributes").then(res => res.json())
     ])
       .then(([history, lineups, players]) => {
         setTimeHistory(history.times || []);
@@ -110,7 +110,7 @@ function TacticalDashboard() {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/match-lineups", {
+      const res = await fetch("https://football-stats-xbx6.onrender.com/match-lineups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

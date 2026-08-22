@@ -53,7 +53,7 @@ function EditMatchModal({ match, onClose, onSave }) {
     setError(null);
 
     try {
-      const response = await fetch(`http://localhost:5000/modify-stats/${index}`, {
+      const response = await fetch(`https://football-stats-xbx6.onrender.com/modify-stats/${index}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

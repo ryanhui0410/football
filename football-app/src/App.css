@@ -132,3 +132,11 @@
 .content-area.sidebar-closed {
   padding-left: 70px;
 }
+/* Remove top padding from main app container on mobile */
+@media (max-width: 768px) {
+  .app-container,
+  .main-content,
+  main {
+    padding-top: 60px !important; /* Just enough for the menu icon */
+  }
+}

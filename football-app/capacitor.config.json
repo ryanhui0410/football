@@ -1,0 +1,8 @@
+{
+  "appId": "com.football.tracker",
+  "appName": "Football Tracker",
+  "webDir": "build",
+  "server": {
+    "androidScheme": "https"
+  }
+}

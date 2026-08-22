@@ -206,7 +206,7 @@ const PlayerStatsModal = ({ selectedPlayer, onClose, profiles, onUpdate }) => {
 
   const handleSave = async () => {
     try {
-      const res = await fetch("http://localhost:5000/player-attributes", {
+      const res = await fetch("https://football-stats-xbx6.onrender.com/player-attributes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editData),

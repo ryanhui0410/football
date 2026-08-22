@@ -1,0 +1,303 @@
+/* ===== GLOBAL MOBILE FIXES FOR ANDROID APK ===== */
+
+/* Prevent horizontal scrolling and text overflow */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
+/* Make all images fit within their containers */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Fix all containers that have fixed widths */
+.md-wrap,
+.td-wrap,
+.pr-page,
+.stats-summary-wrap,
+.em-wrap {
+  max-width: 100% !important;
+  padding: 10px !important;
+  box-sizing: border-box;
+}
+
+/* Fix all modals on small screens */
+.choice-modal,
+.slot-edit-modal,
+.td-slot-modal,
+.report-modal {
+  width: 92vw !important;
+  max-width: 92vw !important;
+  max-height: 85vh !important;
+  padding: 20px !important;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Fix all inputs and selects for touch */
+input, select, button, textarea {
+  font-size: 16px !important; /* Prevents iOS/Android zoom on focus */
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Fix all tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+/* Fix grids that overflow */
+.td-inputs,
+.apc-grid-2,
+.apc-ea-grid {
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+/* Fix the pitch so it doesn't overflow */
+.pitch-wrapper {
+  width: 100% !important;
+  max-width: 100vw !important;
+  height: 55vw !important; /* Maintain aspect ratio on mobile */
+  min-height: 300px !important;
+}
+
+/* Fix horizontal pitch for small screens */
+.match-lineup-container.layout-horizontal .pitch-wrapper {
+  height: 60vw !important;
+  min-height: 280px !important;
+}
+
+/* Fix player cards on the pitch being too large */
+.slot-card {
+  width: 58px !important;
+  padding: 3px !important;
+}
+
+.slot-card img {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.slot-name {
+  font-size: 8px !important;
+  max-width: 52px !important;
+}
+
+.slot-rating {
+  font-size: 11px !important;
+}
+
+/* Fix the filter bar wrapping */
+.md-filter-bar {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px !important;
+}
+
+.md-filter-pills {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.md-pill {
+  padding: 6px 14px;
+  font-size: 12px;
+}
+
+/* Fix the stats grid cards */
+.pr-grid {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+/* Fix summary cards stacking */
+.cards-grid {
+  grid-template-columns: 1fr !important;
+  gap: 16px;
+}
+
+.stats-layout {
+  flex-direction: column !important;
+}
+
+.filter-panel {
+  width: 100% !important;
+  margin-bottom: 16px;
+}
+
+/* Fix the match report result header */
+.report-result-header {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 8px;
+  padding: 10px 12px !important;
+}
+
+.result-score {
+  font-size: 24px !important;
+}
+
+.result-team-avg {
+  font-size: 18px !important;
+}
+
+.result-team-name {
+  font-size: 10px !important;
+}
+
+/* Fix buttons being too small for touch */
+button {
+  min-height: 44px; /* Apple/Google recommended touch target size */
+}
+
+.md-edit-btn,
+.choice-btn,
+.td-save-btn {
+  padding: 12px 20px !important;
+  font-size: 14px !important;
+}
+
+/* Fix the choice buttons stacking */
+.choice-buttons {
+  gap: 10px;
+}
+
+.choice-btn {
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px !important;
+}
+
+/* Fix toast messages */
+.td-toast {
+  font-size: 13px;
+  padding: 10px 14px;
+}
+
+/* Fix the sidebar/menu if it overflows */
+.sidebar {
+  max-width: 80vw !important;
+}
+
+/* Fix any fixed-position overlays */
+.report-overlay,
+.choice-overlay,
+.slot-edit-overlay,
+.td-slot-overlay {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Fix the match report modal scrolling */
+.report-modal {
+  width: 95% !important;
+  max-width: 95vw !important;
+  max-height: 90vh !important;
+  padding: 15px !important;
+}
+
+/* Fix the pitch average badges */
+.pitch-avg-badge {
+  padding: 4px 10px !important;
+  font-size: 12px !important;
+  top: 8px !important;
+}
+
+.pitch-avg-left {
+  left: 8px !important;
+}
+
+.pitch-avg-right {
+  right: 8px !important;
+}
+
+/* Fix the ModifyDashboard table on mobile */
+.md-table {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+/* Fix the EditMatchPage cards */
+.em-card {
+  padding: 12px !important;
+  margin-bottom: 12px !important;
+}
+
+.em-header {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.em-player {
+  font-size: 22px !important;
+}
+
+/* Fix player ratings card sizing */
+.pr-card {
+  width: 100% !important;
+  max-width: 200px !important;
+}
+
+/* Fix the stats summary filter panel */
+.filter-panel {
+  padding: 12px !important;
+}
+
+.filter-select {
+  width: 100% !important;
+}
+
+/* Fix the pie chart container */
+.chart-container {
+  height: 250px !important;
+  width: 100% !important;
+}
+/* Mobile layout optimization */
+@media (max-width: 768px) {
+  /* Reduce padding on mobile for maximum content space */
+  body > div > div[style*="paddingLeft"] {
+    padding-top: 50px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  /* When sidebar is open on mobile, use overlay mode */
+  body > div > div[style*="paddingLeft: 280px"] {
+    padding-left: 10px !important;
+  }
+}
+/* ===== App content layout (replaces the old inline padding styles) ===== */
+.app-content {
+  padding: 80px 20px 20px 70px; /* Desktop: clears hamburger + sidebar */
+  transition: padding-left 0.4s ease;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.app-content.menu-open {
+  padding-left: 280px;
+}
+
+/* ===== Mobile: full width, small top gap, room for bottom nav ===== */
+@media (max-width: 768px) {
+  .app-content,
+  .app-content.menu-open {
+    padding: 10px 10px 85px 10px;
+  }
+
+  /* Calendar no longer needs to dodge the menu button */
+  .cal-wrap {
+    margin-top: 0 !important;
+  }
+}

@@ -1,0 +1,61 @@
+/* Hidden on desktop by default */
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #16324f;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
+    z-index: 1200;
+    padding-bottom: env(safe-area-inset-bottom); /* for phones with gesture bars */
+  }
+
+  .bottom-nav-scroll {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+  }
+  .bottom-nav-scroll::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/WebView */
+  }
+
+  .bottom-nav-item {
+    flex: 0 0 auto;
+    min-width: 74px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 10px 6px;
+    background: none;
+    border: none;
+    color: #9db4cc;
+    font-family: 'Barlow', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .bottom-nav-item:active {
+    transform: scale(0.95);
+  }
+
+  .bottom-nav-item.active {
+    color: #4fc3f7;
+  }
+
+  .bottom-nav-icon {
+    font-size: 20px;
+    line-height: 1;
+  }
+}

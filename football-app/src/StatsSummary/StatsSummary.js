@@ -36,7 +36,7 @@ function StatsSummary({ stats }) {
 
   // ✅ Fetch lineups with error handling
   useEffect(() => {
-    fetch("http://localhost:5000/match-lineups")
+    fetch("https://football-stats-xbx6.onrender.com/match-lineups")
       .then((res) => res.json())
       .then((data) => {
         const arr = Array.isArray(data) ? data : [];
@@ -404,10 +404,12 @@ function StatsSummary({ stats }) {
           )}
         </div>
 
-        {/* Content Area */}
+                {/* Content Area */}
         <div className="cards-grid">
-          {(selectedPlayer === "Ryan" || selectedPlayer === "Darren") && renderDetailedProfile(selectedPlayer)}
-          {renderSeasonalProfile(selectedPlayer)}
+          {(selectedPlayer === "Ryan" || selectedPlayer === "Darren") 
+            ? renderDetailedProfile(selectedPlayer)
+            : renderSeasonalProfile(selectedPlayer)
+          }
         </div>
       </div>
     </div>

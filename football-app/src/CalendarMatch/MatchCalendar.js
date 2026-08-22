@@ -27,6 +27,7 @@ function MatchCalendar({ stats = [] }) {
   const [viewYear, setViewYear] = useState(latest ? latest.y : now.getFullYear());
   const [viewMonth, setViewMonth] = useState(latest ? latest.m : now.getMonth());
   const [contributor, setContributor] = useState("All");
+  const [selectedDay, setSelectedDay] = useState(null); // ✨ TAP-TO-OPEN STATE
 
   const contributors = useMemo(
     () => ["All", ...new Set(stats.map((s) => s.Contributor).filter(Boolean))],
@@ -93,11 +94,15 @@ function MatchCalendar({ stats = [] }) {
           const dayMatches = matchesByDay[key] || [];
           const has = dayMatches.length > 0;
 
-                    return (
-            <div key={key} className={`cal-cell ${has ? "has-match" : ""}`}>
+          return (
+            <div 
+              key={key} 
+              className={`cal-cell ${has ? "has-match" : ""}`}
+              onClick={() => has && setSelectedDay({ day, matches: dayMatches })} // ✨ TAP TO OPEN
+            >
               <span className="cal-day-num">{day}</span>
               
-              {/* NEW: Inline Match Events */}
+              {/* Inline Match Events (compact on mobile) */}
               {has && (
                 <div className="cal-events">
                   {dayMatches.map((m, idx) => {
@@ -117,7 +122,7 @@ function MatchCalendar({ stats = [] }) {
                 </div>
               )}
 
-              {/* Keep the tooltip for extra details like Location/Time */}
+              {/* Tooltip for desktop hover (hidden on mobile via CSS) */}
               {has && (
                 <div className="cal-tooltip">
                   <div className="cal-tt-date">{viewMonth + 1}/{day}/{viewYear}</div>
@@ -149,9 +154,61 @@ function MatchCalendar({ stats = [] }) {
       </div>
 
       <div className="cal-legend">
-        <span><span className="legend-dot"></span>Match day — hover for details</span>
+        <span><span className="legend-dot"></span>Match day — tap for details</span>
         <span className="legend-sym">⚽ Goal &nbsp; 👟 Assist</span>
       </div>
+
+      {/* ✨ TAP-TO-OPEN MATCH DETAILS MODAL */}
+      {selectedDay && (
+        <div className="cal-modal-overlay" onClick={() => setSelectedDay(null)}>
+          <div className="cal-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="cal-modal-close" onClick={() => setSelectedDay(null)}>✕</button>
+            <div className="cal-modal-date">{viewMonth + 1}/{selectedDay.day}/{viewYear}</div>
+
+            {selectedDay.matches.map((m, idx) => {
+              const wl = String(m["Win/Loss?"] || "").toLowerCase();
+              const goals = parseInt(m.Goal) || 0;
+              const assists = parseInt(m.Assist) || 0;
+              return (
+                <div key={idx} className="cal-modal-card">
+                  <div className="cal-modal-top">
+                    <span className="cal-modal-name">{m.Contributor}</span>
+                    <span className="cal-modal-symbol">{m.Symbol || "—"}</span>
+                  </div>
+                  <div className="cal-modal-meta">
+                    <span>📍 {m.Location || "—"}</span>
+                    <span>🕒 {m.Time || "—"}</span>
+                  </div>
+                  <div className="cal-modal-stats">
+                    <div className="cal-modal-stat">
+                      <span className="num">{goals}</span>
+                      <span className="lbl">Goals</span>
+                    </div>
+                    <div className="cal-modal-stat">
+                      <span className="num">{assists}</span>
+                      <span className="lbl">Assists</span>
+                    </div>
+                    <div className="cal-modal-stat">
+                      <span className="num">{goals + assists}</span>
+                      <span className="lbl">Contrib</span>
+                    </div>
+                    <div className="cal-modal-stat">
+                      <span className="num">{m.Rating || "—"}</span>
+                      <span className="lbl">Rating</span>
+                    </div>
+                  </div>
+                  {(m["Match result"] || m["Win/Loss?"]) && (
+                    <div className="cal-modal-result">
+                      {m["Match result"] && <span className="score">{m["Match result"]}</span>}
+                      {m["Win/Loss?"] && <span className={`wl ${wl}`}>{m["Win/Loss?"]}</span>}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
