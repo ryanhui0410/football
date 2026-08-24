@@ -11,7 +11,6 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cors());
 
 // ===================== GitHub API Sync Helper =====================
-// Replaces simple-git. Uses native fetch (requires Node 18+ on Render).
 async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
   try {
     const token = process.env.GITHUB_TOKEN;
@@ -54,7 +53,7 @@ async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
     const body = {
       message: commitMessage,
       content: contentBase64,
-      branch: "main" // ⚠️ CHANGE THIS TO "master" IF YOUR REPO USES MASTER
+      branch: "main"
     };
     if (sha) body.sha = sha;
 
@@ -71,7 +70,10 @@ async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
     // 🕵️‍♂️ VERBOSE LOGGING
     const responseText = await putRes.text();
     if (putRes.ok) {
-      console.log(`✅ GitHub sync SUCCESS: ${githubFilePath}`);
+      const result = JSON.parse(responseText);
+      console.log(`✅ GitHub sync SUCCESS!`);
+      console.log(`🔗 VIEW FILE HERE: ${result.content?.html_url || 'URL not returned'}`);
+      console.log(`🔗 VIEW COMMIT HERE: ${result.commit?.html_url || 'URL not returned'}`);
     } else {
       console.error(`❌ GitHub sync FAILED (${putRes.status}):`, responseText);
     }
@@ -156,7 +158,7 @@ function formatStat(raw) {
 
 // ===================== Stats file I/O =====================
 
-const STATS_PATH = path.join(__dirname, "src", "football_stats_2025_2026.json");
+const STATS_PATH = path.join(__dirname, "football-app", "src", "football_stats_2025_2026.json");
 
 function readStats() {
   if (!fs.existsSync(STATS_PATH)) return [];
@@ -170,7 +172,7 @@ function writeStats(data) {
 
 // ===================== Profile management =====================
 
-const PROFILES_PATH = path.join(__dirname, "src", "contributor_profiles.json");
+const PROFILES_PATH = path.join(__dirname, "football-app", "src", "contributor_profiles.json");
 
 function readProfiles() {
   if (!fs.existsSync(PROFILES_PATH)) return {};
@@ -193,14 +195,14 @@ app.post("/contributor-profile", async (req, res) => {
   profiles[name] = { ...profiles[name], ...profile };
   writeProfiles(profiles);
   
-  await syncFileToGitHub(PROFILES_PATH, "src/contributor_profiles.json", `Update profile for ${name}`);
+  await syncFileToGitHub(PROFILES_PATH, "football-app/src/contributor_profiles.json", `Update profile for ${name}`);
   
   res.json({ message: "Profile updated", updated: profiles[name] });
 });
 
 // ===================== Player Attributes (FIFA Cards) =====================
 
-const ATTR_PATH = path.join(__dirname, "src", "player_attributes.json");
+const ATTR_PATH = path.join(__dirname, "football-app", "src", "player_attributes.json");
 
 function readAttributes() {
   if (!fs.existsSync(ATTR_PATH)) return [];
@@ -228,7 +230,7 @@ app.post("/player-attributes", async (req, res) => {
       try {
         const base64Data = card.picture.replace(/^data:image\/\w+;base64,/, "");
         const imageBuffer = Buffer.from(base64Data, "base64");
-        const imagesDir = path.join(__dirname, "public", "images");
+        const imagesDir = path.join(__dirname, "football-app", "public", "images");
         if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
         
         const safeName = card.Contributor.replace(/[^a-z0-9\u4e00-\u9fa5]/gi, "_");
@@ -239,7 +241,7 @@ app.post("/player-attributes", async (req, res) => {
         card.picture = `/images/${fileName}`;
         
         // 📸 Sync the image to GitHub as well!
-        await syncFileToGitHub(filePath, `public/images/${fileName}`, `Update profile picture: ${card.Contributor}`);
+        await syncFileToGitHub(filePath, `football-app/public/images/${fileName}`, `Update profile picture: ${card.Contributor}`);
       } catch (imgErr) {
         console.error("❌ Failed to save image:", imgErr);
       }
@@ -258,7 +260,7 @@ app.post("/player-attributes", async (req, res) => {
 
     writeAttributes(data);
 
-    await syncFileToGitHub(ATTR_PATH, "src/player_attributes.json", `Update player card: ${card.Contributor}`);
+    await syncFileToGitHub(ATTR_PATH, "football-app/src/player_attributes.json", `Update player card: ${card.Contributor}`);
 
     res.json({ message: "✅ Player card saved", updated: index === -1 ? card : data[index] });
   } catch (error) {
@@ -278,13 +280,13 @@ app.delete("/player-attributes/:name", async (req, res) => {
   }
 
   writeAttributes(data);
-  await syncFileToGitHub(ATTR_PATH, "src/player_attributes.json", `Delete player card: ${name}`);
+  await syncFileToGitHub(ATTR_PATH, "football-app/src/player_attributes.json", `Delete player card: ${name}`);
 
   res.json({ message: "Player card deleted" });
 });
 
 // ===================== Match Lineups =====================
-const LINEUPS_PATH = path.join(__dirname, "src", "match_lineups.json");
+const LINEUPS_PATH = path.join(__dirname, "football-app", "src", "match_lineups.json");
 
 function readLineups() {
   if (!fs.existsSync(LINEUPS_PATH)) return [];
@@ -340,7 +342,7 @@ app.post("/match-lineups", async (req, res) => {
 
     writeLineups(data);
 
-    await syncFileToGitHub(LINEUPS_PATH, "src/match_lineups.json", `Update lineup for ${normDate}`);
+    await syncFileToGitHub(LINEUPS_PATH, "football-app/src/match_lineups.json", `Update lineup for ${normDate}`);
 
     res.json({ message: "✅ Lineup saved", index, isNew: index === -1 });
   } catch (err) {
@@ -368,7 +370,7 @@ app.post("/add-stats", async (req, res) => {
   data.push(newStat);
   writeStats(data);
 
-  await syncFileToGitHub(STATS_PATH, "src/football_stats_2025_2026.json", `Add stats for ${newStat.Contributor}`);
+  await syncFileToGitHub(STATS_PATH, "football-app/src/football_stats_2025_2026.json", `Add stats for ${newStat.Contributor}`);
 
   res.json({
     message: "✅ Stat added successfully",
@@ -400,7 +402,7 @@ app.put("/modify-stats/:index", async (req, res) => {
   data[index] = updatedRecord;
   writeStats(data);
 
-  await syncFileToGitHub(STATS_PATH, "src/football_stats_2025_2026.json", `Modify stats for ${updatedRecord.Contributor}`);
+  await syncFileToGitHub(STATS_PATH, "football-app/src/football_stats_2025_2026.json", `Modify stats for ${updatedRecord.Contributor}`);
 
   res.json({ message: "✅ Stat modified successfully", updated: updatedRecord });
 });
@@ -418,8 +420,7 @@ app.get("/stats-history", (req, res) => {
 });
 
 // ===================== Static serving =====================
-// Only serve frontend files if the build folder exists
-const buildPath = path.join(__dirname, "build");
+const buildPath = path.join(__dirname, "football-app", "build");
 if (fs.existsSync(buildPath)) {
   app.use(express.static(buildPath));
   app.get("*", (req, res) => {
