@@ -67,7 +67,6 @@ async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
       body: JSON.stringify(body)
     });
 
-    // 🕵️‍♂️ VERBOSE LOGGING
     const responseText = await putRes.text();
     if (putRes.ok) {
       const result = JSON.parse(responseText);
@@ -97,7 +96,6 @@ function computeGoalContribution(goal, assist) {
   return (parseInt(goal) || 0) + (parseInt(assist) || 0);
 }
 
-// ✅ Season: Aug–Jul cycle
 function computeSeason(dateStr) {
   if (!dateStr) return "";
   const parts = dateStr.split("/");
@@ -114,7 +112,6 @@ function computeGoal(leftFoot, rightFoot, head, other) {
        + (parseFloat(other) || 0);
 }
 
-// ✅ Accept BOTH camelCase (from form) and spaced (from old data)
 function formatStat(raw) {
   const leftFoot  = raw["Left Foot"]       ?? raw.LeftFoot       ?? 0;
   const rightFoot = raw["Right Foot"]      ?? raw.RightFoot      ?? 0;
@@ -158,17 +155,24 @@ function formatStat(raw) {
 
 // ===================== Stats file I/O =====================
 
+// ✅ FIXED: Added "football-app" to match the others
 const STATS_PATH = path.join(__dirname, "football-app", "src", "football_stats_2025_2026.json");
 
 function readStats() {
-  if (!fs.existsSync(STATS_PATH)) return [];
+  console.log(`🔍 [readStats] Looking locally at: ${STATS_PATH}`);
+  if (!fs.existsSync(STATS_PATH)) {
+    console.log(`❌ [readStats] File NOT FOUND locally! Returning empty array.`);
+    return [];
+  }
   const content = fs.readFileSync(STATS_PATH, "utf8");
-  return content.trim() ? JSON.parse(content) : [];
+  const data = content.trim() ? JSON.parse(content) : [];
+  console.log(`✅ [readStats] Found file locally! Loaded ${data.length} records.`);
+  return data;
 }
 
 function writeStats(data) {
   const dir = path.dirname(STATS_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); // ✅ Auto-create folder
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); 
   fs.writeFileSync(STATS_PATH, JSON.stringify(data, null, 2));
 }
 
@@ -184,10 +188,9 @@ function readProfiles() {
 
 function writeProfiles(profiles) {
   const dir = path.dirname(PROFILES_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); // ✅ Auto-create folder
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); 
   fs.writeFileSync(PROFILES_PATH, JSON.stringify(profiles, null, 2));
 }
-
 
 app.get("/contributor-profiles", (req, res) => {
   res.json(readProfiles());
@@ -217,7 +220,7 @@ function readAttributes() {
 
 function writeAttributes(data) {
   const dir = path.dirname(ATTR_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); // ✅ Auto-create folder
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); 
   fs.writeFileSync(ATTR_PATH, JSON.stringify(data, null, 2));
 }
 
@@ -232,11 +235,12 @@ app.post("/player-attributes", async (req, res) => {
       return res.status(400).json({ error: "Missing Contributor name" });
     }
 
-    // Handle Image Upload
     if (card.picture && typeof card.picture === 'string' && card.picture.startsWith("data:image")) {
       try {
         const base64Data = card.picture.replace(/^data:image\/\w+;base64,/, "");
         const imageBuffer = Buffer.from(base64Data, "base64");
+        
+        // ✅ FIXED: Added "football-app"
         const imagesDir = path.join(__dirname, "football-app", "public", "images");
         if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
         
@@ -247,7 +251,6 @@ app.post("/player-attributes", async (req, res) => {
         fs.writeFileSync(filePath, imageBuffer);
         card.picture = `/images/${fileName}`;
         
-        // 📸 Sync the image to GitHub as well!
         await syncFileToGitHub(filePath, `football-app/public/images/${fileName}`, `Update profile picture: ${card.Contributor}`);
       } catch (imgErr) {
         console.error("❌ Failed to save image:", imgErr);
@@ -303,7 +306,7 @@ function readLineups() {
 
 function writeLineups(data) {
   const dir = path.dirname(LINEUPS_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); // ✅ Auto-create folder
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); 
   fs.writeFileSync(LINEUPS_PATH, JSON.stringify(data, null, 2));
 }
 
