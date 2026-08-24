@@ -167,6 +167,8 @@ function readStats() {
 }
 
 function writeStats(data) {
+  const dir = path.dirname(STATS_PATH);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); // ✅ Auto-create folder
   fs.writeFileSync(STATS_PATH, JSON.stringify(data, null, 2));
 }
 
@@ -181,8 +183,11 @@ function readProfiles() {
 }
 
 function writeProfiles(profiles) {
+  const dir = path.dirname(PROFILES_PATH);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); // ✅ Auto-create folder
   fs.writeFileSync(PROFILES_PATH, JSON.stringify(profiles, null, 2));
 }
+
 
 app.get("/contributor-profiles", (req, res) => {
   res.json(readProfiles());
@@ -211,6 +216,8 @@ function readAttributes() {
 }
 
 function writeAttributes(data) {
+  const dir = path.dirname(ATTR_PATH);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); // ✅ Auto-create folder
   fs.writeFileSync(ATTR_PATH, JSON.stringify(data, null, 2));
 }
 
@@ -295,6 +302,8 @@ function readLineups() {
 }
 
 function writeLineups(data) {
+  const dir = path.dirname(LINEUPS_PATH);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); // ✅ Auto-create folder
   fs.writeFileSync(LINEUPS_PATH, JSON.stringify(data, null, 2));
 }
 
