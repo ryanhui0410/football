@@ -175,29 +175,29 @@ function PlayerRatings() {
               <div className="pr-corner bl" />
               <div className="pr-corner br" />
 
+              {/* 1. Profile Picture */}
               <div className="pr-picture">
                 <img
-                  // Use JSON path if uploaded, otherwise check public folder
                   src={profile.picture || `/${name}.jpeg`}
                   alt={name}
                   onError={(e) => {
                     e.target.style.display = 'none';
-                    e.target.parentNode.innerHTML =
-                      `<span style="font-size:60px;color:#888;">${name.charAt(0)}</span>`;
+                    e.target.parentNode.innerHTML = `<span style="font-size:40px;color:#888;display:flex;align-items:center;justify-content:center;height:100%;font-weight:700;">${name.charAt(0)}</span>`;
                   }}
                 />
-                <div className="pr-picture-overlay" />
               </div>
 
-              <div className="pr-name-row">
-                <span className="pr-name">{name}</span>
-                <span className="pr-position-box">{position}</span>
-                <span className="pr-overall-box">{overall}</span>
+              {/* 2. Name, Position, Overall */}
+              <div className="pr-info-block">
+                <div className="pr-name">{name}</div>
+                <div className="pr-badges-row">
+                  <span className="pr-position-box">{position}</span>
+                  <span className="pr-overall-box">{overall}</span>
+                </div>
               </div>
 
-              <div className="pr-divider" />
-
-              <div className="pr-stats-grid">
+              {/* 3. Six Item Scores in a Row */}
+              <div className="pr-stats-row">
                 {Object.entries(main).map(([stat, value]) => (
                   <div key={stat} className="pr-stat-item">
                     <span className="pr-stat-label">{stat}</span>
@@ -206,48 +206,51 @@ function PlayerRatings() {
                 ))}
               </div>
               
-              {/* Preferred Foot */}
-              {profile.preferredFoot && (
-                <div className="pr-pref-foot">
-                  <span className="pr-pref-foot-label">Preferred Foot:</span>
-                  <span className="pr-pref-foot-value">
-                    {profile.preferredFoot === 'Left' ? '🦶 L' : '🦶 R'}
-                  </span>
-                </div>
-              )}
-              
-              {weakFoot > 0 && (
-                <div className="pr-weak-foot">
-                  <span className="pr-weak-foot-label">Weak Foot:</span>
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className={`pr-star ${i < weakFoot ? 'filled' : 'empty'}`}>
-                      {i < weakFoot ? '★' : '☆'}
+              {/* 4. Extra Details: Preferred Foot, Weak Foot Stars, Form */}
+              <div className="pr-extra-details">
+                {profile.preferredFoot && (
+                  <div className="pr-pref-foot">
+                    <span className="pr-pref-foot-label">Foot:</span>
+                    <span className="pr-pref-foot-value">
+                      {profile.preferredFoot === 'Left' ? '🦶 L' : '🦶 R'}
                     </span>
-                  ))}
-                </div>
-              )}
+                  </div>
+                )}
+                
+                {weakFoot > 0 && (
+                  <div className="pr-weak-foot">
+                    <span className="pr-weak-foot-label">Weak:</span>
+                    <div className="pr-stars">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i} className={`pr-star ${i < weakFoot ? 'filled' : 'empty'}`}>
+                          {i < weakFoot ? '★' : '☆'}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-              {form && (
-                <div className="pr-form">
-                  <span className="pr-form-label">Form:</span>
-                  <span
-                    className="pr-form-grade"
-                    style={{
-                      backgroundColor: form.color,
-                      boxShadow: `0 2px 8px ${form.color}55`,
-                    }}
-                  >
-                    {form.grade}
-                  </span>
-                </div>
-              )}
+                {form && (
+                  <div className="pr-form">
+                    <span className="pr-form-label">Form:</span>
+                    <span
+                      className="pr-form-grade"
+                      style={{
+                        backgroundColor: form.color,
+                        boxShadow: `0 2px 8px ${form.color}55`,
+                      }}
+                    >
+                      {form.grade}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
 
       {showModal && (
-        // Pass the fetch function down as onUpdate so edits refresh the grid
         <PlayerStatsModal 
           selectedPlayer={selectedPlayer} 
           onClose={closeModal} 

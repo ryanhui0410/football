@@ -1,12 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap');
 
+/* ================= Wrapper ================= */
 .stats-summary-wrap {
   max-width: 1400px;
   margin: 0 auto;
   padding: 40px 20px;
   font-family: 'Barlow', sans-serif;
-  background-color: #eef4fb; /* Soft light blue background */
-  color: #1e293b; /* Dark slate text */
+  background-color: #eef4fb;
+  color: #1e293b;
   min-height: 100vh;
 }
 
@@ -18,26 +19,29 @@
   letter-spacing: 0.05em;
   text-align: center;
   margin-bottom: 40px;
-  color: #0f172a; /* Deep navy header */
+  color: #0f172a;
 }
 
+/* ================= Layout (Centered Column for all screens) ================= */
 .stats-layout {
   display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers filter and cards horizontally */
   gap: 30px;
-  align-items: flex-start;
+  width: 100%;
 }
 
 /* ================= Filter Panel ================= */
 .filter-panel {
-  width: 260px;
-  min-width: 260px;
+  width: 100%;
+  max-width: 600px; /* Limits width so it sits nicely in the middle */
   padding: 24px;
-  background: #ffffff; /* Crisp white panel */
-  border: 1px solid #dbeafe; /* Light blue border */
+  background: #ffffff;
+  border: 1px solid #dbeafe;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(14, 165, 233, 0.05);
-  position: sticky;
-  top: 20px;
+  box-sizing: border-box;
+  position: static; /* Removed sticky since it's centered now */
 }
 
 .filter-title {
@@ -46,7 +50,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #1d4ed8; /* Vibrant blue title */
+  color: #1d4ed8;
   margin: 0 0 20px 0;
   padding-bottom: 12px;
   border-bottom: 2px solid #bfdbfe;
@@ -58,7 +62,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #475569; /* Medium slate label */
+  color: #475569;
   margin-bottom: 8px;
 }
 
@@ -71,13 +75,16 @@
   color: #0f172a;
   font-family: 'Barlow', sans-serif;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   outline: none;
   transition: all 0.2s ease;
+  margin-bottom: 16px;
+  box-sizing: border-box;
 }
 
-.filter-select:hover, .filter-select:focus {
+.filter-select:hover,
+.filter-select:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
@@ -95,26 +102,28 @@
 
 /* ================= Cards Grid ================= */
 .cards-grid {
-  flex: 1;
+  width: 100%;
+  max-width: 800px; /* Limits width so cards sit nicely in the middle */
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: 1fr;
   gap: 24px;
 }
 
 .player-card {
-  background: #ffffff; /* Clean white cards */
+  background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-top: 4px solid #2563eb; /* Blue accent top border */
+  border-top: 4px solid #2563eb;
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 8px 24px rgba(14, 165, 233, 0.06);
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  box-sizing: border-box;
 }
 
 .player-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 16px 40px rgba(14, 165, 233, 0.12);
-  border-top-color: #10b981; /* Changes to emerald green on hover */
+  border-top-color: #10b981;
 }
 
 .player-name {
@@ -133,7 +142,7 @@
   flex-direction: column;
   gap: 12px;
   margin-bottom: 24px;
-  background: #f8fafc; /* Very light grey/blue inner box */
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
   padding: 16px;
   border-radius: 12px;
@@ -171,22 +180,19 @@
   text-align: center;
 }
 
-/* Rating Badges */
-.badge-rating-low { background: #ef4444; }
-.badge-rating-mid { background: #10b981; }
+.badge-rating-low  { background: #ef4444; }
+.badge-rating-mid  { background: #10b981; }
 .badge-rating-high { background: #059669; }
 
-/* Error Badges */
 .badge-error-none { background: #10b981; }
-.badge-error-low { background: #f59e0b; }
+.badge-error-low  { background: #f59e0b; }
 .badge-error-high { background: #ef4444; }
 
-/* Win Rate Badges */
 .badge-winrate-high { background: #10b981; }
-.badge-winrate-mid { background: #f59e0b; }
-.badge-winrate-low { background: #ef4444; }
+.badge-winrate-mid  { background: #f59e0b; }
+.badge-winrate-low  { background: #ef4444; }
 
-/* ================= Chart & Graphs ================= */
+/* ================= Chart ================= */
 .chart-container {
   height: 220px;
   width: 220px;
@@ -214,7 +220,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #1d4ed8; /* Vibrant blue */
+  color: #1d4ed8;
   margin-bottom: 12px;
 }
 
@@ -226,7 +232,7 @@
 
 .location-table th {
   padding: 10px 8px;
-  background: #eff6ff; /* Light blue header */
+  background: #eff6ff;
   color: #1e40af;
   font-family: 'Oswald', sans-serif;
   font-weight: 500;
@@ -259,20 +265,14 @@
 .location-table tr:last-child td { border-bottom: none; }
 
 .location-table tr.highlight {
-  background: #ecfdf5; /* Light emerald highlight row */
+  background: #ecfdf5;
 }
 .location-table tr.highlight td {
   color: #047857;
   font-weight: 700;
 }
 
-/* ================= Responsive ================= */
-@media (max-width: 1024px) {
-  .stats-layout { flex-direction: column; }
-  .filter-panel { width: 100%; min-width: unset; position: static; }
-  .cards-grid { grid-template-columns: 1fr; }
-}
-/* Lineup Matrix Table Styles */
+/* ================= Lineup Matrix Table ================= */
 .lineup-table-section {
   background: #ffffff;
   border-radius: 12px;
@@ -286,7 +286,8 @@
   font-size: 0.95rem;
 }
 
-.lineup-matrix th, .lineup-matrix td {
+.lineup-matrix th,
+.lineup-matrix td {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #e2e8f0;
 }
@@ -303,7 +304,6 @@
   background-color: #f1f5f9;
 }
 
-/* Reuse your existing badge classes for the ratings */
 .lineup-matrix .badge {
   display: inline-block;
   padding: 0.25rem 0.6rem;
@@ -311,6 +311,7 @@
   font-weight: 600;
   font-size: 0.85rem;
 }
+
 /* ================= Simple Card & Season Table ================= */
 .simple-card {
   max-width: 600px;
@@ -349,56 +350,19 @@
   background-color: #f8fafc;
 }
 
-/* Adjusting the Filter Select for the Player Dropdown */
-.filter-select {
-  width: 100%;
-  padding: 12px 16px;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  color: #0f172a;
-  font-family: 'Barlow', sans-serif;
-  font-size: 15px;
-  font-weight: 600; /* Bolder for player names */
-  cursor: pointer;
-  outline: none;
-  transition: all 0.2s ease;
-  margin-bottom: 16px; /* Spacing between dropdowns */
-}
-/* Add this to your StatsSummary.css */
-.simple-card {
-  max-width: 600px;
-  margin: 0 auto;
-}
+/* ================= Mobile Specific (Android UI) ================= */
+@media (max-width: 768px) {
+  /* On mobile, let the filter panel take full width since max-width is already handled */
+  .filter-panel {
+    max-width: 100%;
+  }
 
-.season-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
+  .cards-grid {
+    max-width: 100%;
+  }
 
-.season-table th {
-  padding: 12px 8px;
-  background: #eff6ff;
-  color: #1e40af;
-  font-family: 'Oswald', sans-serif;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 12px;
-  text-align: center;
-  border-bottom: 2px solid #bfdbfe;
-}
-
-.season-table td {
-  padding: 12px 8px;
-  border-bottom: 1px solid #f1f5f9;
-  text-align: center;
-  color: #334155;
-  font-family: 'Barlow', sans-serif;
-  font-weight: 500;
-}
-
-.season-table tr:hover {
-  background-color: #f8fafc;
+  /* Hide the Lineup Stats card on mobile to save vertical space */
+  .player-card.simple-card {
+    display: none !important;
+  }
 }

@@ -5,18 +5,23 @@ import "./TacticalDashboard.css";
 function TacticalDashboard() {
   const [matchDetails, setMatchDetails] = useState({ Date: "", Location: "", Time: "" });
   
-  // History & Data States
   const [timeHistory, setTimeHistory] = useState([]);
   const [allLineups, setAllLineups] = useState([]);
   const [availablePlayers, setAvailablePlayers] = useState([]);
   
-  // Lineup Editing States
   const [lineupData, setLineupData] = useState(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [slotToEdit, setSlotToEdit] = useState(null);
+  
+  // Detect mobile to switch pitch layout only
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  // 1. Fetch initial data on mount
   useEffect(() => {
     Promise.all([
       fetch("https://football-stats-xbx6.onrender.com/stats-history").then(res => res.json()),
@@ -31,7 +36,6 @@ function TacticalDashboard() {
       .catch(err => console.error("Failed to fetch initial data", err));
   }, []);
 
-  // 2. Auto-load lineup if Date/Location/Time matches an existing record
   useEffect(() => {
     if (matchDetails.Date && matchDetails.Location && matchDetails.Time) {
       const existing = allLineups.find(l => 
@@ -43,23 +47,21 @@ function TacticalDashboard() {
       if (existing) {
         setLineupData(existing);
       } else {
-        // Initialize empty 11-slot array format
         setLineupData({
           date: matchDetails.Date,
           location: matchDetails.Location,
           time: matchDetails.Time,
-          teamA: { formation: "4-4-2", players: Array(11).fill(null) },
-          teamB: { formation: "4-4-2", players: Array(11).fill(null) }
+          teamA: { players: Array(11).fill(null) },
+          teamB: { players: Array(11).fill(null) }
         });
       }
     } else if (matchDetails.Date) {
-      // If only date is typed, show empty pitch
       setLineupData({
         date: matchDetails.Date,
         location: matchDetails.Location,
         time: matchDetails.Time,
-        teamA: { formation: "4-4-2", players: Array(11).fill(null) },
-        teamB: { formation: "4-4-2", players: Array(11).fill(null) }
+        teamA: { players: Array(11).fill(null) },
+        teamB: { players: Array(11).fill(null) }
       });
     } else {
       setLineupData(null);
@@ -70,7 +72,7 @@ function TacticalDashboard() {
     setMatchDetails({ ...matchDetails, [e.target.name]: e.target.value });
   };
 
-    const handleSaveLineup = async () => {
+  const handleSaveLineup = async () => {
     if (!matchDetails.Date || !matchDetails.Location || !matchDetails.Time) {
       setMessage("⚠️ Please fill in Date, Location, and Time before saving.");
       setTimeout(() => setMessage(""), 3000);
@@ -79,12 +81,11 @@ function TacticalDashboard() {
 
     setSaving(true);
 
-    // ✨ SANITIZE PAYLOAD: Strip EA stats, handle empty slots, ensure 11 items
     const sanitizeTeam = (teamObj) => {
-      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null) };
+      if (!teamObj) return { players: Array(11).fill(null) };
       
       const cleanPlayers = (teamObj.players || []).map(p => {
-        if (!p) return null; // Keep empty slots as null safely
+        if (!p) return null;
         return {
           Contributor: p.Contributor,
           rating: parseFloat(p.rating) || 0,
@@ -92,11 +93,9 @@ function TacticalDashboard() {
         };
       });
       
-      // Ensure exactly 11 slots to prevent UI breaking later
       while (cleanPlayers.length < 11) cleanPlayers.push(null);
       
       return {
-        formation: teamObj.formation || "4-4-2",
         players: cleanPlayers.slice(0, 11)
       };
     };
@@ -133,6 +132,40 @@ function TacticalDashboard() {
     }
   };
 
+  const handleSaveSlot = () => {
+    const { team, idx, player } = slotToEdit;
+    
+    let targetTeam = team;
+    let targetIdx = idx;
+    let forcedMove = false;
+
+    if (player && player.Contributor?.trim().toLowerCase() === 'ryan' && team === 'B') {
+      targetTeam = 'A';
+      forcedMove = true;
+      const teamAPlayers = lineupData.teamA?.players || Array(11).fill(null);
+      const emptyIdx = teamAPlayers.findIndex(p => p === null);
+      targetIdx = emptyIdx !== -1 ? emptyIdx : idx;
+    }
+
+    const teamKey = targetTeam === 'A' ? 'teamA' : 'teamB';
+    
+    setLineupData(prev => {
+      const newLineup = JSON.parse(JSON.stringify(prev));
+      if (!Array.isArray(newLineup[teamKey].players)) {
+        newLineup[teamKey].players = Array(11).fill(null);
+      }
+      newLineup[teamKey].players[targetIdx] = player;
+      return newLineup;
+    });
+    
+    if (forcedMove) {
+      setMessage("💡 Ryan is always on Team A. Moved automatically!");
+      setTimeout(() => setMessage(""), 3000);
+    }
+    
+    setSlotToEdit(null);
+  };
+
   return (
     <div className="td-wrap">
       <h2 className="td-title">⚔️ Tactical Dashboard</h2>
@@ -163,14 +196,13 @@ function TacticalDashboard() {
       {lineupData && matchDetails.Date.trim() ? (
         <>
           <div className="td-pitch-container">
-            {/* ✨ VISUAL REMARK */}
             <div className="td-remark">
               💡 <strong>Tactical Rule:</strong> Ryan is always assigned to <strong>Team A (Left Side)</strong>.
             </div>
             <MatchLineup 
               matchData={matchDetails} 
               initialLineup={lineupData}
-              layout="horizontal" 
+              layout={isMobile ? "vertical" : "horizontal"} 
               editMode={true}
               availablePlayers={availablePlayers}
               onLineupChange={(newLineup) => {
@@ -194,14 +226,14 @@ function TacticalDashboard() {
         </div>
       )}
 
-      {/* SLOT EDIT MODAL */}
+      {/* SLOT EDIT MODAL (works on both web and Android) */}
       {slotToEdit && (
         <div className="td-slot-overlay" onClick={() => setSlotToEdit(null)}>
           <div className="td-slot-modal" onClick={e => e.stopPropagation()}>
             <button className="td-slot-close" onClick={() => setSlotToEdit(null)}>✕</button>
             <h3>{slotToEdit.player ? "Edit Player" : "Add Player"}</h3>
             
-                        <div className="td-modal-field">
+            <div className="td-modal-field">
               <label>Select Player:</label>
               <select 
                 value={slotToEdit.player?.Contributor || ""}
@@ -216,7 +248,6 @@ function TacticalDashboard() {
                       player: { 
                         Contributor: selected.Contributor,
                         picture: selected.picture || `/${selected.Contributor}.jpeg`,
-                        // Keep existing rating if editing, otherwise start empty
                         rating: prev.player?.rating !== undefined ? prev.player.rating : "" 
                       }
                     }));
@@ -252,44 +283,7 @@ function TacticalDashboard() {
             
             <div className="td-modal-actions">
               <button className="td-modal-cancel" onClick={() => setSlotToEdit(null)}>Cancel</button>
-                            <button className="td-modal-save" onClick={() => {
-                const { team, idx, player } = slotToEdit;
-                
-                // ✨ ENFORCE RYAN RULE
-                let targetTeam = team;
-                let targetIdx = idx;
-                let forcedMove = false;
-
-                // If the user selected Ryan while clicking a Team B slot
-                if (player && player.Contributor?.trim().toLowerCase() === 'ryan' && team === 'B') {
-                  targetTeam = 'A'; // Force him to Team A
-                  forcedMove = true;
-                  
-                  // Find the first empty slot in Team A, or fallback to the same index
-                  const teamAPlayers = lineupData.teamA?.players || Array(11).fill(null);
-                  const emptyIdx = teamAPlayers.findIndex(p => p === null);
-                  targetIdx = emptyIdx !== -1 ? emptyIdx : idx; 
-                }
-
-                const teamKey = targetTeam === 'A' ? 'teamA' : 'teamB';
-                
-                setLineupData(prev => {
-                  const newLineup = JSON.parse(JSON.stringify(prev));
-                  if (!Array.isArray(newLineup[teamKey].players)) {
-                    newLineup[teamKey].players = Array(11).fill(null);
-                  }
-                  newLineup[teamKey].players[targetIdx] = player;
-                  return newLineup;
-                });
-                
-                // Show a notification if we had to auto-move him
-                if (forcedMove) {
-                  setMessage("💡 Ryan is always on Team A. Moved automatically!");
-                  setTimeout(() => setMessage(""), 3000);
-                }
-                
-                setSlotToEdit(null);
-              }}>
+              <button className="td-modal-save" onClick={handleSaveSlot}>
                 Save to Pitch
               </button>
             </div>

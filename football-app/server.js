@@ -2,27 +2,86 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
-const simpleGit = require("simple-git");
-const git = simpleGit();
+
 const app = express();
+
 // Increase the JSON payload limit to 10 Megabytes to allow base64 images
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cors());
 
-// ===================== Helpers =====================
-
-async function commitAndPush(message) {
+// ===================== GitHub API Sync Helper =====================
+// Replaces simple-git. Uses native fetch (requires Node 18+ on Render).
+async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
   try {
-    await git.add(".");
-    await git.commit(message);
-    await git.push();
-    console.log(`✅ Git sync: ${message}`);
+    const token = process.env.GITHUB_TOKEN;
+    const owner = process.env.GITHUB_OWNER;
+    const repo = process.env.GITHUB_REPO;
+
+    if (!token || !owner || !repo) {
+      console.error("❌ CRITICAL: GitHub Env Vars missing! Check Render Dashboard.");
+      return;
+    }
+
+    if (!fs.existsSync(localFilePath)) {
+      console.warn(`⚠️ Local file not found: ${localFilePath}`);
+      return;
+    }
+
+    const content = fs.readFileSync(localFilePath);
+    // Check file size (GitHub API limit is ~1MB)
+    if (content.length > 900000) {
+        console.error(`❌ FILE TOO LARGE: ${content.length} bytes. GitHub API limit is ~1MB.`);
+        return;
+    }
+    
+    const contentBase64 = content.toString("base64");
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${githubFilePath}`;
+
+    // 1. Get SHA
+    let sha = "";
+    try {
+      const getRes = await fetch(apiUrl, {
+        headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" }
+      });
+      if (getRes.ok) {
+        const data = await getRes.json();
+        sha = data.sha;
+      }
+    } catch (e) { /* File might not exist yet */ }
+
+    // 2. Push Update
+    const body = {
+      message: commitMessage,
+      content: contentBase64,
+      branch: "main" // ⚠️ CHANGE THIS TO "master" IF YOUR REPO USES MASTER
+    };
+    if (sha) body.sha = sha;
+
+    const putRes = await fetch(apiUrl, {
+      method: "PUT",
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+
+    // 🕵️‍♂️ VERBOSE LOGGING
+    const responseText = await putRes.text();
+    if (putRes.ok) {
+      console.log(`✅ GitHub sync SUCCESS: ${githubFilePath}`);
+    } else {
+      console.error(`❌ GitHub sync FAILED (${putRes.status}):`, responseText);
+    }
+
   } catch (err) {
-    console.error("❌ Git sync failed:", err);
+    console.error("❌ GitHub sync CRITICAL error:", err);
   }
 }
 
+// ===================== Helpers =====================
 
 function computeSymbol(goal, assist) {
   const g = parseInt(goal) || 0;
@@ -46,8 +105,14 @@ function computeSeason(dateStr) {
   return `${startYear}-${startYear + 1}`;
 }
 
+function computeGoal(leftFoot, rightFoot, head, other) {
+  return (parseFloat(leftFoot) || 0)
+       + (parseFloat(rightFoot) || 0)
+       + (parseFloat(head) || 0)
+       + (parseFloat(other) || 0);
+}
+
 // ✅ Accept BOTH camelCase (from form) and spaced (from old data)
-//    Output ALWAYS in the standard spaced format
 function formatStat(raw) {
   const leftFoot  = raw["Left Foot"]       ?? raw.LeftFoot       ?? 0;
   const rightFoot = raw["Right Foot"]      ?? raw.RightFoot      ?? 0;
@@ -56,15 +121,11 @@ function formatStat(raw) {
   const assist    = raw.Assist             ?? 0;
   const rating    = raw.Rating             ?? 0;
 
-  // ✅ 获取 Man of the Match（支持两种字段名）
   const motm = raw["Man of the Match"] ?? raw.ManOfTheMatch ?? false;
 
-  // 助攻目标逻辑（Ryan ↔ Darren）
   const cName = (raw.Contributor || "").trim().toLowerCase();
   const assistRecipient = cName === "ryan" ? "Darren" : cName === "darren" ? "Ryan" : "";
-  // 注意：这里从 raw.AssistTo 或 raw.AssistToCount 读取次数，确保字段正确
-  const assistToCount = parseFloat(raw.AssistToCount ?? raw["Assist to count"] ?? 0) || 0;
-  // 只有当目标匹配且计数 > 0 时才保存
+  const assistToCount = parseFloat(raw.AssistToCount ?? raw["Assist to count"] ?? raw.AssistTo ?? 0) || 0;
   const finalAssistTo = (assistRecipient && assistToCount > 0) ? assistRecipient : "";
 
   const goal = computeGoal(leftFoot, rightFoot, head, other);
@@ -89,7 +150,7 @@ function formatStat(raw) {
     "Win/Loss?":       raw["Win/Loss?"]    ?? raw.WinLoss    ?? "",
     "Assist to":       finalAssistTo,
     "Assist to count": assistToCount,
-    "Man of the Match": motm,   // ✅ 现在 motm 已定义
+    "Man of the Match": motm,
   };
 }
 
@@ -121,23 +182,19 @@ function writeProfiles(profiles) {
   fs.writeFileSync(PROFILES_PATH, JSON.stringify(profiles, null, 2));
 }
 
-function computeGoal(leftFoot, rightFoot, head, other) {
-  return (parseFloat(leftFoot) || 0)
-       + (parseFloat(rightFoot) || 0)
-       + (parseFloat(head) || 0)
-       + (parseFloat(other) || 0);
-}
-
 app.get("/contributor-profiles", (req, res) => {
   res.json(readProfiles());
 });
 
-app.post("/contributor-profile", (req, res) => {
+app.post("/contributor-profile", async (req, res) => {
   const { name, profile } = req.body;
   if (!name) return res.status(400).json({ message: "Missing contributor name" });
   const profiles = readProfiles();
   profiles[name] = { ...profiles[name], ...profile };
   writeProfiles(profiles);
+  
+  await syncFileToGitHub(PROFILES_PATH, "src/contributor_profiles.json", `Update profile for ${name}`);
+  
   res.json({ message: "Profile updated", updated: profiles[name] });
 });
 
@@ -159,19 +216,11 @@ app.get("/player-attributes", (req, res) => {
   res.json(readAttributes());
 });
 
-// ===================== Player Attributes (FIXED) =====================
 app.post("/player-attributes", async (req, res) => {
   try {
     const card = req.body;
     if (!card || !card.Contributor) {
       return res.status(400).json({ error: "Missing Contributor name" });
-    }
-
-    // Pull latest before saving
-    try {
-      await git.pull('origin', 'main', ['--rebase']);
-    } catch (pullErr) {
-      console.log("⚠️ Could not pull from GitHub. Continuing with local save.");
     }
 
     // Handle Image Upload
@@ -188,6 +237,9 @@ app.post("/player-attributes", async (req, res) => {
         
         fs.writeFileSync(filePath, imageBuffer);
         card.picture = `/images/${fileName}`;
+        
+        // 📸 Sync the image to GitHub as well!
+        await syncFileToGitHub(filePath, `public/images/${fileName}`, `Update profile picture: ${card.Contributor}`);
       } catch (imgErr) {
         console.error("❌ Failed to save image:", imgErr);
       }
@@ -206,15 +258,7 @@ app.post("/player-attributes", async (req, res) => {
 
     writeAttributes(data);
 
-    await git.add(".");
-    try {
-      await git.commit(`Update player card: ${card.Contributor}`);
-      await git.push('origin', 'main');
-    } catch (gitErr) {
-      if (!gitErr.message?.includes("nothing to commit")) {
-        console.error("⚠️ Git push warning:", gitErr.message);
-      }
-    }
+    await syncFileToGitHub(ATTR_PATH, "src/player_attributes.json", `Update player card: ${card.Contributor}`);
 
     res.json({ message: "✅ Player card saved", updated: index === -1 ? card : data[index] });
   } catch (error) {
@@ -223,8 +267,7 @@ app.post("/player-attributes", async (req, res) => {
   }
 });
 
-// Optional: Delete endpoint if you ever want to remove a card
-app.delete("/player-attributes/:name", (req, res) => {
+app.delete("/player-attributes/:name", async (req, res) => {
   const name = req.params.name;
   let data = readAttributes();
   const initialLength = data.length;
@@ -235,10 +278,11 @@ app.delete("/player-attributes/:name", (req, res) => {
   }
 
   writeAttributes(data);
-  commitAndPush(`Delete player card: ${name}`).catch(console.error);
+  await syncFileToGitHub(ATTR_PATH, "src/player_attributes.json", `Delete player card: ${name}`);
 
   res.json({ message: "Player card deleted" });
 });
+
 // ===================== Match Lineups =====================
 const LINEUPS_PATH = path.join(__dirname, "src", "match_lineups.json");
 
@@ -256,7 +300,6 @@ app.post("/match-lineups", async (req, res) => {
   try {
     const lineup = req.body;
     
-    // ✅ ADD DEBUG LOGGING
     console.log("📥 Received lineup payload:", JSON.stringify({
       date: lineup.date,
       location: lineup.location, 
@@ -267,20 +310,11 @@ app.post("/match-lineups", async (req, res) => {
 
     if (!lineup.date) return res.status(400).json({ error: "Missing date" });
 
-    await git.pull('origin', 'main', ['--rebase']).catch(() => {});
-
     const data = readLineups();
     
-    // ✅ NORMALIZE before comparison
     const normDate = (lineup.date || "").trim();
     const normLoc  = (lineup.location || "").trim();
     const normTime = (lineup.time || "").trim();
-
-    console.log(`🔍 Searching for: date="${normDate}" loc="${normLoc}" time="${normTime}"`);
-    console.log(`📋 Existing entries: ${data.length}`);
-    data.forEach((l, i) => {
-      console.log(`  [${i}] date="${l.date}" loc="${l.location}" time="${l.time}"`);
-    });
 
     const index = data.findIndex(l => 
       (l.date || "").trim() === normDate && 
@@ -288,15 +322,12 @@ app.post("/match-lineups", async (req, res) => {
       (l.time || "").trim() === normTime
     );
 
-    console.log(`🎯 Match index: ${index}`);
-
-    // ✅ Ensure the saved object always has date/location/time
     const normalizedLineup = {
       date: normDate,
       location: normLoc,
       time: normTime,
-      teamA: lineup.teamA || { formation: "4-4-2", players: {} },
-      teamB: lineup.teamB || { formation: "4-4-2", players: {} }
+      teamA: lineup.teamA || { formation: "4-4-2", players: [] },
+      teamB: lineup.teamB || { formation: "4-4-2", players: [] }
     };
 
     if (index === -1) {
@@ -309,16 +340,7 @@ app.post("/match-lineups", async (req, res) => {
 
     writeLineups(data);
 
-    await git.add(".");
-    try {
-      await git.commit(`Update lineup for ${normDate}`);
-      await git.push('origin', 'main');
-      console.log(`✅ Git sync successful for lineup: ${normDate}`);
-    } catch (gitErr) {
-      if (gitErr.message && !gitErr.message.includes("nothing to commit")) {
-        console.error("⚠️ Git push warning:", gitErr.message);
-      }
-    }
+    await syncFileToGitHub(LINEUPS_PATH, "src/match_lineups.json", `Update lineup for ${normDate}`);
 
     res.json({ message: "✅ Lineup saved", index, isNew: index === -1 });
   } catch (err) {
@@ -326,12 +348,14 @@ app.post("/match-lineups", async (req, res) => {
     res.status(500).json({ error: "Failed to save lineup", details: err.message });
   }
 });
+
 app.get("/match-lineups", (req, res) => {
   res.json(readLineups());
 });
+
 // ===================== POST /add-stats =====================
 
-app.post("/add-stats", (req, res) => {
+app.post("/add-stats", async (req, res) => {
   const raw = req.body;
 
   if (!raw || !raw.Contributor) {
@@ -339,16 +363,12 @@ app.post("/add-stats", (req, res) => {
   }
 
   const data = readStats();
-
-  // ✅ Normalize → standard format with Season
   const newStat = formatStat(raw);
 
   data.push(newStat);
   writeStats(data);
 
-  commitAndPush(`Add stats for ${newStat.Contributor} (${new Date().toISOString()})`).catch(
-    console.error
-  );
+  await syncFileToGitHub(STATS_PATH, "src/football_stats_2025_2026.json", `Add stats for ${newStat.Contributor}`);
 
   res.json({
     message: "✅ Stat added successfully",
@@ -366,7 +386,7 @@ app.get("/stats", (req, res) => {
 
 // ===================== PUT /modify-stats/:index =====================
 
-app.put("/modify-stats/:index", (req, res) => {
+app.put("/modify-stats/:index", async (req, res) => {
   const data = readStats();
   const index = parseInt(req.params.index);
 
@@ -374,16 +394,13 @@ app.put("/modify-stats/:index", (req, res) => {
     return res.status(400).json({ message: "Invalid index" });
   }
 
-  // Merge old record with incoming updates, then normalize
   const merged = { ...data[index], ...req.body };
   const updatedRecord = formatStat(merged);
 
   data[index] = updatedRecord;
   writeStats(data);
 
-  commitAndPush(
-    `Modify stats for ${updatedRecord.Contributor} (${new Date().toISOString()})`
-  ).catch(console.error);
+  await syncFileToGitHub(STATS_PATH, "src/football_stats_2025_2026.json", `Modify stats for ${updatedRecord.Contributor}`);
 
   res.json({ message: "✅ Stat modified successfully", updated: updatedRecord });
 });
@@ -401,11 +418,7 @@ app.get("/stats-history", (req, res) => {
 });
 
 // ===================== Static serving =====================
-
-// ===================== Static serving =====================
 // Only serve frontend files if the build folder exists
-// (This is skipped when deployed as a pure API backend for the APK)
-
 const buildPath = path.join(__dirname, "build");
 if (fs.existsSync(buildPath)) {
   app.use(express.static(buildPath));
@@ -415,5 +428,6 @@ if (fs.existsSync(buildPath)) {
 } else {
   console.log("ℹ️  Running in API-only mode (no frontend build folder found)");
 }
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

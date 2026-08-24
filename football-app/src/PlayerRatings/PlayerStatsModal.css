@@ -553,3 +553,208 @@
   font-family: 'Oswald', sans-serif;
   font-size: 15px;
 }
+/* =========================================================
+   MOBILE LAYOUT (Android / Small Screens)
+   Single column for main attributes, full width utilization
+   ========================================================= */
+@media (max-width: 768px) {
+  
+  /* Modal container adjustments */
+  .psm-content {
+    padding: 16px 12px;
+    border-radius: 16px;
+    max-height: 95vh;
+  }
+
+  .psm-title {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+
+  /* Main attribute grid — SINGLE COLUMN on mobile */
+  .psm-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  /* Each attribute group takes full width */
+  .psm-group {
+    padding: 12px 14px;
+    border-radius: 8px;
+  }
+
+  .psm-group-title {
+    font-size: 16px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+  }
+
+  .psm-group-score {
+    font-size: 15px;
+    padding: 2px 10px;
+  }
+
+  /* Sub-attribute rows — slightly larger for touch */
+  .psm-sub-item {
+    padding: 6px 0;
+    font-size: 14px;
+    gap: 8px;
+  }
+
+  .psm-sub-label {
+    font-size: 14px;
+  }
+
+  .psm-bar-container {
+    width: 100px;
+    height: 8px;
+  }
+
+  .psm-sub-value {
+    font-size: 15px;
+    width: 30px;
+  }
+
+  /* Position court adjustments */
+  .court-wrapper {
+    padding: 10px;
+    margin-top: 12px;
+  }
+
+  .court-row.attack,
+  .court-row.mid,
+  .court-row.defense {
+    height: auto;
+    min-height: 60px;
+  }
+
+  .court-pos {
+    font-size: 11px;
+    min-height: 28px;
+  }
+
+  .court-pos .court-pos-rating {
+    font-size: 9px;
+  }
+
+  /* Header actions stack vertically */
+  .psm-header-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .psm-edit-toggle,
+  .psm-compare-toggle {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+  }
+
+  /* Compare section adjustments */
+  .psm-compare-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .psm-compare-select {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+  }
+
+  .psm-compare-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+  }
+
+  /* Compare modal adjustments */
+  .cmp-content {
+    padding: 16px 12px;
+    border-radius: 16px;
+  }
+
+  .cmp-header-name {
+    font-size: 16px;
+  }
+
+  .cmp-header-vs {
+    font-size: 12px;
+    width: 40px;
+  }
+
+  .cmp-value {
+    font-size: 16px;
+  }
+
+  .cmp-value.large {
+    font-size: 20px;
+  }
+
+  .cmp-label {
+    font-size: 12px;
+    width: 80px;
+  }
+
+  /* Edit mode adjustments */
+  .psm-edit-form {
+    padding: 16px 12px;
+  }
+
+  .psm-edit-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .psm-edit-grid.cols-3,
+  .psm-edit-grid.cols-4,
+  .psm-edit-grid.cols-6 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .psm-edit-grid label {
+    font-size: 13px;
+  }
+
+  .psm-edit-grid input,
+  .psm-edit-grid select {
+    padding: 10px;
+    font-size: 15px;
+  }
+
+  .psm-edit-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .psm-save-btn,
+  .psm-cancel-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  .psm-pos-edit-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .psm-add-pos {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .psm-add-pos input {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+  }
+
+  .psm-add-pos button {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+  }
+}

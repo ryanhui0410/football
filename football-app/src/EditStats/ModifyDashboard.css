@@ -261,12 +261,32 @@
     color: #f2c14e;
   }
 
+  /* ---- 比赛结果框 ---- */
   .md-result-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;           /* Fill the entire grid column */
+  min-width: 0 !important; /* Override desktop min-width to prevent overflow */
+  max-width: 100%;       /* Never exceed the grid column */
+  padding: 6px 8px;      /* Tighter padding on mobile */
+  box-sizing: border-box;
+}
+
+/* Smaller score text on mobile */
+.md-result-box .md-score {
+  font-size: 20px;       /* Reduced from 28px */
+  letter-spacing: 0.03em;
+}
+
+/* Make outcome badge wrap properly if text is long */
+.md-result-box .md-outcome {
+  font-size: 10px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  max-width: 100%;
+}
 
   .md-score {
     font-family: 'Oswald', sans-serif;

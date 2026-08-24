@@ -190,31 +190,6 @@
       <div className={`match-lineup-container ${isVertical ? "layout-vertical" : "layout-horizontal"}`}>
         <div className="lineup-content">
           <div className="pitch-and-controls">
-            <div className="formations-select" style={{ pointerEvents: editMode ? 'auto' : 'none', opacity: editMode ? 1 : 0.7 }}>
-              <div className="team-select">
-                <label>Team A:</label>
-                <select 
-                  value={teamAFormation} 
-                  onChange={(e) => handleFormationChange("A", e.target.value)}
-                  disabled={!editMode}
-                  style={{ marginLeft: 8, padding: '4px 8px', borderRadius: '4px' }}
-                >
-                  {Object.keys(FORMATIONS).map(f => <option key={f} value={f}>{f}</option>)}
-                </select>
-              </div>
-              <div className="team-select">
-                <label>Team B:</label>
-                <select 
-                  value={teamBFormation} 
-                  onChange={(e) => handleFormationChange("B", e.target.value)}
-                  disabled={!editMode}
-                  style={{ marginLeft: 8, padding: '4px 8px', borderRadius: '4px' }}
-                >
-                  {Object.keys(FORMATIONS).map(f => <option key={f} value={f}>{f}</option>)}
-                </select>
-              </div>
-            </div>
-
             <div className={`pitch-wrapper ${isVertical ? "vertical" : ""}`}>
               <div className="pitch-lines">
                 <div className="pitch-outline" />

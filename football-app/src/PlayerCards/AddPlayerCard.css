@@ -317,6 +317,23 @@
 /* ── Responsive ── */
 @media (max-width: 700px) {
   .apc-grid-2 { grid-template-columns: 1fr; }
-  .apc-ea-grid { grid-template-columns: repeat(3, 1fr); }
+  
+  /* ✨ 2 items per row for EA ratings on mobile */
+  .apc-ea-grid { 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 10px;
+  }
+  
+  /* Slightly larger EA fields on mobile for better touch targets */
+  .apc-ea-field input {
+    padding: 12px 8px;
+    font-size: 20px;
+  }
+  
+  .apc-ea-label {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  
   .apc-stats-grid { grid-template-columns: repeat(2, 1fr); }
 }

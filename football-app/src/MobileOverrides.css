@@ -64,7 +64,7 @@ table {
 /* Fix the pitch so it doesn't overflow */
 .pitch-wrapper {
   width: 100% !important;
-  max-width: 100vw !important;
+  max-width: 92vw !important;
   height: 55vw !important; /* Maintain aspect ratio on mobile */
   min-height: 300px !important;
 }
@@ -263,23 +263,10 @@ button {
   height: 250px !important;
   width: 100% !important;
 }
-/* Mobile layout optimization */
-@media (max-width: 768px) {
-  /* Reduce padding on mobile for maximum content space */
-  body > div > div[style*="paddingLeft"] {
-    padding-top: 50px !important;
-    padding-left: 10px !important;
-    padding-right: 10px !important;
-  }
 
-  /* When sidebar is open on mobile, use overlay mode */
-  body > div > div[style*="paddingLeft: 280px"] {
-    padding-left: 10px !important;
-  }
-}
-/* ===== App content layout (replaces the old inline padding styles) ===== */
+/* ===== App content layout (REDUCED LEFT MARGIN) ===== */
 .app-content {
-  padding: 80px 20px 20px 70px; /* Desktop: clears hamburger + sidebar */
+  padding: 60px 5px 5px 10px; /* ← Changed from 60px to 10px */
   transition: padding-left 0.4s ease;
   min-height: 100vh;
   box-sizing: border-box;
@@ -289,15 +276,27 @@ button {
   padding-left: 280px;
 }
 
-/* ===== Mobile: full width, small top gap, room for bottom nav ===== */
+/* ===== Mobile: full width, minimal padding ===== */
 @media (max-width: 768px) {
   .app-content,
   .app-content.menu-open {
-    padding: 10px 10px 85px 10px;
+    padding: 3px 3px 85px 5px; /* ← Reduced left padding to 5px */
   }
 
   /* Calendar no longer needs to dodge the menu button */
   .cal-wrap {
     margin-top: 0 !important;
+  }
+  
+  /* Reduce padding on mobile for maximum content space */
+  body > div > div[style*="paddingLeft"] {
+    padding-top: 30px !important;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+  }
+
+  /* When sidebar is open on mobile, use overlay mode */
+  body > div > div[style*="paddingLeft: 280px"] {
+    padding-left: 3px !important;
   }
 }
