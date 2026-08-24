@@ -156,7 +156,7 @@ function formatStat(raw) {
 // ===================== Stats file I/O =====================
 
 // ✅ FIXED: Added "football-app" to match the others
-const STATS_PATH = path.join(__dirname, "football-app", "src", "football_stats_2025_2026.json");
+const STATS_PATH = path.join(__dirname, "src", "football_stats_2025_2026.json");
 
 function readStats() {
   console.log(`🔍 [readStats] Looking locally at: ${STATS_PATH}`);
@@ -178,7 +178,7 @@ function writeStats(data) {
 
 // ===================== Profile management =====================
 
-const PROFILES_PATH = path.join(__dirname, "football-app", "src", "contributor_profiles.json");
+const PROFILES_PATH = path.join(__dirname, "src", "contributor_profiles.json");
 
 function readProfiles() {
   if (!fs.existsSync(PROFILES_PATH)) return {};
@@ -210,7 +210,7 @@ app.post("/contributor-profile", async (req, res) => {
 
 // ===================== Player Attributes (FIFA Cards) =====================
 
-const ATTR_PATH = path.join(__dirname, "football-app", "src", "player_attributes.json");
+const ATTR_PATH = path.join(__dirname, "src", "player_attributes.json");
 
 function readAttributes() {
   if (!fs.existsSync(ATTR_PATH)) return [];
@@ -241,7 +241,7 @@ app.post("/player-attributes", async (req, res) => {
         const imageBuffer = Buffer.from(base64Data, "base64");
         
         // ✅ FIXED: Added "football-app"
-        const imagesDir = path.join(__dirname, "football-app", "public", "images");
+        const imagesDir = path.join(__dirname,"public", "images");
         if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
         
         const safeName = card.Contributor.replace(/[^a-z0-9\u4e00-\u9fa5]/gi, "_");
@@ -296,7 +296,7 @@ app.delete("/player-attributes/:name", async (req, res) => {
 });
 
 // ===================== Match Lineups =====================
-const LINEUPS_PATH = path.join(__dirname, "football-app", "src", "match_lineups.json");
+const LINEUPS_PATH = path.join(__dirname, "src", "match_lineups.json");
 
 function readLineups() {
   if (!fs.existsSync(LINEUPS_PATH)) return [];
@@ -432,7 +432,7 @@ app.get("/stats-history", (req, res) => {
 });
 
 // ===================== Static serving =====================
-const buildPath = path.join(__dirname, "football-app", "build");
+const buildPath = path.join(__dirname,"build");
 if (fs.existsSync(buildPath)) {
   app.use(express.static(buildPath));
   app.get("*", (req, res) => {
