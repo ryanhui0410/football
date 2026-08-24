@@ -2455,5 +2455,27 @@
     "Assist to": "",
     "Assist to count": 0,
     "Man of the Match": true
+  },
+  {
+    "Date": "8/22/2026",
+    "Contributor": "Ryan",
+    "Symbol": "⚽",
+    "Goal": 1,
+    "Assist": 0,
+    "Rating": 8,
+    "Location": "顯田",
+    "Time": "11:30 AM",
+    "Goal Contribution": 1,
+    "source": "Barry",
+    "Left Foot": 0,
+    "Right Foot": 1,
+    "Head": 0,
+    "Other body parts": 0,
+    "Season": "2026-2027",
+    "Match result": "3-3",
+    "Win/Loss?": "Draw",
+    "Assist to": "",
+    "Assist to count": 0,
+    "Man of the Match": false
   }
 ]
