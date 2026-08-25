@@ -24,9 +24,9 @@ function TacticalDashboard() {
 
   useEffect(() => {
     Promise.all([
-      fetch("https://football-stats-xbx6.onrender.com/stats-history").then(res => res.json()),
-      fetch("https://football-stats-xbx6.onrender.com/match-lineups").then(res => res.json()),
-      fetch("https://football-stats-xbx6.onrender.com/player-attributes").then(res => res.json())
+      fetch("https://football-stats-xbx6.onrender.com/stats-history?t=${Date.now()}").then(res => res.json()),
+      fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}").then(res => res.json()),
+      fetch("https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}").then(res => res.json())
     ])
       .then(([history, lineups, players]) => {
         setTimeHistory(history.times || []);
@@ -109,7 +109,7 @@ function TacticalDashboard() {
     };
 
     try {
-      const res = await fetch("https://football-stats-xbx6.onrender.com/match-lineups", {
+      const res = await fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

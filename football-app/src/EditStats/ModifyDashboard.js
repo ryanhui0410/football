@@ -190,8 +190,8 @@ function ModifyDashboard({ contributors, onSave }) {
       const fetchAndOpenReport = async (isEditMode = false) => {
     try {
       const [lineupsRes, statsRes] = await Promise.all([
-        fetch("https://football-stats-xbx6.onrender.com/match-lineups"),
-        fetch("https://football-stats-xbx6.onrender.com/stats")
+        fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}"),
+        fetch("https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}")
       ]);
       const lineups = await lineupsRes.json();
       const stats = await statsRes.json();
@@ -217,7 +217,7 @@ function ModifyDashboard({ contributors, onSave }) {
         
         // Always fetch latest player cards when entering edit mode
         if (isEditMode) { 
-          const pRes = await fetch("https://football-stats-xbx6.onrender.com/player-attributes");
+          const pRes = await fetch("https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}");
           const pData = await pRes.json();
           setAvailablePlayers(Array.isArray(pData) ? pData : []);
         }
@@ -258,7 +258,7 @@ function ModifyDashboard({ contributors, onSave }) {
     };
 
     try {
-      const res = await fetch("https://football-stats-xbx6.onrender.com/match-lineups", {
+      const res = await fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

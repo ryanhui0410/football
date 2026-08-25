@@ -15,7 +15,7 @@ function EditMatchPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("https://football-stats-xbx6.onrender.com/stats");
+        const res = await fetch("https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}");
         const data = await res.json();
         setFormData(data[index]);
       } catch (err) {
@@ -27,7 +27,7 @@ function EditMatchPage() {
 
   useEffect(() => {
     if (isEditingLineup && availablePlayers.length === 0) {
-      fetch("https://football-stats-xbx6.onrender.com/player-attributes")
+      fetch("https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}")
         .then(res => res.json())
         .then(data => setAvailablePlayers(Array.isArray(data) ? data : []))
         .catch(console.error);
@@ -36,7 +36,7 @@ function EditMatchPage() {
 
   useEffect(() => {
     if (isEditingLineup && formData) {
-      fetch("https://football-stats-xbx6.onrender.com/match-lineups")
+      fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}")
         .then(res => res.json())
         .then(lineups => {
           const match = lineups.find(l => 
@@ -55,7 +55,7 @@ function EditMatchPage() {
     const resultStr = formData["Match result"] || "";
     const calculatedWL = calculateWinLoss(resultStr);
 
-    await fetch(`https://football-stats-xbx6.onrender.com/modify-stats/${index}`, {
+    await fetch(`https://football-stats-xbx6.onrender.com/modify-stats/${index}?t=${Date.now()}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...formData, "Win/Loss?": calculatedWL }),
@@ -79,7 +79,7 @@ function EditMatchPage() {
     console.log("📤 Sending lineup payload:", JSON.stringify(payload, null, 2));
 
     try {
-      const res = await fetch("https://football-stats-xbx6.onrender.com/match-lineups", {
+      const res = await fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

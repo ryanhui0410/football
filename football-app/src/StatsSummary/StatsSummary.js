@@ -36,7 +36,7 @@ function StatsSummary({ stats }) {
 
   // ✅ Fetch lineups with error handling
   useEffect(() => {
-    fetch("https://football-stats-xbx6.onrender.com/match-lineups")
+    fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}")
       .then((res) => res.json())
       .then((data) => {
         const arr = Array.isArray(data) ? data : [];
