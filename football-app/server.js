@@ -10,7 +10,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cors());
 
-// ===================== GitHub API Sync Helper =====================
+// ===================== GitHub API Sync Helper (PUSH) =====================
 async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
   try {
     const token = process.env.GITHUB_TOKEN;
@@ -79,6 +79,39 @@ async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
 
   } catch (err) {
     console.error("❌ GitHub sync CRITICAL error:", err);
+  }
+}
+
+// ===================== GitHub API Pull Helper (Startup Sync) =====================
+async function pullLatestFromGitHub(githubFilePath, localFilePath) {
+  try {
+    const token = process.env.GITHUB_TOKEN;
+    const owner = process.env.GITHUB_OWNER;
+    const repo = process.env.GITHUB_REPO;
+
+    if (!token || !owner || !repo) return;
+
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${githubFilePath}`;
+    
+    // "application/vnd.github.raw" tells GitHub to return the raw text of the file directly
+    const res = await fetch(apiUrl, {
+      headers: { 
+        Authorization: `token ${token}`, 
+        Accept: "application/vnd.github.raw" 
+      }
+    });
+
+    if (res.ok) {
+      const fileContent = await res.text();
+      const dir = path.dirname(localFilePath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(localFilePath, fileContent);
+      console.log(`✅ Downloaded fresh data: ${githubFilePath}`);
+    } else {
+      console.log(`⚠️ Could not fetch ${githubFilePath} from GitHub`);
+    }
+  } catch (err) {
+    console.error(`❌ Error pulling from GitHub:`, err);
   }
 }
 
@@ -155,19 +188,12 @@ function formatStat(raw) {
 
 // ===================== Stats file I/O =====================
 
-// ✅ FIXED: Added "football-app" to match the others
 const STATS_PATH = path.join(__dirname, "src", "football_stats_2025_2026.json");
 
 function readStats() {
-  console.log(`🔍 [readStats] Looking locally at: ${STATS_PATH}`);
-  if (!fs.existsSync(STATS_PATH)) {
-    console.log(`❌ [readStats] File NOT FOUND locally! Returning empty array.`);
-    return [];
-  }
+  if (!fs.existsSync(STATS_PATH)) return [];
   const content = fs.readFileSync(STATS_PATH, "utf8");
-  const data = content.trim() ? JSON.parse(content) : [];
-  console.log(`✅ [readStats] Found file locally! Loaded ${data.length} records.`);
-  return data;
+  return content.trim() ? JSON.parse(content) : [];
 }
 
 function writeStats(data) {
@@ -240,7 +266,6 @@ app.post("/player-attributes", async (req, res) => {
         const base64Data = card.picture.replace(/^data:image\/\w+;base64,/, "");
         const imageBuffer = Buffer.from(base64Data, "base64");
         
-        // ✅ FIXED: Added "football-app"
         const imagesDir = path.join(__dirname,"public", "images");
         if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
         
@@ -442,5 +467,21 @@ if (fs.existsSync(buildPath)) {
   console.log("ℹ️  Running in API-only mode (no frontend build folder found)");
 }
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// ===================== STARTUP SYNC =====================
+// Every time Render wakes up from sleep, it will download the latest data from GitHub
+async function startupSync() {
+  console.log("🔄 Server waking up... Pulling latest data from GitHub...");
+  
+  await pullLatestFromGitHub("football-app/src/football_stats_2025_2026.json", STATS_PATH);
+  await pullLatestFromGitHub("football-app/src/contributor_profiles.json", PROFILES_PATH);
+  await pullLatestFromGitHub("football-app/src/player_attributes.json", ATTR_PATH);
+  await pullLatestFromGitHub("football-app/src/match_lineups.json", LINEUPS_PATH);
+  
+  console.log("✅ Data synced! Server is ready.");
+  
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+}
+
+// Start the server with sync
+startupSync();
