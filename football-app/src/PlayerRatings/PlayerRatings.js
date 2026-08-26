@@ -28,9 +28,10 @@ function PlayerRatings() {
 
   const fetchData = async () => {
     try {
+      // ✅ FIX: Use backticks
       const [attrRes, statsRes] = await Promise.all([
-        fetch('https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}'),
-        fetch('https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}'),
+        fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`),
+        fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`),
       ]);
       const profilesData = await attrRes.json();
       const statsData = await statsRes.json();
