@@ -239,9 +239,14 @@ app.post("/contributor-profile", async (req, res) => {
 const ATTR_PATH = path.join(__dirname, "src", "player_attributes.json");
 
 function readAttributes() {
-  if (!fs.existsSync(ATTR_PATH)) return [];
+  if (!fs.existsSync(ATTR_PATH)) {
+    console.log(`⚠️ [READ] ${ATTR_PATH} does not exist locally. Returning empty array.`);
+    return [];
+  }
   const content = fs.readFileSync(ATTR_PATH, "utf8");
-  return content.trim() ? JSON.parse(content) : [];
+  const data = content.trim() ? JSON.parse(content) : [];
+  console.log(`📖 [READ] Successfully loaded ${data.length} players from local disk.`);
+  return data;
 }
 
 function writeAttributes(data) {
