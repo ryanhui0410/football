@@ -24,8 +24,19 @@ async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
     if (localFilePath.endsWith('.json')) {
       try {
         const parsed = JSON.parse(contentString);
+        const recordCount = Array.isArray(parsed) ? parsed.length : Object.keys(parsed).length;
+        console.log(`📦 [PUSH] Sending ${recordCount} records to GitHub: ${githubFilePath}`);
+        
+        // Log first and last record names if it's an array
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          console.log(`   First: ${parsed[0].Contributor || 'unnamed'}`);
+          console.log(`   Last: ${parsed[parsed.length - 1].Contributor || 'unnamed'}`);
+        }
+        
         contentString = JSON.stringify(parsed); 
-      } catch (e) {}
+      } catch (e) {
+        console.error("❌ Failed to parse/minify JSON:", e.message);
+      }
     }
 
     const contentBuffer = Buffer.from(contentString, 'utf8');
@@ -48,7 +59,7 @@ async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
       return { success: false, error: `Network error getting SHA` };
     }
 
-    const body = { message: commitMessage, content: contentBase64, branch: "main" }; // ⚠️ Change to "master" if your repo uses master!
+    const body = { message: commitMessage, content: contentBase64, branch: "main" };
     if (sha) body.sha = sha;
 
     const putRes = await fetch(apiUrl, {
@@ -245,14 +256,19 @@ function readAttributes() {
   }
   const content = fs.readFileSync(ATTR_PATH, "utf8");
   const data = content.trim() ? JSON.parse(content) : [];
-  console.log(`📖 [READ] Successfully loaded ${data.length} players from local disk.`);
+  console.log(`📖 [READ] Loaded ${data.length} players from local disk`);
+  if (data.length > 0) {
+    console.log(`   First player: ${data[0].Contributor || 'unnamed'}`);
+    console.log(`   Last player: ${data[data.length - 1].Contributor || 'unnamed'}`);
+  }
   return data;
 }
 
 function writeAttributes(data) {
   const dir = path.dirname(ATTR_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); 
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(ATTR_PATH, JSON.stringify(data, null, 2));
+  console.log(`💾 [WRITE] Saved ${data.length} players to local disk`);
 }
 
 app.get("/player-attributes", (req, res) => {
@@ -260,58 +276,67 @@ app.get("/player-attributes", (req, res) => {
 });
 
 app.post("/player-attributes", async (req, res) => {
-  console.log(`📥 [PLAYER-ATTRIBUTES] Request received! Contributor: ${req.body?.Contributor}`);
+  console.log(`\n📥 [PLAYER-ATTRIBUTES] Request received! Contributor: ${req.body?.Contributor}`);
   try {
     const card = req.body;
     if (!card || !card.Contributor) {
-      return res.status(400).json({ error: "Missing Contributor name" });
+      return res.status(400).json({ error: "Missing Contributor" });
     }
 
+    // Handle image upload (keep existing code)
     if (card.picture && typeof card.picture === 'string' && card.picture.startsWith("data:image")) {
       try {
         const base64Data = card.picture.replace(/^data:image\/\w+;base64,/, "");
         const imageBuffer = Buffer.from(base64Data, "base64");
-        
         const imagesDir = path.join(__dirname,"public", "images");
         if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
-        
         const safeName = card.Contributor.replace(/[^a-z0-9\u4e00-\u9fa5]/gi, "_");
         const fileName = `${safeName}.jpeg`;
         const filePath = path.join(imagesDir, fileName);
-        
         fs.writeFileSync(filePath, imageBuffer);
         card.picture = `/images/${fileName}`;
-        
         await syncFileToGitHub(filePath, `football-app/public/images/${fileName}`, `Update profile picture: ${card.Contributor}`);
       } catch (imgErr) {
         console.error("❌ Failed to save image:", imgErr);
       }
     }
 
+    // Read current data
     const data = readAttributes();
+    console.log(`📊 [DEBUG] After reading, array has ${data.length} players`);
+
     const index = data.findIndex(a => 
       (a.Contributor || "").trim().toLowerCase() === card.Contributor.trim().toLowerCase()
     );
 
     if (index === -1) {
       data.push(card);
+      console.log(`➕ [DEBUG] Added NEW player. Array now has ${data.length} players`);
     } else {
       data[index] = { ...data[index], ...card };
+      console.log(`🔄 [DEBUG] Updated existing player at index ${index}`);
     }
 
-    // 🕵️‍♂️ CHECK THE SYNC RESULT
+    // Verify the player is in the array before writing
+    const hasPlayer = data.some(p => p.Contributor === card.Contributor);
+    console.log(`✓ [DEBUG] Player ${card.Contributor} is in array: ${hasPlayer}`);
+
+    writeAttributes(data);
+
+    // Now push to GitHub
+    console.log(`📤 [DEBUG] About to push ${data.length} players to GitHub`);
     const syncResult = await syncFileToGitHub(ATTR_PATH, "football-app/src/player_attributes.json", `Update player card: ${card.Contributor}`);
 
     if (syncResult.success) {
-      res.json({ message: "✅ Player card saved and synced to GitHub!" });
+      res.json({ message: "✅ Player card saved and synced to GitHub!", totalPlayers: data.length });
     } else {
-      // Tell the phone exactly why GitHub rejected it!
       res.status(500).json({ 
         error: "Saved locally, but GitHub rejected it.", 
         githubError: syncResult.error 
       });
     }
   } catch (error) {
+    console.error("❌ Error in player-attributes POST:", error);
     res.status(500).json({ error: "Failed to save player card", details: error.message });
   }
 });
