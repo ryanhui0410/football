@@ -307,16 +307,45 @@
     "location": "顯田",
     "time": "11:30 AM",
     "teamA": {
+      "formation": "4-4-2",
       "players": [
         null,
         null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
+        {
+          "Contributor": "普巴",
+          "rating": 6.5,
+          "picture": "/普巴.jpeg"
+        },
+        {
+          "Contributor": "Ken",
+          "rating": 6.7,
+          "picture": "/images/Ken.jpeg"
+        },
+        {
+          "Contributor": "QC",
+          "rating": 6.8,
+          "picture": "/images/QC.jpeg"
+        },
+        {
+          "Contributor": "Chris",
+          "rating": 7.1,
+          "picture": "/Chris.jpeg"
+        },
+        {
+          "Contributor": "Chun",
+          "rating": 7.1,
+          "picture": "/Chun.jpeg"
+        },
+        {
+          "Contributor": "Derek",
+          "rating": 8.2,
+          "picture": "/images/Derek.jpeg"
+        },
+        {
+          "Contributor": "Barry",
+          "rating": 5.7,
+          "picture": "/Barry.jpeg"
+        },
         {
           "Contributor": "Ryan",
           "rating": 8,
@@ -330,18 +359,63 @@
       ]
     },
     "teamB": {
+      "formation": "4-4-2",
       "players": [
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        {
+          "Contributor": "Pierre",
+          "rating": 7.1,
+          "picture": "/Pierre.jpeg"
+        },
+        {
+          "Contributor": "Steve",
+          "rating": 7,
+          "picture": "/Steve.jpeg"
+        },
+        {
+          "Contributor": "Nick",
+          "rating": 5.5,
+          "picture": "/Nick.jpeg"
+        },
+        {
+          "Contributor": "阿榮",
+          "rating": 6.9,
+          "picture": "/images/阿榮.jpeg"
+        },
+        {
+          "Contributor": "S Joe",
+          "rating": 6.7,
+          "picture": "/images/S_Joe.jpeg"
+        },
+        {
+          "Contributor": "大嚿",
+          "rating": 7.3,
+          "picture": "/大嚿.jpeg"
+        },
+        {
+          "Contributor": "hong",
+          "rating": 7.5,
+          "picture": "/hong.jpeg"
+        },
+        {
+          "Contributor": "Lu",
+          "rating": 7.1,
+          "picture": "/Lu.jpeg"
+        },
+        {
+          "Contributor": "Dave",
+          "rating": 6.8,
+          "picture": "/images/Dave.jpeg"
+        },
+        {
+          "Contributor": "Jacob",
+          "rating": 7.3,
+          "picture": "/Jacob.jpeg"
+        },
+        {
+          "Contributor": "局長",
+          "rating": 7.4,
+          "picture": "/局長.jpeg"
+        }
       ]
     }
   }
