@@ -132,7 +132,7 @@ function AddPlayerCard() {
     setPositionRatings((prev) => prev.filter((p) => p.position !== pos));
   };
 
-  const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.Contributor.trim()) {
       alert("Please enter a player name.");
@@ -147,19 +147,16 @@ function AddPlayerCard() {
       posRatingsObj[position] = rating;
     });
 
-    // Fields that should remain as strings (not parsed to numbers)
     const stringFields = ["Contributor", "picture", "position", "preferredFoot", "filterGroup"];
 
     const payload = {
       ...formData,
-      // Ensure all numeric fields are numbers, but keep strings as strings
       ...Object.fromEntries(
         Object.entries(formData).map(([k, v]) => [
           k,
           stringFields.includes(k) ? v : parseInt(v) || 0,
         ])
       ),
-      // Force empty position ratings if the player is a GK
       positionRatings: formData.position === "GK" ? {} : posRatingsObj,
     };
 
@@ -169,14 +166,22 @@ function AddPlayerCard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("Save failed");
-      setMessage("✅ Player card saved successfully!");
       
-      // Reset form after successful save
+      // 🚨 Parse the JSON response to get the exact error details
+      const result = await res.json();
+      
+      if (!res.ok) {
+        // Throw the exact GitHub error so it shows on the screen!
+        throw new Error(result.githubError || result.error || "Save failed");
+      }
+      
+      setMessage(result.message || "✅ Player card saved successfully!");
+      
       setFormData(buildEmptyForm());
       setPositionRatings([]);
     } catch (err) {
-      setMessage("❌ Failed to save. Check that the server is running.");
+      // Display the exact error on the screen
+      setMessage(`❌ Failed: ${err.message}`);
     } finally {
       setSaving(false);
     }

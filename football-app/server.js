@@ -10,51 +10,45 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cors());
 
-// ===================== GitHub API Sync Helper (PUSH) =====================
 async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
   try {
     const token = process.env.GITHUB_TOKEN;
     const owner = process.env.GITHUB_OWNER;
     const repo = process.env.GITHUB_REPO;
 
-    if (!token || !owner || !repo) {
-      console.error("❌ CRITICAL: GitHub Env Vars missing! Check Render Dashboard.");
-      return;
-    }
+    if (!token || !owner || !repo) return { success: false, error: "Missing GitHub Env Vars" };
+    if (!fs.existsSync(localFilePath)) return { success: false, error: "Local file not found" };
 
-    if (!fs.existsSync(localFilePath)) {
-      console.warn(`⚠️ Local file not found: ${localFilePath}`);
-      return;
-    }
-
-    const content = fs.readFileSync(localFilePath);
-    // Check file size (GitHub API limit is ~1MB)
-    if (content.length > 900000) {
-        console.error(`❌ FILE TOO LARGE: ${content.length} bytes. GitHub API limit is ~1MB.`);
-        return;
-    }
+    let contentString = fs.readFileSync(localFilePath, 'utf8');
     
-    const contentBase64 = content.toString("base64");
+    if (localFilePath.endsWith('.json')) {
+      try {
+        const parsed = JSON.parse(contentString);
+        contentString = JSON.stringify(parsed); 
+      } catch (e) {}
+    }
+
+    const contentBuffer = Buffer.from(contentString, 'utf8');
+    if (contentBuffer.length > 950000) return { success: false, error: `File too large: ${contentBuffer.length} bytes` };
+    
+    const contentBase64 = contentBuffer.toString("base64");
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${githubFilePath}`;
 
-    // 1. Get SHA
     let sha = "";
     try {
       const getRes = await fetch(apiUrl, {
         headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" }
       });
       if (getRes.ok) {
-        const data = await getRes.json();
-        sha = data.sha;
+        sha = (await getRes.json()).sha;
+      } else if (getRes.status !== 404) {
+        return { success: false, error: `Failed to get SHA (${getRes.status})` };
       }
-    } catch (e) { /* File might not exist yet */ }
+    } catch (e) {
+      return { success: false, error: `Network error getting SHA` };
+    }
 
-    // 2. Push Update
-    const body = {
-      message: commitMessage,
-      content: contentBase64,
-      branch: "main"
-    };
+    const body = { message: commitMessage, content: contentBase64, branch: "main" }; // ⚠️ Change to "master" if your repo uses master!
     if (sha) body.sha = sha;
 
     const putRes = await fetch(apiUrl, {
@@ -67,18 +61,17 @@ async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
       body: JSON.stringify(body)
     });
 
-    const responseText = await putRes.text();
     if (putRes.ok) {
-      const result = JSON.parse(responseText);
-      console.log(`✅ GitHub sync SUCCESS!`);
-      console.log(`🔗 VIEW FILE HERE: ${result.content?.html_url || 'URL not returned'}`);
-      console.log(`🔗 VIEW COMMIT HERE: ${result.commit?.html_url || 'URL not returned'}`);
+      console.log(`✅ GitHub sync SUCCESS: ${githubFilePath}`);
+      return { success: true };
     } else {
-      console.error(`❌ GitHub sync FAILED (${putRes.status}):`, responseText);
+      const errText = await putRes.text();
+      console.error(`❌ GitHub sync FAILED (${putRes.status}):`, errText);
+      return { success: false, error: `GitHub rejected push (${putRes.status}): ${errText}` };
     }
 
   } catch (err) {
-    console.error("❌ GitHub sync CRITICAL error:", err);
+    return { success: false, error: `Critical error: ${err.message}` };
   }
 }
 
@@ -262,6 +255,7 @@ app.get("/player-attributes", (req, res) => {
 });
 
 app.post("/player-attributes", async (req, res) => {
+  console.log(`📥 [PLAYER-ATTRIBUTES] Request received! Contributor: ${req.body?.Contributor}`);
   try {
     const card = req.body;
     if (!card || !card.Contributor) {
@@ -300,13 +294,19 @@ app.post("/player-attributes", async (req, res) => {
       data[index] = { ...data[index], ...card };
     }
 
-    writeAttributes(data);
+    // 🕵️‍♂️ CHECK THE SYNC RESULT
+    const syncResult = await syncFileToGitHub(ATTR_PATH, "football-app/src/player_attributes.json", `Update player card: ${card.Contributor}`);
 
-    await syncFileToGitHub(ATTR_PATH, "football-app/src/player_attributes.json", `Update player card: ${card.Contributor}`);
-
-    res.json({ message: "✅ Player card saved", updated: index === -1 ? card : data[index] });
+    if (syncResult.success) {
+      res.json({ message: "✅ Player card saved and synced to GitHub!" });
+    } else {
+      // Tell the phone exactly why GitHub rejected it!
+      res.status(500).json({ 
+        error: "Saved locally, but GitHub rejected it.", 
+        githubError: syncResult.error 
+      });
+    }
   } catch (error) {
-    console.error("❌ CRITICAL ERROR saving player card:", error);
     res.status(500).json({ error: "Failed to save player card", details: error.message });
   }
 });
