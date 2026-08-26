@@ -55,6 +55,7 @@
 }
 
 .slot-label { color: rgba(255,255,255,0.5); font-size: 12px; font-weight: bold; font-family: 'Oswald', sans-serif; }
+
 /* --- Player Card Symbols (Ryan/Darren) --- */
 .slot-symbols {
   position: absolute;
@@ -62,7 +63,7 @@
   left: 50%;
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: repeat(3, auto);  /* ✅ Exactly 3 per row */
+  grid-template-columns: repeat(3, auto);
   gap: 2px;
   margin-top: 107px;  
   z-index: 12;
@@ -81,6 +82,7 @@
   from { opacity: 0; transform: scale(0.3); }
   to   { opacity: 1; transform: scale(1); }
 }
+
 .slot-card {
   width: 100%; height: 100%;
   background: linear-gradient(135deg, #1e293b, #0f172a);
@@ -101,21 +103,19 @@
 .slot-card img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; background: #fff; }
 .slot-info { text-align: center; margin-top: 2px; }
 .slot-name { display: block; font-size: 10px; color: #fff; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 55px; font-family: 'Barlow', sans-serif; }
-/* 1. Update the base class (Remove the static color) */
+
 .slot-rating { 
   display: block; 
   font-size: 16px; 
-  /* color: #f2c14e;  <-- REMOVE THIS LINE */
   font-weight: 800; 
   font-family: 'Oswald', sans-serif; 
   line-height: 1; 
 }
 
-/* 2. Add Rating Color Classes */
-.slot-rating.rating-blue { color: #2563eb; }   /* Over 9.0 */
-.slot-rating.rating-green { color: #16a34a; }  /* > 7.0 and < 9.0 */
-.slot-rating.rating-orange { color: #ea580c; } /* 5.5 to 7.0 */
-.slot-rating.rating-red { color: #dc2626; }    /* Below 5.5 */
+.slot-rating.rating-blue { color: #2563eb; }
+.slot-rating.rating-green { color: #16a34a; }
+.slot-rating.rating-orange { color: #ea580c; }
+.slot-rating.rating-red { color: #dc2626; }
 
 .slot-remove { position: absolute; top: -8px; right: -8px; width: 20px; height: 20px; background: #ef4444; color: #fff; border: 2px solid #fff; border-radius: 50%; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; z-index: 11; }
 .slot-remove:hover { background: #dc2626; }
@@ -171,14 +171,6 @@
 .btn-confirm:hover { background: #059669; }
 .btn-cancel { background: #f1f5f9; color: #475569; }
 .btn-cancel:hover { background: #e2e8f0; }
-
-@media (max-width: 768px) {
-  .pitch-slot { width: 45px; height: 60px; }
-  .slot-card img { width: 24px; height: 24px; }
-  .slot-name { font-size: 8px; max-width: 35px; }
-  .slot-rating { font-size: 12px; }
-  .slot-remove { width: 16px; height: 16px; font-size: 10px; top: -6px; right: -6px; }
-}
 
 /* ========================================== */
 /* ===== VERTICAL LAYOUT (MANAGER MODE) ===== */
@@ -268,15 +260,6 @@
   height: 70px;
 }
 
-@media (max-width: 900px) {
-  .match-lineup-container.layout-vertical .lineup-content {
-    grid-template-columns: 1fr;
-  }
-  .match-lineup-container.layout-vertical .player-pool.vertical-pool {
-    position: static;
-    max-height: 300px;
-  }
-}
 /* ===== PLAYER PICKER POPUP ===== */
 .picker-overlay {
   position: fixed; inset: 0;
@@ -400,6 +383,7 @@
   background: #10b981; color: #fff;
 }
 .edit-report-actions .save-btn:hover { background: #059669; }
+
 /* ===== MAN OF THE MATCH BADGE ===== */
 .slot-card.motm {
   border-color: #f2c14e;
@@ -432,6 +416,7 @@
   box-shadow: 0 2px 6px rgba(242, 193, 78, 0.5);
   white-space: nowrap;
 }
+
 /* --- Empty Slot Profile Placeholder --- */
 .empty-slot-card {
   width: 75px;
@@ -449,7 +434,6 @@
   box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
 }
 
-/* Hover effect when in Edit Mode */
 .pitch-slot.editable:hover .empty-slot-card {
   background: rgba(242, 193, 78, 0.15);
   border-color: #f2c14e;
@@ -486,4 +470,254 @@
 
 .pitch-slot.editable:hover .empty-slot-hint {
   opacity: 1;
+}
+
+/* =========================================================
+   MOBILE / ANDROID UI - VERTICAL LAYOUT WITH SCROLLING
+   ========================================================= */
+@media (max-width: 768px) {
+  .match-lineup-container {
+    padding: 16px;
+    margin-top: 20px;
+  }
+
+  .lineup-title {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  /* Force vertical layout on mobile */
+  .match-lineup-container.layout-vertical .lineup-content {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Pitch wrapper - vertical and scrollable */
+  .pitch-wrapper {
+    aspect-ratio: 2 / 3;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    overflow: visible;
+    border-width: 2px;
+  }
+
+  .pitch-wrapper.vertical {
+    max-width: 100%;
+  }
+
+  /* Smaller slots for mobile */
+  .pitch-slot {
+    width: 45px;
+    height: 60px;
+  }
+
+  .pitch-wrapper.vertical .pitch-slot {
+    width: 45px;
+    height: 60px;
+  }
+
+  /* Smaller player cards */
+  .slot-card img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .slot-name {
+    font-size: 8px;
+    max-width: 35px;
+  }
+
+  .slot-rating {
+    font-size: 12px;
+  }
+
+  .slot-remove {
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+    top: -6px;
+    right: -6px;
+  }
+
+  /* Empty slot cards */
+  .empty-slot-card {
+    width: 45px;
+    height: 60px;
+  }
+
+  .empty-slot-label {
+    font-size: 10px;
+  }
+
+  .empty-slot-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Symbols */
+  .slot-symbols {
+    margin-top: 80px;
+  }
+
+  .slot-symbol {
+    font-size: 10px;
+  }
+
+  /* MOTM badge */
+  .motm-badge {
+    font-size: 7px;
+    padding: 1px 4px;
+    top: -8px;
+    right: -4px;
+  }
+
+  /* Player pool adjustments */
+  .match-lineup-container.layout-vertical .player-pool.vertical-pool {
+    position: static;
+    max-height: 250px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pool-grid {
+    max-height: 200px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pool-card {
+    width: 70px;
+    padding: 8px 6px;
+  }
+
+  .pool-card img {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 4px;
+  }
+
+  .pool-card .name {
+    font-size: 10px;
+  }
+
+  .pool-card .pos {
+    font-size: 9px;
+  }
+
+  /* Save button */
+  .save-lineup-btn {
+    padding: 10px 24px;
+    font-size: 14px;
+  }
+
+  /* Modal adjustments */
+  .rating-modal {
+    width: 90%;
+    max-width: 320px;
+    padding: 20px;
+  }
+
+  .rating-modal h3 {
+    font-size: 18px;
+  }
+
+  .modal-player-name {
+    font-size: 16px;
+  }
+
+  .rating-input {
+    font-size: 24px;
+    padding: 12px;
+  }
+
+  .picker-modal {
+    width: 90%;
+    max-width: 380px;
+    padding: 20px;
+  }
+
+  .picker-modal h3 {
+    font-size: 16px;
+  }
+
+  .picker-rating-row input {
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+
+  .picker-search {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .picker-list {
+    max-height: 250px;
+  }
+
+  .picker-item {
+    padding: 8px 10px;
+  }
+
+  .picker-item img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .picker-name {
+    font-size: 13px;
+  }
+
+  .picker-pos {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .match-lineup-container {
+    padding: 12px;
+  }
+
+  .pitch-wrapper {
+    aspect-ratio: 2 / 3;
+  }
+
+  .pitch-slot {
+    width: 40px;
+    height: 55px;
+  }
+
+  .slot-card img {
+    width: 22px;
+    height: 22px;
+  }
+
+  .slot-name {
+    font-size: 7px;
+    max-width: 32px;
+  }
+
+  .slot-rating {
+    font-size: 11px;
+  }
+
+  .empty-slot-card {
+    width: 40px;
+    height: 55px;
+  }
+
+  .empty-slot-label {
+    font-size: 9px;
+  }
+
+  .pool-card {
+    width: 65px;
+  }
+
+  .pool-card img {
+    width: 32px;
+    height: 32px;
+  }
 }

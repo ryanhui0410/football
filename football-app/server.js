@@ -93,22 +93,29 @@ async function pullLatestFromGitHub(githubFilePath, localFilePath) {
 
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${githubFilePath}`;
     
-    // "application/vnd.github.raw" tells GitHub to return the raw text of the file directly
+    // Fetch the standard JSON response from GitHub
     const res = await fetch(apiUrl, {
       headers: { 
         Authorization: `token ${token}`, 
-        Accept: "application/vnd.github.raw" 
+        Accept: "application/vnd.github.v3+json" 
       }
     });
 
     if (res.ok) {
-      const fileContent = await res.text();
+      const data = await res.json();
+      
+      // GitHub returns the file content as a base64 encoded string. 
+      // We must decode it back to normal text.
+      const fileContent = Buffer.from(data.content, 'base64').toString('utf8');
+      
       const dir = path.dirname(localFilePath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      
       fs.writeFileSync(localFilePath, fileContent);
       console.log(`✅ Downloaded fresh data: ${githubFilePath}`);
     } else {
-      console.log(`⚠️ Could not fetch ${githubFilePath} from GitHub`);
+      const errText = await res.text();
+      console.log(`⚠️ Could not fetch ${githubFilePath} from GitHub (${res.status}): ${errText}`);
     }
   } catch (err) {
     console.error(`❌ Error pulling from GitHub:`, err);

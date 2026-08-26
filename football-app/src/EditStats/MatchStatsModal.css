@@ -24,6 +24,7 @@
   background: rgba(255, 255, 255, 0.1); border: none; color: #fff;
   width: 36px; height: 36px; border-radius: 50%;
   font-size: 18px; cursor: pointer; transition: all 0.2s;
+  z-index: 10;
 }
 .msm-close-btn:hover { background: rgba(255, 255, 255, 0.2); transform: rotate(90deg); }
 
@@ -82,11 +83,6 @@
 .msm-source-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(238, 244, 238, 0.5); }
 .msm-source-val { font-family: 'Oswald', sans-serif; font-size: 16px; color: #fff; }
 
-@media (max-width: 768px) {
-  .msm-grid { grid-template-columns: 1fr; }
-  .msm-player { font-size: 28px; }
-  .msm-container { padding: 20px; }
-}
 .msm-assist-to-row {
   display: flex;
   justify-content: space-between;
@@ -106,4 +102,162 @@
   font-size: 20px;
   font-weight: 600;
   color: #f2c14e;
+}
+
+/* =========================================================
+   MOBILE / ANDROID UI - VERTICAL LAYOUT WITH SCROLLING
+   ========================================================= */
+@media (max-width: 768px) {
+  .msm-container {
+    padding: 20px 16px;
+    max-height: 95vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .msm-close-btn {
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .msm-header {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+  }
+
+  .msm-player {
+    font-size: 28px;
+    margin: 4px 0 0;
+  }
+
+  .msm-date-badge {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .msm-date {
+    font-size: 14px;
+    padding: 4px 10px;
+  }
+
+  .msm-season {
+    font-size: 11px;
+  }
+
+  /* Vertical layout - stack all cards */
+  .msm-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .msm-col {
+    gap: 16px;
+  }
+
+  .msm-card {
+    padding: 16px;
+  }
+
+  .msm-card-title {
+    font-size: 11px;
+    margin-bottom: 12px;
+  }
+
+  .msm-overview-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .msm-ov-val {
+    font-size: 16px;
+  }
+
+  .msm-result-strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .msm-scoreline {
+    font-size: 26px;
+  }
+
+  .msm-wl {
+    font-size: 12px;
+    padding: 3px 12px;
+  }
+
+  .msm-rating-hero {
+    font-size: 44px;
+  }
+
+  .msm-symbols {
+    font-size: 28px;
+    letter-spacing: 4px;
+    margin-bottom: 16px;
+  }
+
+  .msm-stat-row {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .msm-stat {
+    padding: 10px 6px;
+  }
+
+  .msm-stat-num {
+    font-size: 24px;
+  }
+
+  .msm-stat-label {
+    font-size: 9px;
+    margin-top: 4px;
+  }
+
+  .msm-breakdown {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .msm-chip {
+    padding: 10px 4px;
+  }
+
+  .msm-chip-val {
+    font-size: 18px;
+  }
+
+  .msm-chip-label {
+    font-size: 9px;
+    margin-top: 3px;
+  }
+
+  .msm-assist-to-row {
+    margin-top: 10px;
+    padding-top: 8px;
+    font-size: 13px;
+  }
+
+  .msm-assist-to-label {
+    font-size: 12px;
+  }
+
+  .msm-assist-to-value {
+    font-size: 18px;
+  }
+
+  .msm-source-label {
+    font-size: 10px;
+  }
+
+  .msm-source-val {
+    font-size: 14px;
+  }
 }
