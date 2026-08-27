@@ -47,22 +47,22 @@ function TacticalDashboard() {
       if (existing) {
         setLineupData(existing);
       } else {
-        setLineupData({
+                setLineupData({
           date: matchDetails.Date,
           location: matchDetails.Location,
           time: matchDetails.Time,
-          teamA: { players: Array(11).fill(null) },
-          teamB: { players: Array(11).fill(null) }
+          teamA: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] },
+          teamB: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] }
         });
       }
     } else if (matchDetails.Date) {
-      setLineupData({
-        date: matchDetails.Date,
-        location: matchDetails.Location,
-        time: matchDetails.Time,
-        teamA: { players: Array(11).fill(null) },
-        teamB: { players: Array(11).fill(null) }
-      });
+              setLineupData({
+          date: matchDetails.Date,
+          location: matchDetails.Location,
+          time: matchDetails.Time,
+          teamA: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] },
+          teamB: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] }
+        });
     } else {
       setLineupData(null);
     }
@@ -81,22 +81,26 @@ function TacticalDashboard() {
 
     setSaving(true);
 
-    const sanitizeTeam = (teamObj) => {
-      if (!teamObj) return { players: Array(11).fill(null) };
+        const sanitizeTeam = (teamObj) => {
+      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] };
       
       const cleanPlayers = (teamObj.players || []).map(p => {
         if (!p) return null;
-        return {
-          Contributor: p.Contributor,
-          rating: parseFloat(p.rating) || 0,
-          picture: p.picture || `/${p.Contributor}.jpeg`
-        };
+        return { Contributor: p.Contributor, rating: parseFloat(p.rating) || 0, picture: p.picture || `/${p.Contributor}.jpeg` };
       });
-      
       while (cleanPlayers.length < 11) cleanPlayers.push(null);
       
+      // Clean Subs
+      const cleanSubs = (teamObj.subs || []).map(p => {
+        if (!p) return null;
+        return { Contributor: p.Contributor, rating: parseFloat(p.rating) || 0, picture: p.picture || `/${p.Contributor}.jpeg` };
+      });
+      while (cleanSubs.length < 2) cleanSubs.push(null);
+
       return {
-        players: cleanPlayers.slice(0, 11)
+        formation: teamObj.formation || "4-4-2",
+        players: cleanPlayers.slice(0, 11),
+        subs: cleanSubs.slice(0, 2)
       };
     };
 
@@ -132,7 +136,7 @@ function TacticalDashboard() {
     }
   };
 
-  const handleSaveSlot = () => {
+    const handleSaveSlot = () => {
     const { team, idx, player } = slotToEdit;
     
     let targetTeam = team;
@@ -142,19 +146,33 @@ function TacticalDashboard() {
     if (player && player.Contributor?.trim().toLowerCase() === 'ryan' && team === 'B') {
       targetTeam = 'A';
       forcedMove = true;
-      const teamAPlayers = lineupData.teamA?.players || Array(11).fill(null);
-      const emptyIdx = teamAPlayers.findIndex(p => p === null);
-      targetIdx = emptyIdx !== -1 ? emptyIdx : idx;
+      if (typeof idx === 'string' && idx.startsWith('sub')) {
+        const teamASubs = lineupData.teamA?.subs || [null, null];
+        const emptyIdx = teamASubs.findIndex(p => p === null);
+        targetIdx = emptyIdx !== -1 ? `sub${emptyIdx}` : idx;
+      } else {
+        const teamAPlayers = lineupData.teamA?.players || Array(11).fill(null);
+        const emptyIdx = teamAPlayers.findIndex(p => p === null);
+        targetIdx = emptyIdx !== -1 ? emptyIdx : idx;
+      }
     }
 
     const teamKey = targetTeam === 'A' ? 'teamA' : 'teamB';
     
     setLineupData(prev => {
       const newLineup = JSON.parse(JSON.stringify(prev));
-      if (!Array.isArray(newLineup[teamKey].players)) {
-        newLineup[teamKey].players = Array(11).fill(null);
+      
+      // Handle Sub Slots
+      if (typeof targetIdx === 'string' && targetIdx.startsWith('sub')) {
+        const subIdx = parseInt(targetIdx.replace('sub', ''));
+        if (!Array.isArray(newLineup[teamKey].subs)) newLineup[teamKey].subs = [null, null];
+        newLineup[teamKey].subs[subIdx] = player;
+      } 
+      // Handle Pitch Slots
+      else {
+        if (!Array.isArray(newLineup[teamKey].players)) newLineup[teamKey].players = Array(11).fill(null);
+        newLineup[teamKey].players[targetIdx] = player;
       }
-      newLineup[teamKey].players[targetIdx] = player;
       return newLineup;
     });
     

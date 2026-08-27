@@ -398,12 +398,20 @@ app.post("/match-lineups", async (req, res) => {
       (l.time || "").trim() === normTime
     );
 
-    const normalizedLineup = {
+        const normalizedLineup = {
       date: normDate,
       location: normLoc,
       time: normTime,
-      teamA: lineup.teamA || { formation: "4-4-2", players: [] },
-      teamB: lineup.teamB || { formation: "4-4-2", players: [] }
+      teamA: {
+        formation: lineup.teamA?.formation || "4-4-2",
+        players: lineup.teamA?.players || Array(11).fill(null),
+        subs: lineup.teamA?.subs || [null, null] // Add subs
+      },
+      teamB: {
+        formation: lineup.teamB?.formation || "4-4-2",
+        players: lineup.teamB?.players || Array(11).fill(null),
+        subs: lineup.teamB?.subs || [null, null] // Add subs
+      }
     };
 
     if (index === -1) {
