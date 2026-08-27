@@ -38,8 +38,9 @@
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
-    width: 100%;
+    height: 100%;
     box-sizing: border-box;
+    max-height: 620px
   }
 
   .pr-card:hover {
@@ -115,10 +116,12 @@
     text-align: center;
   }
 
-  .pr-badges {
-    display: flex;
-    gap: 12px;
-  }
+  .pr-badges, .pr-badges-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  justify-content: center;
+}
 
   .pr-position-box, .pr-overall-box {
     display: flex;
@@ -135,13 +138,13 @@
   .silver .pr-position-box, .silver .pr-overall-box { background: linear-gradient(135deg, #9ca3af, #7c8694); }
   .bronze .pr-position-box, .bronze .pr-overall-box { background: linear-gradient(135deg, #b87333, #a0622a); }
 
-  .pr-stats {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    width: 100%;
-    margin-bottom: 24px;
-  }
+  .pr-stats, .pr-stats-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 24px;
+}
 
   .pr-stat-item {
     display: flex;
@@ -174,8 +177,7 @@
     font-weight: 700;
     line-height: 1;
   }
-
-  .pr-extra {
+  .pr-extra, .pr-extra-details {
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -237,11 +239,11 @@
 }
 
 /* =========================================================
-   MOBILE COMPACT PLAYER CARDS
+   MOBILE COMPACT PLAYER CARDS - 2 COL LAYOUT
    ========================================================= */
 @media (max-width: 768px) {
   .pr-page {
-    padding: 8px 8px 90px;
+    padding: 8px 4px 90px;
   }
 
   .pr-title {
@@ -249,23 +251,28 @@
     margin-bottom: 12px;
   }
 
+  /* 2 cards per row */
   .pr-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    padding: 0 4px;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    padding: 0 2px;
     max-width: 100%;
   }
 
   .pr-card {
-    padding: 10px 8px;
+    padding: 10px 6px !important;
     border-width: 2px;
     border-radius: 10px;
     transform: none !important;
     box-shadow: none !important;
     animation: none !important;
-    width: 100%;
+    width: 100% !important;
+    max-width: none !important;
     position: relative;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
   }
 
   .pr-card.gold {
@@ -293,8 +300,8 @@
   .bronze .pr-accent-bar { background: #c08552; }
 
   .pr-corner {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-width: 2px;
     border-style: solid;
     position: absolute;
@@ -302,123 +309,131 @@
   .gold .pr-corner { border-color: #d4af37; }
   .silver .pr-corner { border-color: #b0b8c4; }
   .bronze .pr-corner { border-color: #c08552; }
-  
-  .pr-corner.tl { top: 5px; left: 5px; border-right: none; border-bottom: none; }
-  .pr-corner.tr { top: 5px; right: 5px; border-left: none; border-bottom: none; }
-  .pr-corner.bl { bottom: 5px; left: 5px; border-right: none; border-top: none; }
-  .pr-corner.br { bottom: 5px; right: 5px; border-left: none; border-top: none; }
 
+  .pr-corner.tl { top: 4px; left: 4px; border-right: none; border-bottom: none; }
+  .pr-corner.tr { top: 4px; right: 4px; border-left: none; border-bottom: none; }
+  .pr-corner.bl { bottom: 4px; left: 4px; border-right: none; border-top: none; }
+  .pr-corner.br { bottom: 4px; right: 4px; border-left: none; border-top: none; }
+
+  /* Picture */
   .pr-picture {
-    width: 70px;
-    height: 85px;
-    margin: 0 auto 6px;
+    width: 60px !important;
+    height: 72px !important;
+    margin: 0 auto 6px !important;
     border-radius: 8px;
     overflow: hidden;
     background: #e2e8f0;
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
-    font-size: 32px;
+    font-size: 28px;
+    flex-shrink: 0;
   }
 
   .pr-picture img {
-    width: 100%;
-    height: 100%;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: cover;
-    border-radius: 6px;
   }
 
-  .pr-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    margin: 4px 0 2px;
+  /* Name & Badges - supports BOTH old and new class names */
+  .pr-info, .pr-info-block {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 3px;
+    margin: 2px 0;
     width: 100%;
   }
 
   .pr-name {
-    font-size: 13px;
+    font-size: 12px !important;
     font-weight: 700;
     color: #1e293b;
+    text-align: center;
+    line-height: 1.2;
   }
 
-  .pr-badges {
-    display: flex;
+  .pr-badges, .pr-badges-row {
+    display: flex !important;
     gap: 4px;
+    justify-content: center;
   }
 
   .pr-position-box, .pr-overall-box {
-    padding: 0 6px;
-    font-size: 10px;
-    line-height: 1.6;
+    padding: 1px 6px !important;
+    font-size: 9px !important;
+    line-height: 1.5;
     border-radius: 4px;
-    color: #fff;
+    color: #fff !important;
     font-weight: 700;
   }
   .gold .pr-position-box, .gold .pr-overall-box { background: linear-gradient(135deg, #d4af37, #c19420); }
   .silver .pr-position-box, .silver .pr-overall-box { background: linear-gradient(135deg, #9ca3af, #7c8694); }
   .bronze .pr-position-box, .bronze .pr-overall-box { background: linear-gradient(135deg, #b87333, #a0622a); }
 
-  .pr-stats {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 3px;
+  /* ===== STATS: 2 COLUMNS (PAC/SHO, PAS/DRI, DEF/PHY) ===== */
+  .pr-stats, .pr-stats-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 3px !important;
     margin-top: 6px;
     width: 100%;
   }
 
   .pr-stat-item {
-    padding: 3px 6px;
-    font-size: 10px;
-    border-radius: 3px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    background: transparent;
+    padding: 3px 4px !important;
+    border-radius: 4px;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: rgba(0,0,0,0.04);
   }
 
   .pr-stat-label {
-    font-size: 9px;
+    font-size: 8px !important;
     font-weight: 700;
     color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
   }
 
   .pr-score-box {
-    padding: 0 5px;
-    font-size: 10px;
-    line-height: 1.6;
-    min-width: 22px;
+    padding: 0 5px !important;
+    font-size: 10px !important;
+    line-height: 1.5;
+    min-width: 20px;
     border-radius: 3px;
     color: #fff !important;
     text-align: center;
+    font-weight: 700;
   }
   .gold .pr-score-box   { background: linear-gradient(135deg, #d4af37, #c19420); }
   .silver .pr-score-box { background: linear-gradient(135deg, #9ca3af, #7c8694); }
   .bronze .pr-score-box { background: linear-gradient(135deg, #b87333, #a0622a); }
 
-  .pr-extra {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  /* Extra details */
+  .pr-extra, .pr-extra-details {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
     margin-top: 6px;
     width: 100%;
+    gap: 3px;
   }
 
-  /* 🌟 CHANGED: Now visible on mobile, styled to be compact and centered */
-  .pr-pref-foot, .pr-weak-foot {
-    display: flex;
+  .pr-pref-foot, .pr-weak-foot, .pr-form {
+    display: flex !important;
     align-items: center;
     gap: 4px;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     color: #334155;
-    margin-top: 4px;
   }
 
-  .pr-pref-foot-label, .pr-weak-foot-label {
-    font-size: 10px;
+  .pr-pref-foot-label, .pr-weak-foot-label, .pr-form-label {
+    font-size: 9px;
     color: #64748b;
     font-weight: 600;
     text-transform: uppercase;
@@ -426,53 +441,51 @@
 
   .pr-stars {
     display: flex;
-    gap: 2px;
+    gap: 1px;
   }
 
   .pr-star {
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1;
   }
 
-  .pr-star.filled {
-    color: #fbbf24;
-  }
-
-  .pr-star.empty {
-    color: #cbd5e1;
-  }
-
-  .pr-form {
-    display: flex;
-    gap: 4px;
-    font-size: 11px;
-    align-items: center;
-    margin-top: 6px;
-  }
-
-  .pr-form-label {
-    font-size: 10px;
-    color: #64748b;
-    font-weight: 600;
-  }
+  .pr-star.filled { color: #fbbf24; }
+  .pr-star.empty { color: #cbd5e1; }
 
   .pr-form-grade {
-    padding: 0 8px;
-    font-size: 11px;
+    padding: 0 7px !important;
+    font-size: 10px !important;
     line-height: 1.5;
-    min-width: 20px;
+    min-width: 18px;
     border-radius: 4px;
-    color: #fff;
+    color: #fff !important;
     text-align: center;
     font-weight: 700;
   }
 }
 
 /* =========================================================
-   EXTRA SMALL PHONES
+   EXTRA SMALL PHONES (< 360px)
    ========================================================= */
 @media (max-width: 360px) {
   .pr-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+  }
+
+  .pr-picture {
+    width: 55px !important;
+    height: 66px !important;
+  }
+
+  .pr-name {
+    font-size: 11px !important;
+  }
+
+  .pr-stat-label {
+    font-size: 7px !important;
+  }
+
+  .pr-score-box {
+    font-size: 9px !important;
   }
 }

@@ -22,7 +22,7 @@ img {
 .stats-summary-wrap,
 .em-wrap {
   max-width: 100% !important;
-  padding: 10px !important;
+  padding: 3px !important;
   box-sizing: border-box;
 }
 
@@ -62,11 +62,21 @@ table {
 }
 
 /* Fix the pitch so it doesn't overflow */
-.pitch-wrapper {
+.match-lineup-container .pitch-wrapper {
   width: 100% !important;
-  max-width: 92vw !important;
-  height: 55vw !important; /* Maintain aspect ratio on mobile */
+  max-width: 100vw !important;
   min-height: 300px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+.match-lineup-container .pitch-wrapper.vertical {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 460px !important;
+  aspect-ratio: auto !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 /* Fix horizontal pitch for small screens */
@@ -75,24 +85,48 @@ table {
   min-height: 280px !important;
 }
 
-/* Fix player cards on the pitch being too large */
-.slot-card {
+/* Fix player cards - Match Lineup only, transparent style */
+.match-lineup-container .slot-card {
   width: 58px !important;
   padding: 3px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 
-.slot-card img {
-  width: 32px !important;
-  height: 32px !important;
+.match-lineup-container .slot-card img {
+  width: 28px !important;
+  height: 28px !important;
+  border: 1px solid rgba(255,255,255,0.9) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
 }
 
-.slot-name {
-  font-size: 8px !important;
+.match-lineup-container .slot-name {
+  font-size: 9px !important;
   max-width: 52px !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
 }
 
-.slot-rating {
-  font-size: 11px !important;
+.match-lineup-container .slot-rating {
+  font-size: 10px !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
+}
+
+/* Remove dotted borders from Match Lineup slots */
+.match-lineup-container .pitch-slot {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Remove empty slot placeholders in Match Lineup */
+.match-lineup-container .empty-slot-card,
+.match-lineup-container .empty-slot-icon,
+.match-lineup-container .empty-slot-label,
+.match-lineup-container .empty-slot-hint {
+  display: none !important;
 }
 
 /* Fix the filter bar wrapping */
@@ -115,7 +149,7 @@ table {
 
 /* Fix the stats grid cards */
 .pr-grid {
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+  grid-template-columns: repeat(3, 1fr) !important;
   gap: 12px !important;
 }
 
@@ -207,18 +241,28 @@ button {
 }
 
 /* Fix the pitch average badges */
-.pitch-avg-badge {
+/* Move avg rating badges ABOVE the pitch */
+.match-lineup-container .pitch-wrapper {
+  margin-top: 40px !important;
+  overflow: visible !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.match-lineup-container .pitch-avg-badge {
   padding: 4px 10px !important;
   font-size: 12px !important;
-  top: 8px !important;
+  top: -45px !important;
 }
 
-.pitch-avg-left {
+.match-lineup-container .pitch-avg-left {
   left: 8px !important;
+  bottom: auto !important;
 }
 
-.pitch-avg-right {
+.match-lineup-container .pitch-avg-right {
   right: 8px !important;
+  bottom: auto !important;
 }
 
 /* Fix the ModifyDashboard table on mobile */
@@ -246,9 +290,15 @@ button {
 /* Fix player ratings card sizing */
 .pr-card {
   width: 100% !important;
-  max-width: 200px !important;
+  max-width: 600px !important;
 }
-
+/* Fix player ratings card sizing - MOBILE ONLY */
+@media (max-width: 768px) {
+  .pr-card {
+    width: 100% !important;
+    max-width: 200px !important;
+  }
+}
 /* Fix the stats summary filter panel */
 .filter-panel {
   padding: 12px !important;
