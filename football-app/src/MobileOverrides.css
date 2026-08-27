@@ -95,40 +95,210 @@ table {
   box-shadow: none !important;
   backdrop-filter: none !important;
 }
+@media (min-width: 769px){
+  .match-lineup-container .slot-card img {
+    width: 56px !important;
+    height: 56px !important;
+    border: 2px solid rgba(255,255,255,0.9) !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
+  }
 
-.match-lineup-container .slot-card img {
-  width: 28px !important;
-  height: 28px !important;
-  border: 1px solid rgba(255,255,255,0.9) !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
+  .match-lineup-container .slot-name {
+    font-size: 18px !important;
+    max-width: 104px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
+  }
+
+  .match-lineup-container .slot-rating {
+    font-size: 20px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
+  }
 }
+/* ✅ ANDROID ONLY - wrapped in mobile media query */
+@media (max-width: 768px) {
+  .match-lineup-container .slot-card {
+    width: 58px !important;
+    padding: 3px !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
 
-.match-lineup-container .slot-name {
-  font-size: 9px !important;
-  max-width: 52px !important;
-  text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
+  .match-lineup-container .slot-card img {
+    width: 28px !important;
+    height: 28px !important;
+    border: 1px solid rgba(255,255,255,0.9) !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
+  }
+
+  .match-lineup-container .slot-name {
+    font-size: 9px !important;
+    max-width: 52px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
+  }
+
+  .match-lineup-container .slot-rating {
+    font-size: 10px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
+  }
 }
+@media (max-width: 768px) {
+  /* Remove dotted borders from Match Lineup slots */
+  .match-lineup-container .pitch-slot {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
 
-.match-lineup-container .slot-rating {
-  font-size: 10px !important;
-  text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
+  /* ✅ Minimal clean placeholders for empty slots */
+  .match-lineup-container .empty-slot-card {
+    display: flex !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .match-lineup-container .empty-slot-icon,
+  .match-lineup-container .empty-slot-hint {
+    display: none !important; 
+  }
+
+  .match-lineup-container .empty-slot-label {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-family: 'Oswald', sans-serif !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-transform: uppercase !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9) !important;
+    background: rgba(0, 0, 0, 0.3) !important; 
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+  }
 }
+/* ========================================== */
+/* ===== LANDSCAPE PHONE FIX ================ */
+/* ========================================== */
+@media (orientation: landscape) and (max-width: 1024px) {
+  
+  /* Enlarge slot cards for landscape phone */
+  .match-lineup-container .slot-card {
+    width: 58px !important;
+    padding: 3px !important;
+  }
 
-/* Remove dotted borders from Match Lineup slots */
-.match-lineup-container .pitch-slot {
-  border: none !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  .match-lineup-container .slot-card img {
+    width: 36px !important;
+    height: 36px !important;
+    border: 2px solid rgba(255,255,255,0.9) !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
+  }
+
+  .match-lineup-container .slot-name {
+    font-size: 12px !important;
+    max-width: 70px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
+  }
+
+  .match-lineup-container .slot-rating {
+    font-size: 14px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
+  }
+
+  /* Enlarge pitch slots */
+  .match-lineup-container .pitch-slot {
+    width: 75px !important;
+    height: 95px !important;
+  }
+
+  /* Enlarge empty slot labels */
+  .match-lineup-container .empty-slot-label {
+    font-size: 14px !important;
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  /* Enlarge MOTM badge */
+  .match-lineup-container .motm-badge {
+    font-size: 8px !important;
+    padding: 2px 4px !important;
+  }
+
+  /* Enlarge symbols */
+  .match-lineup-container .slot-symbol {
+    font-size: 12px !important;
+  }
+
+  /* Subs bench */
+  .sub-slot {
+    width: 60px !important;
+    height: 75px !important;
+  }
+
+  .empty-sub-label {
+    font-size: 11px !important;
+  }
+
+  /* Avg badges */
+  .match-lineup-container .pitch-avg-badge {
+    font-size: 11px !important;
+    padding: 3px 8px !important;
+  }
 }
+@media (min-width: 769px) {
+  /* Remove dotted borders from Match Lineup slots */
+  .match-lineup-container .pitch-slot {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
 
-/* Remove empty slot placeholders in Match Lineup */
-.match-lineup-container .empty-slot-card,
-.match-lineup-container .empty-slot-icon,
-.match-lineup-container .empty-slot-label,
-.match-lineup-container .empty-slot-hint {
-  display: none !important;
+  /* ✅ Minimal clean placeholders for empty slots */
+  .match-lineup-container .empty-slot-card {
+    display: flex !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .match-lineup-container .empty-slot-icon,
+  .match-lineup-container .empty-slot-hint {
+    display: none !important; 
+  }
+
+  .match-lineup-container .empty-slot-label {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-family: 'Oswald', sans-serif !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-transform: uppercase !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9) !important;
+    background: rgba(0, 0, 0, 0.3) !important; 
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 50% !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+  }
 }
-
 /* Fix the filter bar wrapping */
 .md-filter-bar {
   flex-direction: column;
@@ -149,7 +319,7 @@ table {
 
 /* Fix the stats grid cards */
 .pr-grid {
-  grid-template-columns: repeat(3, 1fr) !important;
+  grid-template-columns: repeat(2, 1fr) !important;
   gap: 12px !important;
 }
 

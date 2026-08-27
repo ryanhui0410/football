@@ -6,7 +6,6 @@ function BottomNav({ activeView, onNavigate }) {
     { key: "home", label: "Home", icon: "🏠", onClick: onNavigate.home },
     { key: "add", label: "Add Stats", icon: "➕", onClick: onNavigate.add },
     { key: "modify", label: "Modify", icon: "✏️", onClick: onNavigate.modify },
-    { key: "display", label: "Matches", icon: "📋", onClick: onNavigate.display },
     { key: "summary", label: "Summary", icon: "📊", onClick: onNavigate.summary },
     { key: "calendar", label: "Calendar", icon: "📅", onClick: onNavigate.calendar },
     { key: "ratings", label: "Ratings", icon: "⭐", onClick: onNavigate.ratings },
