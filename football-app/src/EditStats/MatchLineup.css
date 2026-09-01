@@ -570,8 +570,8 @@
 }
 .card-rating-badge {
   position: absolute;
-  top: -25px;
-  right: -20px;
+  top: 10px;
+  right: 5px;
   background: #0f172a; /* Fallback dark background */
   color: #fff;
   font-family: 'Oswald', sans-serif;
@@ -832,8 +832,8 @@
   /* 3. Rating Badge 20% Smaller (Base 13px -> ~10.5px) */
   .card-rating-badge {
   position: absolute;
-  top: -25px;       /* Moved downward */
-  right: -20px;     /* Moved leftward */
+  top: 10px;       /* Moved downward */
+  right: 5px;     /* Moved leftward */
   background: #0f172a; 
   color: #fff;
   font-family: 'Oswald', sans-serif;
