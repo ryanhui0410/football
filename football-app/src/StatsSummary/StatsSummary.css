@@ -360,9 +360,4 @@
   .cards-grid {
     max-width: 100%;
   }
-
-  /* Hide the Lineup Stats card on mobile to save vertical space */
-  .player-card.simple-card {
-    display: none !important;
-  }
 }

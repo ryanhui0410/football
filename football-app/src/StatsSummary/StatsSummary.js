@@ -7,13 +7,10 @@ import "./StatsSummary.css";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-// ✅ FIXED: Robust date parser that handles "8/9/2026" format
 function getSeasonFromDate(dateStr) {
   if (!dateStr) return "";
-  
   const parts = dateStr.split("/");
   let month, year;
-  
   if (parts.length === 3) {
     month = parseInt(parts[0], 10);
     year = parseInt(parts[2], 10);
@@ -23,76 +20,106 @@ function getSeasonFromDate(dateStr) {
     month = d.getMonth() + 1;
     year = d.getFullYear();
   }
-  
   if (isNaN(month) || isNaN(year)) return "";
   return month >= 8 ? `${year}-${year + 1}` : `${year - 1}-${year}`;
 }
+
+// ✅ Helper: Normalize names to avoid whitespace/case mismatches
+const normalizeName = (name) => (name || "").trim().toLowerCase();
+// ✅ Capitalize first letter for display
+const prettyName = (name) => {
+  if (!name) return "";
+  // Improved to handle names like "S Joe" -> "S Joe" instead of "S joe"
+  return name.split(' ').map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()).join(' ');
+};
 
 function StatsSummary({ stats }) {
   const [filterSeason, setFilterSeason] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState("Ryan");
   const [lineups, setLineups] = useState([]);
-  const [debugInfo, setDebugInfo] = useState(""); 
+  const [debugInfo, setDebugInfo] = useState("");
 
-  // ✅ Fetch lineups with error handling
   useEffect(() => {
-    fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}")
-      .then((res) => res.json())
-      .then((data) => {
-        const arr = Array.isArray(data) ? data : [];
-        setLineups(arr);
-      })
-      .catch((err) => {
-        setDebugInfo(`❌ Fetch error: ${err.message}`);
-      });
+    setDebugInfo("⏳ Loading lineups...");
+    fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`)
+  .then((res) => res.json())
+  .then((data) => {
+    let arr = [];
+    if (Array.isArray(data)) {
+      arr = data;
+    } else if (data && typeof data === "object") {
+      if (Array.isArray(data.lineups)) arr = data.lineups;
+      else if (Array.isArray(data.matches)) arr = data.matches;
+      else arr = Object.values(data).filter((m) => m && (m.date || m.teamA || m.teamB));
+    }
+    console.log("lineups raw:", data, "→ parsed:", arr.length, "matches");
+    setLineups(arr);
+    setDebugInfo(`✅ Loaded ${arr.length} match lineups`);
+  })
   }, []);
 
-  // ✅ DYNAMICALLY Build dropdown player list from actual data
   const dropdownPlayers = useMemo(() => {
     const names = new Set();
     
-    // 1. Get names from stats
     stats.forEach(s => {
-      if (s.Contributor) names.add(s.Contributor.trim());
+      if (s.Contributor) names.add(prettyName(s.Contributor));
     });
     
-    // 2. Get names from lineups
     lineups.forEach(match => {
       const teams = [match.teamA, match.teamB].filter(Boolean);
       teams.forEach(team => {
-        // Handle both new Array format and old Object format
         const players = Array.isArray(team.players) ? team.players : Object.values(team.players || {});
         players.forEach(p => {
-          if (p && p.Contributor) names.add(p.Contributor.trim());
+          if (p && p.Contributor) names.add(prettyName(p.Contributor));
         });
+        if (Array.isArray(team.subs)) {
+          team.subs.forEach(p => {
+            if (p && p.Contributor) names.add(prettyName(p.Contributor));
+          });
+        }
       });
     });
 
-    return Array.from(names).sort();
+    return Array.from(names).filter(Boolean).sort();
   }, [stats, lineups]);
-
-  // ✅ FIXED: Build lineup stats with Array support
+  const getLineupTotals = (playerName) => {
+  const playerData = lineupStats[normalizeName(playerName)];
+  if (!playerData) return null;
+  let matches = 0, totalRating = 0;
+  Object.entries(playerData).forEach(([season, d]) => {
+    if (!filterSeason || season === filterSeason) {
+      matches += d.matches;
+      totalRating += d.totalRating;
+    }
+  });
+  return {
+    matches,
+    avgRating: matches > 0 ? totalRating / matches : 0,
+  };
+};
   const lineupStats = useMemo(() => {
     const map = {};
 
     lineups.forEach((match) => {
       if (!match || !match.date) return;
-      
       const season = getSeasonFromDate(match.date);
       if (!season) return;
 
-      const teams = [];
-      if (match.teamA) teams.push(match.teamA);
-      if (match.teamB) teams.push(match.teamB);
+      const teams = [match.teamA, match.teamB].filter(Boolean);
 
       teams.forEach((team) => {
-        // ✅ Support both new Array format and old Object format
+        const allPlayers = [];
         const players = Array.isArray(team.players) ? team.players : Object.values(team.players || {});
+        allPlayers.push(...players);
         
-        players.forEach((player) => {
-          if (!player || !player.Contributor) return; // Safely skip null/empty slots
+        if (Array.isArray(team.subs)) {
+          allPlayers.push(...team.subs);
+        }
+        
+        allPlayers.forEach((player) => {
+          if (!player || !player.Contributor) return;
 
-          const name = player.Contributor.trim();
+          const name = normalizeName(player.Contributor);
           const rating = parseFloat(player.rating) || 0;
 
           if (!map[name]) map[name] = {};
@@ -104,7 +131,6 @@ function StatsSummary({ stats }) {
       });
     });
 
-    // Calculate averages
     Object.keys(map).forEach((name) => {
       Object.keys(map[name]).forEach((season) => {
         const d = map[name][season];
@@ -115,17 +141,15 @@ function StatsSummary({ stats }) {
     return map;
   }, [lineups]);
 
-  // ✅ Get all seasons from stats
   const allSeasons = [...new Set(stats.map((s) => getSeasonFromDate(s.Date)).filter(Boolean))].sort();
   const filteredStats = filterSeason
     ? stats.filter((s) => getSeasonFromDate(s.Date) === filterSeason)
     : stats;
 
-  // ===== ✅ Compute MOTM stats per player per season =====
   const motmStats = useMemo(() => {
     const map = {};
     stats.forEach((s) => {
-      const name = s.Contributor?.trim();
+      const name = normalizeName(s.Contributor);
       if (!name) return;
       const season = getSeasonFromDate(s.Date);
       if (!season) return;
@@ -138,9 +162,10 @@ function StatsSummary({ stats }) {
     return map;
   }, [stats]);
 
-  // ===== Detailed stats for Ryan/Darren =====
   const getDetailedPlayerStats = (playerName) => {
-    const playerStats = filteredStats.filter((s) => s.Contributor?.trim() === playerName);
+    // 🐛 FIX 1: Normalize the target playerName so it matches the lowercase keys in stats
+    const normalizedTarget = normalizeName(playerName);
+    const playerStats = filteredStats.filter((s) => normalizeName(s.Contributor) === normalizedTarget);
     if (playerStats.length === 0) return null;
 
     const entry = {
@@ -164,7 +189,7 @@ function StatsSummary({ stats }) {
       if (wl.toLowerCase() === "win") entry.wins += 1;
       entry.matches.push({ date: s.Date, rating, goals: left + right + head + other, assists });
 
-      const location = s.Location?.trim() || "Unknown";
+      const location = normalizeName(s.Location) || "Unknown";
       if (!entry.locationStats[location]) entry.locationStats[location] = { count: 0, goals: 0, assists: 0 };
       const loc = entry.locationStats[location];
       loc.count += 1; loc.goals += left + right + head + other; loc.assists += assists;
@@ -174,10 +199,9 @@ function StatsSummary({ stats }) {
     return entry;
   };
 
-  // ===== Render: Detailed profile (Ryan/Darren) =====
   const renderDetailedProfile = (playerName) => {
     const statsData = getDetailedPlayerStats(playerName);
-    if (!statsData) return null;
+    if (!statsData) return null; // Returns null if player has no detailed stats
 
     const avgRating = statsData.ratings.reduce((sum, r) => sum + r, 0) / (statsData.ratings.length || 1);
     const totalGoals = statsData.left + statsData.right + statsData.head + statsData.other;
@@ -199,25 +223,26 @@ function StatsSummary({ stats }) {
     const errorClass = statsData.errors === 0 ? "none" : statsData.errors <= 3 ? "low" : "high";
     const winRateClass = winRate >= 50 ? "high" : winRate > 0 ? "mid" : "low";
 
-    const playerMotm = motmStats[playerName] || {};
+    // 🐛 FIX 2: Use normalizeName for motmStats lookup
+    const normName = normalizeName(playerName);
+    const playerMotm = motmStats[normName] || {};
     const totalMotm = filterSeason
       ? (playerMotm[filterSeason] || 0)
       : Object.values(playerMotm).reduce((a, b) => a + b, 0);
 
-    // ---- 新增：计算助攻给对方的总数 ----
-    const targetAssistPlayer = (playerName === "Ryan") ? "Darren" : (playerName === "Darren") ? "Ryan" : null;
+    // 🐛 FIX 3: Use normalized names for Assist tracking logic
+    const targetAssistPlayer = (normName === "ryan") ? "Darren" : (normName === "darren") ? "Ryan" : null;
     let totalAssistTo = 0;
     if (targetAssistPlayer) {
       const relevantStats = filterSeason
         ? stats.filter(s => getSeasonFromDate(s.Date) === filterSeason)
         : stats;
       relevantStats.forEach(s => {
-        if (s.Contributor?.trim() === playerName && s["Assist to"]?.trim() === targetAssistPlayer) {
+        if (normalizeName(s.Contributor) === normName && normalizeName(s["Assist to"]) === normalizeName(targetAssistPlayer)) {
           totalAssistTo += parseInt(s["Assist to count"]) || 0;
         }
       });
     }
-    // ---- 新增结束 ----
 
     const locationEntries = Object.entries(statsData.locationStats).filter(([loc]) => loc !== "Unknown").sort((a, b) => a[0].localeCompare(b[0]));
     const locationData = locationEntries.map(([loc, data]) => {
@@ -227,8 +252,9 @@ function StatsSummary({ stats }) {
       return { loc, data, avgGoals, avgAssists, avgContrib };
     });
     const maxContrib = locationData.length > 0 ? Math.max(...locationData.map((d) => d.avgContrib)) : 0;
-
+    const lineupTotals = getLineupTotals(playerName);
     return (
+      
       <div className="player-card">
         <h3 className="player-name">⚔️ {playerName} - Attacking Stats</h3>
         <div className="summary-list">
@@ -236,14 +262,12 @@ function StatsSummary({ stats }) {
           <div className="summary-row"><span className="summary-label">Matches</span><span className="plain-value">{totalMatches}</span></div>
           <div className="summary-row"><span className="summary-label">Total Goals</span><span className="plain-value">{totalGoals}</span></div>
           <div className="summary-row"><span className="summary-label">Assists</span><span className="plain-value">{statsData.assists}</span></div>
-          {/* ---- 新增：助攻给对方的行 ---- */}
           {targetAssistPlayer && (
             <div className="summary-row">
               <span className="summary-label">Assists to {targetAssistPlayer}</span>
               <span className="plain-value">{totalAssistTo}</span>
             </div>
           )}
-          {/* ---- 新增结束 ---- */}
           <div className="summary-row"><span className="summary-label">Win Rate</span><span className={`badge badge-winrate-${winRateClass}`}>{winRate.toFixed(1)}%</span></div>
           <div className="summary-row"><span className="summary-label">Errors</span><span className={`badge badge-error-${errorClass}`}>{statsData.errors}</span></div>
           <div className="summary-row">
@@ -258,6 +282,18 @@ function StatsSummary({ stats }) {
         ) : (<p className="no-data">No goal source data</p>)}
         <FormTrendGraph matches={statsData.matches} />
         <StreakTracker matches={statsData.matches} />
+        {lineupTotals && lineupTotals.matches > 0 && (
+  <>
+    <div className="summary-row">
+      <span className="summary-label">Lineup Matches</span>
+      <span className="plain-value">{lineupTotals.matches}</span>
+    </div>
+    <div className="summary-row">
+      <span className="summary-label">Lineup Avg Rating</span>
+      <span className="plain-value">{lineupTotals.avgRating.toFixed(2)}</span>
+    </div>
+  </>
+)}
         {locationData.length > 0 && (
           <div className="location-section">
             <div className="location-title">📍 地点表现</div>
@@ -277,12 +313,9 @@ function StatsSummary({ stats }) {
     );
   };
 
-  // ===== Render: Seasonal profile (other players) =====
   const renderSeasonalProfile = (playerName) => {
-    const playerData = lineupStats[playerName];
-    
-    // ✅ Calculate total MOTM across all seasons
-    const playerMotm = motmStats[playerName] || {};
+    const playerData = lineupStats[normalizeName(playerName)];
+    const playerMotm = motmStats[normalizeName(playerName)] || {};
     const totalMotm = Object.values(playerMotm).reduce((a, b) => a + b, 0);
 
     if (!playerData || Object.keys(playerData).length === 0) {
@@ -313,7 +346,6 @@ function StatsSummary({ stats }) {
     const overallAvg = totalMatches > 0 ? totalRating / totalMatches : 0;
     const ratingClass = overallAvg < 6 ? "low" : overallAvg <= 8 ? "mid" : "high";
 
-    // ✅ ADD THE MISSING RETURN STATEMENT HERE!
     return (
       <div className="player-card simple-card">
         <h3 className="player-name">🛡️ {playerName} - Lineup Stats</h3>
@@ -364,13 +396,23 @@ function StatsSummary({ stats }) {
     );
   };
 
-  // ===== Main Render =====
   return (
     <div className="stats-summary-wrap">
       <h2 className="stats-header">Stats Summary</h2>
-      {debugInfo && <div style={{textAlign: "center", color: "#94a3b8", fontSize: "12px", marginBottom: "10px"}}>{debugInfo}</div>}
+      {debugInfo && (
+        <div style={{
+          textAlign: "center", 
+          color: debugInfo.includes("❌") ? "#ef4444" : "#64748b", 
+          fontSize: "13px", 
+          marginBottom: "15px",
+          padding: "8px 12px",
+          background: debugInfo.includes("❌") ? "#fef2f2" : "#f8fafc",
+          borderRadius: "6px"
+        }}>
+          {debugInfo}
+        </div>
+      )}
       <div className="stats-layout">
-        {/* Filter Panel */}
         <div className="filter-panel">
           <h3 className="filter-title">Filters</h3>
 
@@ -386,7 +428,8 @@ function StatsSummary({ stats }) {
             ))}
           </select>
 
-          {(selectedPlayer === "Ryan" || selectedPlayer === "Darren") && (
+          {/* Show Season Filter if the selected player has detailed stats available */}
+          {getDetailedPlayerStats(selectedPlayer) && (
             <>
               <label className="filter-label">Season (Attacking Stats):</label>
               <select value={filterSeason} onChange={(e) => setFilterSeason(e.target.value)} className="filter-select">
@@ -404,12 +447,9 @@ function StatsSummary({ stats }) {
           )}
         </div>
 
-                {/* Content Area */}
         <div className="cards-grid">
-          {(selectedPlayer === "Ryan" || selectedPlayer === "Darren") 
-            ? renderDetailedProfile(selectedPlayer)
-            : renderSeasonalProfile(selectedPlayer)
-          }
+          {/* 🐛 FIX 4: Render Detailed Profile for ANY player who has stats. Fallback to Seasonal if they don't. */}
+          {renderDetailedProfile(selectedPlayer) || renderSeasonalProfile(selectedPlayer)}
         </div>
       </div>
     </div>

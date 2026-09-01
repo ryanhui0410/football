@@ -151,42 +151,43 @@ function ModifyDashboard({ contributors, onSave }) {
   };
 
     const enrichLineupWithMotm = (lineup) => {
-    if (!lineup || !matchStatsData.length) return lineup;
-    const enriched = JSON.parse(JSON.stringify(lineup));
-    ['teamA', 'teamB'].forEach(team => {
-      if (!enriched[team]?.players) return;
-      
-      // NEW ARRAY LOGIC
-      if (Array.isArray(enriched[team].players)) {
-        enriched[team].players = enriched[team].players.map(player => {
-          if (!player) return null;
-          const stat = getPlayerMatchStats(
-            player.Contributor,
-            enriched.date,
-            enriched.location,
-            enriched.time
-          );
-          return {
-            ...player,
-            isMotm: stat?.["Man of the Match"] === true,
-            goals: parseInt(stat?.Goal) || 0,
-            assists: parseInt(stat?.Assist) || 0,
-          };
-        });
-      } else {
-        // Fallback for old object format just in case
-        Object.keys(enriched[team].players).forEach(slotId => {
-          const player = enriched[team].players[slotId];
-          const stat = getPlayerMatchStats(player.Contributor, enriched.date, enriched.location, enriched.time);
-          player.isMotm = stat?.["Man of the Match"] === true;
-          player.goals = parseInt(stat?.Goal) || 0;
-          player.assists = parseInt(stat?.Assist) || 0;
-        });
-      }
-    });
-    return enriched;
-  };
+  if (!lineup || !matchStatsData.length) return lineup;
+  const enriched = JSON.parse(JSON.stringify(lineup));
+  ['teamA', 'teamB'].forEach(team => {
+    // Enrich players
+    if (Array.isArray(enriched[team]?.players)) {
+      enriched[team].players = enriched[team].players.map(player => {
+        if (!player) return null;
+        const stat = getPlayerMatchStats(
+          player.Contributor, enriched.date, enriched.location, enriched.time
+        );
+        return {
+          ...player,
+          isMotm: stat?.["Man of the Match"] === true,
+          goals: parseInt(stat?.Goal) || 0,
+          assists: parseInt(stat?.Assist) || 0,
+        };
+      });
+    }
 
+    // ✅ Enrich subs too
+    if (Array.isArray(enriched[team]?.subs)) {
+      enriched[team].subs = enriched[team].subs.map(player => {
+        if (!player) return null;
+        const stat = getPlayerMatchStats(
+          player.Contributor, enriched.date, enriched.location, enriched.time
+        );
+        return {
+          ...player,
+          isMotm: stat?.["Man of the Match"] === true,
+          goals: parseInt(stat?.Goal) || 0,
+          assists: parseInt(stat?.Assist) || 0,
+        };
+      });
+    }
+  });
+  return enriched;
+};
       const fetchAndOpenReport = async (isEditMode = false) => {
     try {
       const [lineupsRes, statsRes] = await Promise.all([
@@ -234,20 +235,35 @@ function ModifyDashboard({ contributors, onSave }) {
     const handleSaveReportLineup = async () => {
     if (!editedLineup) return;
 
-    // ✨ Same sanitization logic
-    const sanitizeTeam = (teamObj) => {
-      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null) };
-      const cleanPlayers = (teamObj.players || []).map(p => {
-        if (!p) return null;
-        return {
-          Contributor: p.Contributor,
-          rating: parseFloat(p.rating) || 0,
-          picture: p.picture || `/${p.Contributor}.jpeg`
-        };
-      });
-      while (cleanPlayers.length < 11) cleanPlayers.push(null);
-      return { formation: teamObj.formation || "4-4-2", players: cleanPlayers.slice(0, 11) };
+    // ✅ FIXED - includes subs
+const sanitizeTeam = (teamObj) => {
+  if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] };
+  const cleanPlayers = (teamObj.players || []).map(p => {
+    if (!p) return null;
+    return {
+      Contributor: p.Contributor,
+      rating: parseFloat(p.rating) || 0,
+      picture: p.picture || `/${p.Contributor}.jpeg`
     };
+  });
+  while (cleanPlayers.length < 11) cleanPlayers.push(null);
+
+  const cleanSubs = (teamObj.subs || []).map(p => {
+    if (!p) return null;
+    return {
+      Contributor: p.Contributor,
+      rating: parseFloat(p.rating) || 0,
+      picture: p.picture || `/${p.Contributor}.jpeg`
+    };
+  });
+  while (cleanSubs.length < 2) cleanSubs.push(null);
+
+  return { 
+    formation: teamObj.formation || "4-4-2", 
+    players: cleanPlayers.slice(0, 11),
+    subs: cleanSubs.slice(0, 2)
+  };
+};
 
     const payload = {
       date: editedLineup.date,
@@ -573,19 +589,30 @@ function ModifyDashboard({ contributors, onSave }) {
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button onClick={() => setSlotToEdit(null)} style={{ padding: '10px 16px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
               <button onClick={() => {
-                const { team, idx, player } = slotToEdit;
-                const teamKey = team === 'A' ? 'teamA' : 'teamB';
-                setEditedLineup(prev => {
-                  const newLineup = JSON.parse(JSON.stringify(prev));
-                  if (!Array.isArray(newLineup[teamKey].players)) {
-                    newLineup[teamKey].players = Array(11).fill(null);
-                  }
-                  newLineup[teamKey].players[idx] = player;
-                  return newLineup;
-                });
-                setLineupVersion(v => v + 1); // Refresh the pitch visually
-                setSlotToEdit(null);
-              }} style={{ padding: '10px 16px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>
+                  const { team, idx, player } = slotToEdit;
+                  const teamKey = team === 'A' ? 'teamA' : 'teamB';
+                  setEditedLineup(prev => {
+                    const newLineup = JSON.parse(JSON.stringify(prev));
+
+                    if (typeof idx === 'string' && idx.startsWith('sub')) {
+                      // Handle sub slots
+                      const subIdx = parseInt(idx.replace('sub', ''));
+                      if (!Array.isArray(newLineup[teamKey].subs)) {
+                        newLineup[teamKey].subs = [null, null];
+                      }
+                      newLineup[teamKey].subs[subIdx] = player;
+                    } else {
+                      // Handle pitch slots
+                      if (!Array.isArray(newLineup[teamKey].players)) {
+                        newLineup[teamKey].players = Array(11).fill(null);
+                      }
+                      newLineup[teamKey].players[idx] = player;
+                    }
+                    return newLineup;
+                  });
+                  setLineupVersion(v => v + 1);
+                  setSlotToEdit(null);
+                }} style={{ padding: '10px 16px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>
                 Save to Pitch
               </button>
             </div>
