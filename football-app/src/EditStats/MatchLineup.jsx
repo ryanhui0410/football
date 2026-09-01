@@ -128,12 +128,49 @@ function MatchLineup({
       >
         {player ? (
           <div className={`slot-card ${player.isMotm ? 'motm' : ''}`}>
-            <img src={player.picture || `/${player.Contributor}.jpeg`} alt={player.Contributor} />
+            {/* Remove Button for Subs */}
+            {editMode && (
+              <button 
+                className="slot-remove" 
+                onClick={(e) => { e.stopPropagation(); handleSlotClick(team, `sub${subIdx}`, null); }}
+              >
+                ×
+              </button>
+            )}
+
+            {player.isMotm && <div className="motm-badge">MOTM</div>}
+            
+            <div 
+              className="card-rating-badge" 
+              style={{ backgroundColor: getRatingColor ? getRatingColor(player.rating) : '#9e9e9e' }}
+            >
+              {player.rating != null ? parseFloat(player.rating).toFixed(1) : '—'}
+            </div>
+
+                        <div className="player-icon-wrapper">
+              <img src={player.picture || `/${player.Contributor}.jpeg`} alt={player.Contributor} />
+              
+              {/* Assists Icons */}
+              {player.assists > 0 && (
+                <div className="stat-badge assists">
+                  {[...Array(player.assists)].map((_, i) => (
+                    <span key={`sub-assist-${i}`} className="icon">👟</span>
+                  ))}
+                </div>
+              )}
+              
+              {/* Goals Icons */}
+              {player.goals > 0 && (
+                <div className="stat-badge goals">
+                  {[...Array(player.goals)].map((_, i) => (
+                    <span key={`sub-goal-${i}`} className="icon">⚽</span>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="slot-info">
               <span className="slot-name">{player.Contributor}</span>
-              <span className="slot-rating" style={{ color: getRatingColor ? getRatingColor(player.rating) : undefined }}>
-                {player.rating != null ? parseFloat(player.rating).toFixed(1) : '—'}
-              </span>
             </div>
           </div>
         ) : (
@@ -163,28 +200,52 @@ function MatchLineup({
         >
           {player ? (
             <div className={`slot-card ${player.isMotm ? 'motm' : ''}`}>
-              {player.isMotm && <span className="motm-badge">⭐ MOTM</span>}
-              
-              {(() => {
-                const name = (player.Contributor || "").trim().toLowerCase();
-                if (name !== "ryan" && name !== "darren") return null;
-                const goals = player.goals || 0;
-                const assists = player.assists || 0;
-                if (goals === 0 && assists === 0) return null;
-                const symbols = [...Array(goals).fill('⚽'), ...Array(assists).fill('👟')];
-                return (
-                  <div className="slot-symbols">
-                    {symbols.map((s, i) => <span key={i} className="slot-symbol">{s}</span>)}
-                  </div>
-                );
-              })()}
+              {/* Remove Button (Only show in edit mode) */}
+              {editMode && (
+                <button 
+                  className="slot-remove" 
+                  onClick={(e) => { e.stopPropagation(); handleSlotClick(team, idx, null); }}
+                >
+                  ×
+                </button>
+              )}
 
-              <img src={player.picture || `/${player.Contributor}.jpeg`} alt={player.Contributor} />
+              {player.isMotm && <div className="motm-badge">MOTM</div>}
+              
+              {/* 1. Top-Right Rating Badge */}
+              <div 
+                className="card-rating-badge" 
+                style={{ backgroundColor: getRatingColor ? getRatingColor(player.rating) : '#9e9e9e' }}
+              >
+                {player.rating != null ? parseFloat(player.rating).toFixed(1) : '—'}
+              </div>
+
+              {/* 2. Icon Wrapper (Holds Image + Stats) */}
+                            {/* 2. Icon Wrapper (Holds Image + Stats) */}
+              <div className="player-icon-wrapper">
+                <img src={player.picture || `/${player.Contributor}.jpeg`} alt={player.Contributor} />
+                
+                {/* Bottom-Left: Assists Icons */}
+                {player.assists > 0 && (
+                  <div className="stat-badge assists">
+                    {[...Array(player.assists)].map((_, i) => (
+                      <span key={`pitch-assist-${i}`} className="icon">👟</span>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Bottom-Right: Goals Icons */}
+                {player.goals > 0 && (
+                  <div className="stat-badge goals">
+                    {[...Array(player.goals)].map((_, i) => (
+                      <span key={`pitch-goal-${i}`} className="icon">⚽</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="slot-info">
                 <span className="slot-name">{player.Contributor}</span>
-                <span className="slot-rating" style={{ color: getRatingColor ? getRatingColor(player.rating) : undefined }}>
-                  {player.rating != null ? parseFloat(player.rating).toFixed(1) : '—'}
-                </span>
               </div>
             </div>
           ) : (

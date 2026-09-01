@@ -568,11 +568,90 @@
 .pitch-slot.editable:hover .empty-slot-hint {
   opacity: 1;
 }
+.card-rating-badge {
+  position: absolute;
+  top: -15px;
+  right: -10px;
+  background: #0f172a; /* Fallback dark background */
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 6px;
+  border: 2px solid #fff;
+  z-index: 15;
+  line-height: 1;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+/* Map your existing rating colors to the badge background */
+.card-rating-badge.rating-blue { background: #2563eb; }
+.card-rating-badge.rating-green { background: #16a34a; }
+.card-rating-badge.rating-orange { background: #ea580c; }
+.card-rating-badge.rating-red { background: #dc2626; }
+
+/* 2. Player Icon Wrapper (Relative container for stats) */
+.player-icon-wrapper {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 4px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-icon-wrapper img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* 3. Goals & Assists Badges (Overlapping Bottom Edges) */
+.stat-badge {
+  position: absolute;
+  bottom: -6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 2px 5px;
+  font-size: 11px;
+  font-weight: 800;
+  font-family: 'Barlow', sans-serif;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  border: 1px solid rgba(0,0,0,0.1);
+  z-index: 12;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.stat-badge.goals {
+  right: -10px;
+  color: #ca8a04; /* Gold/Yellow for goals */
+}
+
+.stat-badge.assists {
+  left: -10px;
+  color: #2563eb; /* Blue for assists */
+}
+
+/* Hide the old rating text inside slot-info since it's now a top-right badge */
+.slot-info .slot-rating {
+  display: none;
+}
 
 /* =========================================================
-   MOBILE / ANDROID UI - VERTICAL LAYOUT WITH SCROLLING
+   MOBILE / ANDROID UI RESPONSIVE (GENERAL SMALL SCREENS)
    ========================================================= */
-@media (max-width: 768px) {
+@media (max-width: 850px) {
   .match-lineup-container {
     padding: 16px;
     margin-top: 20px;
@@ -583,33 +662,8 @@
     margin-bottom: 16px;
   }
 
-  /* Force vertical layout on mobile */
-  .match-lineup-container.layout-vertical .lineup-content {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  /* Pitch wrapper - vertical and scrollable */
-  .pitch-wrapper {
-    aspect-ratio: 2 / 3;
-    width: 100%;
-    max-width: 100%;
-    margin: 0 auto;
-    overflow: visible;
-    border-width: 2px;
-  }
-
-  .pitch-wrapper.vertical {
-    max-width: 100%;
-  }
-
   /* Smaller slots for mobile */
   .pitch-slot {
-    width: 45px;
-    height: 60px;
-  }
-
-  .pitch-wrapper.vertical .pitch-slot {
     width: 45px;
     height: 60px;
   }
@@ -715,113 +769,183 @@
     padding: 20px;
   }
 
-  .rating-modal h3 {
-    font-size: 18px;
-  }
+  .rating-modal h3 { font-size: 18px; }
+  .modal-player-name { font-size: 16px; }
+  .rating-input { font-size: 24px; padding: 12px; }
 
-  .modal-player-name {
-    font-size: 16px;
-  }
-
-  .rating-input {
-    font-size: 24px;
-    padding: 12px;
-  }
-
-  .picker-modal {
-    width: 90%;
-    max-width: 380px;
-    padding: 20px;
-  }
-
-  .picker-modal h3 {
-    font-size: 16px;
-  }
-
-  .picker-rating-row input {
-    font-size: 14px;
-    padding: 6px 10px;
-  }
-
-  .picker-search {
-    font-size: 13px;
-    padding: 8px 10px;
-  }
-
-  .picker-list {
-    max-height: 250px;
-  }
-
-  .picker-item {
-    padding: 8px 10px;
-  }
-
-  .picker-item img {
-    width: 28px;
-    height: 28px;
-  }
-
-  .picker-name {
-    font-size: 13px;
-  }
-
-  .picker-pos {
-    font-size: 10px;
-    padding: 2px 6px;
-  }
+  .picker-modal { width: 90%; max-width: 380px; padding: 20px; }
+  .picker-modal h3 { font-size: 16px; }
+  .picker-rating-row input { font-size: 14px; padding: 6px 10px; }
+  .picker-search { font-size: 13px; padding: 8px 10px; }
+  .picker-list { max-height: 250px; }
+  .picker-item { padding: 8px 10px; }
+  .picker-item img { width: 28px; height: 28px; }
+  .picker-name { font-size: 13px; }
+  .picker-pos { font-size: 10px; padding: 2px 6px; }
 }
 
-/* Extra small devices */
-@media (max-width: 480px) {
-  .match-lineup-container {
-    padding: 12px;
+/* =========================================================
+   PORTRAIT MOBILE SPECIFIC (Stacked / Vertical Pitch)
+   ========================================================= */
+@media (max-width: 850px) and (orientation: portrait) {
+  /* Force vertical layout grid */
+  .match-lineup-container.layout-vertical .lineup-content {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
+  /* Pitch wrapper - vertical aspect ratio */
   .pitch-wrapper {
     aspect-ratio: 2 / 3;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    overflow: visible;
+    border-width: 2px;
   }
 
-  .pitch-slot {
-    width: 40px;
-    height: 55px;
+  .pitch-wrapper.vertical {
+    max-width: 100%;
   }
 
+  .pitch-wrapper.vertical .pitch-slot {
+    width: 55px;  /* Slightly widened to accommodate larger icons */
+    height: 70px;
+  }
+
+  /* 1. Player Icons 20% Larger (Base ~24-26px -> ~32px) */
+  .player-icon-wrapper {
+    width: 41px;
+    height: 41px;
+  }
   .slot-card img {
-    width: 22px;
-    height: 22px;
+    width:41px;
+    height: 41px;
   }
 
+  /* 2. Name Font Size 15% Larger (Base 8px -> ~9.5px) */
   .slot-name {
-    font-size: 7px;
-    max-width: 32px;
+    font-size: 9.5px;
+    max-width: 45px;
   }
 
-  .slot-rating {
-    font-size: 11px;
-  }
+  /* 3. Rating Badge 20% Smaller (Base 13px -> ~10.5px) */
+  .card-rating-badge {
+  position: absolute;
+  top: -15px;       /* Moved downward */
+  right: -10px;     /* Moved leftward */
+  background: #0f172a; 
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 6px;
+  border: 2px solid #fff;
+  z-index: 15;
+  line-height: 1;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
 
-  .empty-slot-card {
-    width: 40px;
-    height: 55px;
-  }
+  /* 4. Overlapping Goal/Assist Icons */
+  /* 3. Goals & Assists Badges (Overlapping & Stretching Outwards) */
+.stat-badge {
+  position: absolute;
+  bottom: -4px;
+  display: flex;
+  align-items: center;
+  background: transparent !important; /* Removed white box */
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  z-index: 12;
+  white-space: nowrap;
+  line-height: 1;
+  pointer-events: none;
+}
 
-  .empty-slot-label {
-    font-size: 9px;
-  }
+.stat-badge .icon {
+  font-size: 15px;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6));
+}
 
-  .pool-card {
-    width: 65px;
-  }
+/* Goals: Anchor near right edge, stretch further right */
+.stat-badge.goals {
+  left: calc(100% - 6px); 
+  flex-direction: row;
+  color: #ca8a04; 
+}
 
-  .pool-card img {
-    width: 32px;
-    height: 32px;
+/* Assists: Anchor near left edge, stretch further left */
+.stat-badge.assists {
+  right: calc(100% - 6px); 
+  flex-direction: row-reverse; 
+  color: #2563eb; 
+}
+
+/* Overlap logic for Goals (Left margin pulls subsequent icons left) */
+.stat-badge.goals > * + * {
+  margin-left: -9px;
+  margin-right: 0;
+}
+
+/* Overlap logic for Assists (Right margin pulls subsequent icons right) */
+.stat-badge.assists > * + * {
+  margin-right: -9px;
+  margin-left: 0;
+}
+
+/* Hide raw numbers if they exist */
+.stat-badge .count, 
+.stat-badge .number {
+  display: none !important;
+}
+}
+
+/* =========================================================
+   EXTRA SMALL DEVICES (Typically Portrait Phones < 480px)
+   ========================================================= */
+@media (max-width: 480px) and (orientation: portrait) {
+  .match-lineup-container { padding: 12px; }
+  .pitch-wrapper { aspect-ratio: 2 / 3; }
+  .pitch-slot { width: 48px; height: 65px; }
+  
+  /* 1. Player Icons 20% Larger (Base 26px -> ~31px) */
+  .player-icon-wrapper {
+    width: 33px;
+    height: 33px;
+  }
+  .slot-card img { width: 33px; height: 33px; }
+  
+  /* 2. Name Font 15% Larger (Base 7px -> ~8px) */
+  .slot-name { font-size: 8.5px; max-width: 40px; }
+  
+  /* 3. Rating Badge 20% Smaller */
+  .card-rating-badge { 
+    font-size: 9.5px; 
+    padding: 1.5px 4px; 
+    top: -15px; 
+    right: -10px; 
+
+  }
+  
+  .empty-slot-card { width: 48px; height: 65px; }
+  .empty-slot-label { font-size: 9px; }
+  .pool-card { width: 65px; }
+  .pool-card img { width: 32px; height: 32px; }
+  
+  /* Adjust overlap slightly less for very small screens */
+  .stat-badge > * + * {
+    margin-left: -5px;
+    font-size: 10px;
   }
 }
+
 /* =========================================================
    REMOVE BLACK BOXES & DOTTED LINES (MOBILE)
    ========================================================= */
-@media (max-width: 768px) {
+@media (max-width: 850px) {
   /* Remove dotted border and dark background from slots */
   .pitch-slot {
     border: none !important;
@@ -833,19 +957,12 @@
     border: none !important;
     background: transparent !important;
   }
+  
   /* Move avg rating badges above the pitch */
-.pitch-avg-badge {
-  top: -36px !important;
-}
-
-.pitch-wrapper.vertical .pitch-avg-left {
-  bottom: auto !important;
-  top: -36px !important;
-}
-
-.pitch-wrapper.vertical .pitch-avg-right {
-  top: -36px !important;
-}
+  .pitch-avg-badge { top: -36px !important; }
+  .pitch-wrapper.vertical .pitch-avg-left { bottom: auto !important; top: -36px !important; }
+  .pitch-wrapper.vertical .pitch-avg-right { top: -36px !important; }
+  
   /* Remove black card background */
   .slot-card {
     background: transparent !important;
@@ -875,34 +992,18 @@
   }
 
   /* Keep text readable on green pitch */
-  .slot-name {
-    text-shadow: 0 1px 3px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
-  }
-
-  .slot-rating {
-    text-shadow: 0 1px 3px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
-  }
-
-  .slot-label {
-    text-shadow: 0 1px 3px rgba(0,0,0,1) !important;
-  }
+  .slot-name { text-shadow: 0 1px 3px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important; }
+  .slot-rating { text-shadow: 0 1px 3px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important; }
+  .slot-label { text-shadow: 0 1px 3px rgba(0,0,0,1) !important; }
 }
 
 /* Same for extra small phones */
-@media (max-width: 480px) {
-  .pitch-slot {
-    border: none !important;
-    background: transparent !important;
-  }
-
-  .slot-card {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-
-  .empty-slot-card {
-    background: transparent !important;
-    border: none !important;
+@media (max-width: 480px) and (orientation: portrait) {
+  .pitch-slot { border: none !important; background: transparent !important; }
+  .slot-card { background: transparent !important; border: none !important; box-shadow: none !important; }
+  .empty-slot-card { background: transparent !important; border: none !important; }
+  .player-icon-wrapper {
+    width: 34px;
+    height: 34px;
   }
 }

@@ -28,6 +28,29 @@ function ModifyDashboard({ contributors, onSave }) {
     setSelectedStats({ ...match, contributorName });
     setStatsModalOpen(true);
   };
+      const getLayoutType = () => {
+    // Consider it a mobile device if width is <= 850px
+    const isMobileWidth = window.innerWidth <= 850;
+    // Check if the device is held vertically
+    const isPortrait = window.innerHeight > window.innerWidth;
+    
+    if (isMobileWidth && isPortrait) {
+      return "vertical";
+    }
+    return "horizontal"; // Desktop OR Mobile Landscape
+  };
+
+  const [layout, setLayout] = useState(getLayoutType());
+
+  useEffect(() => {
+    const handleResize = () => setLayout(getLayoutType());
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
 
   const closeModal = () => setSelectedMatch(null);
   const closeCompare = () => setCompareData(null);
@@ -191,9 +214,9 @@ function ModifyDashboard({ contributors, onSave }) {
       const fetchAndOpenReport = async (isEditMode = false) => {
     try {
       const [lineupsRes, statsRes] = await Promise.all([
-        fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}"),
-        fetch("https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}")
-      ]);
+  fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`),
+  fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`)
+]);
       const lineups = await lineupsRes.json();
       const stats = await statsRes.json();
 
@@ -218,7 +241,7 @@ function ModifyDashboard({ contributors, onSave }) {
         
         // Always fetch latest player cards when entering edit mode
         if (isEditMode) { 
-          const pRes = await fetch("https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}");
+          const pRes = await fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`);
           const pData = await pRes.json();
           setAvailablePlayers(Array.isArray(pData) ? pData : []);
         }
@@ -274,7 +297,7 @@ const sanitizeTeam = (teamObj) => {
     };
 
     try {
-      const res = await fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}", {
+      const res = await fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -497,7 +520,7 @@ const sanitizeTeam = (teamObj) => {
                         initialLineup={enrichLineupWithMotm(isEditingReport ? editedLineup : matchReport)}
                         readOnly={!isEditingReport}
                         editMode={isEditingReport}
-                        layout="horizontal"
+                        layout={layout}
                         availablePlayers={availablePlayers}
                         getRatingColor={getRatingColor}
                         getPlayerMatchStats={getPlayerMatchStats}
