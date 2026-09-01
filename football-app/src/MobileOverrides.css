@@ -73,7 +73,7 @@ table {
   width: 100% !important;
   max-width: 100% !important;
   height: auto !important;
-  min-height: 460px !important;
+  min-height: 550px !important;
   aspect-ratio: auto !important;
   margin-left: auto !important;
   margin-right: auto !important;
@@ -81,13 +81,13 @@ table {
 
 /* Fix horizontal pitch for small screens */
 .match-lineup-container.layout-horizontal .pitch-wrapper {
-  height: 60vw !important;
-  min-height: 280px !important;
+  height: 62vw !important;
+  min-height: 450px !important;
 }
 
 /* Fix player cards - Match Lineup only, transparent style */
 .match-lineup-container .slot-card {
-  width: 58px !important;
+  width: 62px !important;
   padding: 3px !important;
   background: transparent !important;
   border: none !important;
@@ -127,8 +127,8 @@ table {
   }
 
   .match-lineup-container .slot-card img {
-    width: 28px !important;
-    height: 28px !important;
+    width: 32px !important;
+    height: 32px !important;
     border: 1px solid rgba(255,255,255,0.9) !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
   }
@@ -180,8 +180,8 @@ table {
     text-transform: uppercase !important;
     text-shadow: 0 1px 3px rgba(0,0,0,0.9) !important;
     background: rgba(0, 0, 0, 0.3) !important; 
-    width: 28px !important;
-    height: 28px !important;
+    width: 32px !important;
+    height: 32px !important;
     border-radius: 50% !important;
     line-height: 1 !important;
     margin: 0 !important;
@@ -199,8 +199,8 @@ table {
   }
 
   .match-lineup-container .slot-card img {
-    width: 36px !important;
-    height: 36px !important;
+    width: 39px !important;
+    height: 39px !important;
     border: 2px solid rgba(255,255,255,0.9) !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
   }
@@ -231,7 +231,7 @@ table {
 
   /* Enlarge MOTM badge */
   .match-lineup-container .motm-badge {
-    font-size: 8px !important;
+    font-size: 9px !important;
     padding: 2px 4px !important;
   }
 
