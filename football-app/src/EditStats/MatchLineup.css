@@ -570,8 +570,8 @@
 }
 .card-rating-badge {
   position: absolute;
-  top: -15px;
-  right: -10px;
+  top: -25px;
+  right: -20px;
   background: #0f172a; /* Fallback dark background */
   color: #fff;
   font-family: 'Oswald', sans-serif;
@@ -670,8 +670,8 @@
 
   /* Smaller player cards */
   .slot-card img {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
   }
 
   .slot-name {
@@ -832,8 +832,8 @@
   /* 3. Rating Badge 20% Smaller (Base 13px -> ~10.5px) */
   .card-rating-badge {
   position: absolute;
-  top: -15px;       /* Moved downward */
-  right: -10px;     /* Moved leftward */
+  top: -25px;       /* Moved downward */
+  right: -20px;     /* Moved leftward */
   background: #0f172a; 
   color: #fff;
   font-family: 'Oswald', sans-serif;
@@ -925,8 +925,8 @@
   .card-rating-badge { 
     font-size: 9.5px; 
     padding: 1.5px 4px; 
-    top: -15px; 
-    right: -10px; 
+    top: -25px; 
+    right: -20px; 
 
   }
   
