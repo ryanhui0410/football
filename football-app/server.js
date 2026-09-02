@@ -6,10 +6,34 @@ const cors = require("cors");
 const app = express();
 
 // Reverted to standard JSON limits (removed 10mb limit used for base64 images)
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(cors());
+// Frontend Helper: Compress & Fix Smartphone Images
+const sharp = require('sharp');
 
+app.post("/process-image", async (req, res) => {
+  try {
+    // Assuming frontend sends the raw base64 string
+    const base64String = req.body.image; 
+    const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
+    const imageBuffer = Buffer.from(base64Data, 'base64');
+
+    // Sharp automatically reads EXIF data, fixes rotation, and converts HEIC to JPEG
+    const processedBuffer = await sharp(imageBuffer)
+      .rotate()                                  // 📱 Fixes smartphone sideways EXIF errors!
+      .resize({ width: 800, withoutEnlargement: true }) // 📏 Shrinks massive files
+      .jpeg({ quality: 70, mozjpeg: true })      // 🗜️ Compresses and ensures standard JPEG format
+      .toBuffer();
+
+    const finalBase64 = `data:image/jpeg;base64,${processedBuffer.toString('base64')}`;
+    
+    res.json({ success: true, image: finalBase64 });
+  } catch (err) {
+    console.error("Backend Image Decode Error:", err);
+    res.status(500).json({ error: "Failed to decode/process smartphone image" });
+  }
+});
 async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
   try {
     const token = process.env.GITHUB_TOKEN;
