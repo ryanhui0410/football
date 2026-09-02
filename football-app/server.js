@@ -5,9 +5,9 @@ const cors = require("cors");
 
 const app = express();
 
-// Increase the JSON payload limit to 10 Megabytes to allow base64 images
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+// Reverted to standard JSON limits (removed 10mb limit used for base64 images)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
@@ -281,24 +281,6 @@ app.post("/player-attributes", async (req, res) => {
     const card = req.body;
     if (!card || !card.Contributor) {
       return res.status(400).json({ error: "Missing Contributor" });
-    }
-
-    // Handle image upload (keep existing code)
-    if (card.picture && typeof card.picture === 'string' && card.picture.startsWith("data:image")) {
-      try {
-        const base64Data = card.picture.replace(/^data:image\/\w+;base64,/, "");
-        const imageBuffer = Buffer.from(base64Data, "base64");
-        const imagesDir = path.join(__dirname,"public", "images");
-        if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
-        const safeName = card.Contributor.replace(/[^a-z0-9\u4e00-\u9fa5]/gi, "_");
-        const fileName = `${safeName}.jpeg`;
-        const filePath = path.join(imagesDir, fileName);
-        fs.writeFileSync(filePath, imageBuffer);
-        card.picture = `/images/${fileName}`;
-        await syncFileToGitHub(filePath, `football-app/public/images/${fileName}`, `Update profile picture: ${card.Contributor}`);
-      } catch (imgErr) {
-        console.error("❌ Failed to save image:", imgErr);
-      }
     }
 
     // Read current data
