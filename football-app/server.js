@@ -33,7 +33,7 @@ async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
           console.log(`   Last: ${parsed[parsed.length - 1].Contributor || 'unnamed'}`);
         }
         
-        contentString = JSON.stringify(parsed); 
+        contentString = JSON.stringify(parsed, null, 2); 
       } catch (e) {
         console.error("❌ Failed to parse/minify JSON:", e.message);
       }
