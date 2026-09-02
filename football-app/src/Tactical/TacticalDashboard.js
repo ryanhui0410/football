@@ -24,9 +24,9 @@ function TacticalDashboard() {
 
   useEffect(() => {
     Promise.all([
-      fetch("https://football-stats-xbx6.onrender.com/stats-history?t=${Date.now()}").then(res => res.json()),
-      fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}").then(res => res.json()),
-      fetch("https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}").then(res => res.json())
+      fetch(`https://football-stats-xbx6.onrender.com/stats-history?t=${Date.now()}`).then(res => res.json()),
+      fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`).then(res => res.json()),
+      fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`).then(res => res.json())
     ])
       .then(([history, lineups, players]) => {
         setTimeHistory(history.times || []);
@@ -113,27 +113,26 @@ function TacticalDashboard() {
     };
 
     try {
-      const res = await fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const result = await res.json();
-      if (result.isNew) {
-        setAllLineups(prev => [...prev, payload]);
-      } else {
-        setAllLineups(prev => prev.map(l => 
-          l.date === payload.date && l.location === payload.location && l.time === payload.time ? payload : l
-        ));
-      }
-      setMessage("✅ Tactical Lineup saved successfully!");
-      setTimeout(() => setMessage(""), 3000);
-    } catch (err) {
-      setMessage("❌ Failed to save. Check server.");
-      setTimeout(() => setMessage(""), 3000);
-    } finally {
-      setSaving(false);
-    }
+  const res = await fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const result = await res.json();
+
+  if (!res.ok) {
+    // ✅ NOW YOU'LL SEE THE REAL ERROR
+    setMessage(`⚠️ Saved locally, but GitHub failed: ${result.githubError || result.error}`);
+    setTimeout(() => setMessage(""), 6000);
+    return;
+  }
+
+  // ... rest of your success logic
+  setMessage("✅ Tactical Lineup saved AND synced to GitHub!");
+} catch (err) {
+  setMessage(`❌ Network error: ${err.message}`);
+  setTimeout(() => setMessage(""), 5000);
+}
   };
 
     const handleSaveSlot = () => {

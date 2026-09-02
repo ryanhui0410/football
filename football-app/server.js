@@ -375,42 +375,34 @@ function writeLineups(data) {
 app.post("/match-lineups", async (req, res) => {
   try {
     const lineup = req.body;
-    
-    console.log("📥 Received lineup payload:", JSON.stringify({
-      date: lineup.date,
-      location: lineup.location, 
-      time: lineup.time,
-      hasTeamA: !!lineup.teamA,
-      hasTeamB: !!lineup.teamB
-    }, null, 2));
 
     if (!lineup.date) return res.status(400).json({ error: "Missing date" });
 
     const data = readLineups();
-    
+
     const normDate = (lineup.date || "").trim();
     const normLoc  = (lineup.location || "").trim();
     const normTime = (lineup.time || "").trim();
 
-    const index = data.findIndex(l => 
-      (l.date || "").trim() === normDate && 
-      (l.location || "").trim() === normLoc && 
+    const index = data.findIndex(l =>
+      (l.date || "").trim() === normDate &&
+      (l.location || "").trim() === normLoc &&
       (l.time || "").trim() === normTime
     );
 
-        const normalizedLineup = {
+    const normalizedLineup = {
       date: normDate,
       location: normLoc,
       time: normTime,
       teamA: {
         formation: lineup.teamA?.formation || "4-4-2",
         players: lineup.teamA?.players || Array(11).fill(null),
-        subs: lineup.teamA?.subs || [null, null] // Add subs
+        subs: lineup.teamA?.subs || [null, null]
       },
       teamB: {
         formation: lineup.teamB?.formation || "4-4-2",
         players: lineup.teamB?.players || Array(11).fill(null),
-        subs: lineup.teamB?.subs || [null, null] // Add subs
+        subs: lineup.teamB?.subs || [null, null]
       }
     };
 
@@ -424,9 +416,24 @@ app.post("/match-lineups", async (req, res) => {
 
     writeLineups(data);
 
-    await syncFileToGitHub(LINEUPS_PATH, "football-app/src/match_lineups.json", `Update lineup for ${normDate}`);
+    // ✅ NOW CHECK THE RESULT
+    const syncResult = await syncFileToGitHub(
+      LINEUPS_PATH,
+      "football-app/src/match_lineups.json",
+      `Update lineup for ${normDate}`
+    );
 
-    res.json({ message: "✅ Lineup saved", index, isNew: index === -1 });
+    if (syncResult.success) {
+      res.json({ message: "✅ Lineup saved AND synced to GitHub", index, isNew: index === -1 });
+    } else {
+      console.error(`❌ GitHub sync failed for lineups: ${syncResult.error}`);
+      res.status(500).json({
+        error: "Saved locally but GitHub sync FAILED",
+        githubError: syncResult.error,
+        index,
+        isNew: index === -1
+      });
+    }
   } catch (err) {
     console.error("❌ Lineup save error:", err);
     res.status(500).json({ error: "Failed to save lineup", details: err.message });
