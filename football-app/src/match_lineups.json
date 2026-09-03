@@ -499,7 +499,11 @@
         }
       ],
       "subs": [
-        null,
+        {
+          "Contributor": "Derek",
+          "rating": 9.1,
+          "picture": "/images/Derek.jpeg"
+        },
         null
       ]
     },
