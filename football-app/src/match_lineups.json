@@ -442,15 +442,51 @@
     "teamA": {
       "formation": "4-4-2",
       "players": [
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
+        {
+          "Contributor": "QC",
+          "rating": 7.5,
+          "picture": "/images/QC.jpeg"
+        },
+        {
+          "Contributor": "大嚿",
+          "rating": 7.8,
+          "picture": "/大嚿.jpeg"
+        },
+        {
+          "Contributor": "普巴",
+          "rating": 7.3,
+          "picture": "/普巴.jpeg"
+        },
+        {
+          "Contributor": "Nick",
+          "rating": 7.5,
+          "picture": "/Nick.jpeg"
+        },
+        {
+          "Contributor": "KK",
+          "rating": 7.2,
+          "picture": "/KK.jpeg"
+        },
+        {
+          "Contributor": "Barry",
+          "rating": 7,
+          "picture": "/Barry.jpeg"
+        },
+        {
+          "Contributor": "Hong1",
+          "rating": 9.1,
+          "picture": "/Hong1.jpeg"
+        },
+        {
+          "Contributor": "子睿",
+          "rating": 8.6,
+          "picture": "/子睿.jpeg"
+        },
+        {
+          "Contributor": "Lu",
+          "rating": 7.7,
+          "picture": "/Lu.jpeg"
+        },
         {
           "Contributor": "Ryan",
           "rating": 9.2,
@@ -470,17 +506,45 @@
     "teamB": {
       "formation": "4-4-2",
       "players": [
+        {
+          "Contributor": "Eugene",
+          "rating": 5.5,
+          "picture": "/Eugene.jpeg"
+        },
+        null,
+        {
+          "Contributor": "Kit",
+          "rating": 5.7,
+          "picture": "/images/Kit.jpeg"
+        },
+        {
+          "Contributor": "Po",
+          "rating": 5.4,
+          "picture": "/images/Po.jpeg"
+        },
+        {
+          "Contributor": "S Joe",
+          "rating": 5.6,
+          "picture": "/images/S_Joe.jpeg"
+        },
+        null,
+        {
+          "Contributor": "hong",
+          "rating": 6.8,
+          "picture": "/hong.jpeg"
+        },
+        {
+          "Contributor": "Jackson",
+          "rating": 6.1,
+          "picture": "./Jackson.jpeg"
+        },
         null,
         null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        {
+          "Contributor": "局長",
+          "rating": 6.1,
+          "picture": "/局長.jpeg"
+        }
       ],
       "subs": [
         null,
