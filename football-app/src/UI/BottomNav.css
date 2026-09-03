@@ -3,6 +3,9 @@
   display: none;
 }
 
+/* =========================================
+   PORTRAIT MODE (Bottom Bar)
+   ========================================= */
 @media (max-width: 768px) {
   .bottom-nav {
     display: block;
@@ -57,5 +60,40 @@
   .bottom-nav-icon {
     font-size: 20px;
     line-height: 1;
+  }
+}
+
+/* =========================================
+   LANDSCAPE MODE (Left Sidebar Overrides)
+   ========================================= */
+@media (max-width: 768px) and (orientation: landscape) {
+  .bottom-nav {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: auto;
+    width: 80px; /* Fixed width for the sidebar */
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height (fixes mobile browser URL bar jumping) */
+    border-top: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.3); /* Shadow casts to the right */
+    padding-bottom: 0;
+    padding-left: env(safe-area-inset-left); /* Handles camera notch on the left side */
+  }
+
+  .bottom-nav-scroll {
+    flex-direction: column; /* Stack items vertically */
+    overflow-x: hidden;
+    overflow-y: auto; /* Allow vertical scrolling if screen height is too short for 8 items */
+    height: 100%;
+    width: 100%;
+  }
+
+  .bottom-nav-item {
+    width: 100%;
+    min-width: unset;
+    padding: 12px 0; /* Adjust vertical spacing */
+    flex: 0 0 auto;
   }
 }
