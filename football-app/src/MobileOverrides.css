@@ -73,7 +73,7 @@ table {
   width: 100% !important;
   max-width: 100% !important;
   height: auto !important;
-  min-height: 550px !important;
+  min-height: 590px !important;
   aspect-ratio: auto !important;
   margin-left: auto !important;
   margin-right: auto !important;
@@ -87,7 +87,7 @@ table {
 
 /* Fix player cards - Match Lineup only, transparent style */
 .match-lineup-container .slot-card {
-  width: 62px !important;
+  width: 65px !important;
   padding: 3px !important;
   background: transparent !important;
   border: none !important;
@@ -101,6 +101,7 @@ table {
     height: 56px !important;
     border: 2px solid rgba(255,255,255,0.9) !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
+    aspect-ratio: 1 / 1; 
   }
 
   .match-lineup-container .slot-name {
@@ -110,14 +111,14 @@ table {
   }
 
   .match-lineup-container .slot-rating {
-    font-size: 20px !important;
+    font-size: 24px !important;
     text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
   }
 }
 /* ✅ ANDROID ONLY - wrapped in mobile media query */
 @media (max-width: 768px) {
   .match-lineup-container .slot-card {
-    width: 58px !important;
+    width: 61px !important;
     padding: 3px !important;
     background: transparent !important;
     border: none !important;
@@ -127,20 +128,21 @@ table {
   }
 
   .match-lineup-container .slot-card img {
-    width: 32px !important;
-    height: 32px !important;
+    width: 42px !important;
+    height: 42px !important;
     border: 1px solid rgba(255,255,255,0.9) !important;
+    aspect-ratio: 1 / 1; 
     box-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
   }
 
   .match-lineup-container .slot-name {
-    font-size: 9px !important;
-    max-width: 52px !important;
+    font-size: 10px !important;
+    max-width: 56px !important;
     text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
   }
 
   .match-lineup-container .slot-rating {
-    font-size: 10px !important;
+    font-size: 12.5px !important;
     text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
   }
 }
@@ -180,8 +182,8 @@ table {
     text-transform: uppercase !important;
     text-shadow: 0 1px 3px rgba(0,0,0,0.9) !important;
     background: rgba(0, 0, 0, 0.3) !important; 
-    width: 32px !important;
-    height: 32px !important;
+    width: 38px !important;
+    height: 38px !important;
     border-radius: 50% !important;
     line-height: 1 !important;
     margin: 0 !important;
@@ -194,13 +196,13 @@ table {
   
   /* Enlarge slot cards for landscape phone */
   .match-lineup-container .slot-card {
-    width: 58px !important;
+    width: 65px !important;
     padding: 3px !important;
   }
 
   .match-lineup-container .slot-card img {
-    width: 39px !important;
-    height: 39px !important;
+    width: 45px !important;
+    height: 45px !important;
     border: 2px solid rgba(255,255,255,0.9) !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
   }
@@ -212,7 +214,7 @@ table {
   }
 
   .match-lineup-container .slot-rating {
-    font-size: 14px !important;
+    font-size: 15px !important;
     text-shadow: 0 1px 2px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9) !important;
   }
 
@@ -231,7 +233,7 @@ table {
 
   /* Enlarge MOTM badge */
   .match-lineup-container .motm-badge {
-    font-size: 9px !important;
+    font-size: 19px !important;
     padding: 2px 4px !important;
   }
 

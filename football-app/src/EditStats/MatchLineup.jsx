@@ -282,13 +282,19 @@ function MatchLineup({
     }
   };
 
-  return (
+    return (
     <div className={`match-lineup-container ${isVertical ? "layout-vertical" : "layout-horizontal"}`}>
       <div className="lineup-content">
         <div className="pitch-and-controls">
-          
+
           {/* THE PITCH */}
+                    {/* THE PITCH */}
           <div className={`pitch-wrapper ${isVertical ? "vertical" : ""}`}>
+            
+            {/* ✅ CORNER LABELS (Inside the pitch) */}
+            <div className="team-label team-b-label">Team B</div>
+            <div className="team-label team-a-label">Team A</div>
+
             <div className="pitch-lines">
               <div className="pitch-outline" />
               <div className="center-line" />
@@ -296,9 +302,11 @@ function MatchLineup({
               <div className="penalty-box-left" />
               <div className="penalty-box-right" />
             </div>
+            
             {renderSlots(teamAFormation, "A", teamAPlayers)}
             {renderSlots(teamBFormation, "B", teamBPlayers)}
           </div>
+
 
           {/* === SUBSTITUTES BENCH (Added Below Pitch) === */}
           <div className="subs-container">

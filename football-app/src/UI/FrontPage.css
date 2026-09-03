@@ -3,23 +3,30 @@
 .fp-container {
   position: relative;
   width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  background-color: #083a29; /* Fallback dark green */
+  min-height: 100vh;
+  min-height: 100dvh; /* Crucial for Android to account for URL/Nav bars */
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto; /* Allows scrolling if content exceeds viewport */
+  -webkit-overflow-scrolling: touch;
+  background-color: #083a29; 
   font-family: 'Barlow', sans-serif;
 }
 
-/* --- Background Images (Crossfade & Slow Zoom) --- */
+/* --- Background Images (Fixed to viewport to prevent scrolling issues) --- */
 .fp-bg-image {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center center;
   opacity: 0;
   transition: opacity 1.5s ease-in-out;
   animation: kenburns 20s infinite alternate ease-in-out;
+  z-index: 0;
 }
 
 .fp-bg-image.fp-active {
@@ -31,9 +38,9 @@
   100% { transform: scale(1.1) translate(-1%, -1%); }
 }
 
-/* --- Dark Gradient Overlay for Text Readability --- */
+/* --- Dark Gradient Overlay --- */
 .fp-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: linear-gradient(
     105deg, 
@@ -41,19 +48,25 @@
     rgba(4, 20, 14, 0.7) 40%, 
     rgba(4, 20, 14, 0.2) 100%
   );
-  z-index: 2;
+  z-index: 1;
 }
 
 /* --- Hero Content --- */
 .fp-content {
   position: relative;
   z-index: 10;
-  height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 0 8%;
+  padding: 80px 8%;
   max-width: 800px;
+  width: 100%;
+  box-sizing: border-box;
+  /* margin: auto 0 is the secret sauce: 
+     It centers vertically when there is space, 
+     but pushes to the top and allows scrolling when content overflows */
+  margin: auto 0; 
   animation: slideUp 1s ease-out forwards;
 }
 
@@ -67,7 +80,7 @@
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.4em;
-  color: #f2c14e; /* Premium Gold */
+  color: #f2c14e; 
   text-transform: uppercase;
   margin-bottom: 16px;
   display: flex;
@@ -85,10 +98,9 @@
 
 .fp-title {
   font-family: 'Oswald', sans-serif;
-  /* Reduced size: Min 2.25rem (mobile), scales at 5.5vw, caps at 4.5rem (large screens) */
   font-size: clamp(2.25rem, 5.5vw, 4.5rem); 
   font-weight: 700;
-  line-height: 1.05; /* Increased slightly from 0.95 so wrapped text doesn't overlap */
+  line-height: 1.05; 
   text-transform: uppercase;
   color: #ffffff;
   margin: 0 0 24px 0;
@@ -154,12 +166,12 @@
   border-color: #ffffff;
 }
 
-/* --- Carousel Indicator Dots --- */
+/* --- Carousel Indicator Dots (Fixed to viewport) --- */
 .fp-dots {
-  position: absolute;
-  bottom: 40px;
+  position: fixed;
+  bottom: 30px;
   left: 8%;
-  z-index: 10;
+  z-index: 20;
   display: flex;
   gap: 12px;
 }
@@ -181,7 +193,8 @@
 /* --- Error Fallback State --- */
 .fp-error-state {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
+  min-height: 100dvh;
   background: linear-gradient(135deg, #083a29 0%, #04140e 100%);
   display: flex;
   flex-direction: column;
@@ -190,6 +203,8 @@
   color: #fff;
   text-align: center;
   font-family: 'Barlow', sans-serif;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .fp-error-icon {
@@ -210,24 +225,108 @@
   color: #f2c14e;
 }
 
-/* --- Responsive Adjustments --- */
-@media (max-width: 768px) {
+/* =========================================
+   RESPONSIVE: MOBILE PORTRAIT
+   ========================================= */
+@media (max-width: 768px) and (orientation: portrait) {
   .fp-content {
-    padding: 0 6%;
+    padding: 0 6% 14vh 6%; /* Extra bottom padding to clear Android Nav Bar */
     justify-content: flex-end;
-    padding-bottom: 120px;
+    margin: 0; /* Overrides auto margin to force content to bottom */
   }
+  
+  .fp-title {
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
+
   .fp-subtitle {
     font-size: 1rem;
+    margin-bottom: 24px;
   }
+
+  .fp-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
   .fp-btn {
     padding: 14px 24px;
     font-size: 14px;
     width: 100%;
     text-align: center;
+    flex: none;
   }
+
   .fp-dots {
     left: 50%;
     transform: translateX(-50%);
+    bottom: 20px;
+  }
+}
+
+/* =========================================
+   RESPONSIVE: MOBILE LANDSCAPE (Android/iOS)
+   ========================================= */
+@media (orientation: landscape) and (max-height: 600px) {
+  .fp-overlay {
+    /* Darker, directional overlay to guarantee text readability over cropped images */
+    background: linear-gradient(
+      90deg, 
+      rgba(4, 20, 14, 0.95) 0%, 
+      rgba(4, 20, 14, 0.85) 50%, 
+      rgba(4, 20, 14, 0.5) 100%
+    );
+  }
+
+  .fp-bg-image {
+    /* Shift focal point slightly up to prevent faces/subjects from being cropped out */
+    object-position: center 30%; 
+  }
+
+  .fp-content {
+    padding: 20px 5%;
+    max-width: 650px;
+    margin: auto 0;
+  }
+
+  .fp-kicker {
+    font-size: clamp(10px, 1.5vh, 14px);
+    margin-bottom: 8px;
+  }
+  
+  .fp-kicker::before {
+    width: 24px;
+  }
+
+  /* Use vh (viewport height) instead of vw for landscape to prevent massive text */
+  .fp-title {
+    font-size: clamp(1.4rem, 5vh, 2.5rem);
+    margin-bottom: 12px;
+    line-height: 1.1;
+  }
+
+  .fp-subtitle {
+    font-size: clamp(0.8rem, 2vh, 1rem);
+    margin-bottom: 20px;
+    line-height: 1.4;
+    max-width: 500px;
+  }
+
+  .fp-actions {
+    gap: 12px;
+    flex-wrap: nowrap;
+  }
+
+  .fp-btn {
+    padding: 10px 20px;
+    font-size: clamp(11px, 1.8vh, 14px);
+    width: auto;
+    flex: 1;
+    max-width: 200px;
+  }
+  
+  .fp-dots {
+    bottom: 15px;
+    left: 5%;
   }
 }

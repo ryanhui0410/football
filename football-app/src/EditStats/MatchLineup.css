@@ -675,6 +675,114 @@
   display: none;
 }
 
+/* ========================================== */
+/* ===== PITCH TEAM LABELS (CORNERS) ======== */
+/* ========================================== */
+.team-label {
+  position: absolute;
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  z-index: 10;
+  pointer-events: none;
+  
+  /* Small compact pill/button style */
+  background: rgba(15, 23, 42, 0.85); 
+  padding: 5px 5px;           /* ← slightly more even padding */
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  
+  /* Centering fix */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;           /* ← ADD THIS */
+  line-height: 1;               /* ← CHANGE from 1.2 to 1 for perfect vertical center */
+  white-space: nowrap;
+  width: auto;
+  max-width: fit-content;
+}
+
+/* Team B: Top-Right Corner */
+.team-b-label {
+  top: 12px;
+  right: 7px;
+}
+
+/* Team A: Bottom-Left Corner */
+.team-a-label {
+  bottom: 12px;
+  left: 9px;
+}
+
+/* Mobile adjustments for corner labels */
+@media (max-width: 768px) {
+  .team-label {
+    font-size: 10px;
+    padding: 4px 10px;
+    letter-spacing: 0.05em;
+  }
+  
+  .team-b-label {
+    top: 8px;
+    right: 8px;
+  }
+  
+  .team-a-label {
+    bottom: 8px;
+    left: 8px;
+  }
+}
+
+
+/* ========================================== */
+/* ===== ENHANCED SUBS BENCH LABELS ========= */
+/* ========================================== */
+.subs-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 10px 0;
+  padding: 6px 14px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* Color-code Team A Subs (Blue) */
+.subs-team:first-child .subs-label {
+  background: rgba(37, 99, 235, 0.1); 
+  color: #1d4ed8;
+  border-left: 4px solid #2563eb;
+}
+
+/* Color-code Team B Subs (Red) */
+.subs-team:last-child .subs-label {
+  background: rgba(239, 68, 68, 0.1); 
+  color: #b91c1c;
+  border-left: 4px solid #ef4444;
+}
+
+/* Make subs bench wrap nicely on very small screens */
+@media (max-width: 480px) {
+  .subs-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .subs-team {
+    width: 100%;
+  }
+  .subs-row {
+    justify-content: flex-start;
+  }
+}
 /* =========================================================
    MOBILE / ANDROID UI RESPONSIVE (GENERAL SMALL SCREENS)
    ========================================================= */
@@ -691,39 +799,31 @@
 
   /* Smaller slots for mobile */
   .pitch-slot {
-    width: 50px;
+    width: 65px;
     height: 65px;
   }
 
   /* Smaller player cards */
   .slot-card img {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
   }
 
   .slot-name {
-    font-size: 9px;
-    max-width: 35px;
+    font-size: 10.5px;
+    max-width: 56px;
   }
   /* === SPACING BETWEEN ICON AND NAME 40% SMALLER === */
   .slot-info {
     margin-top: 5px; /* was 2px, now ~40% less */
   }
   .slot-rating {
-    font-size: 12px;
-  }
-
-  .slot-remove {
-    width: 16px;
-    height: 16px;
-    font-size: 10px;
-    top: -6px;
-    right: -6px;
+    font-size: 12.5px;
   }
 
   /* Empty slot cards */
   .empty-slot-card {
-    width: 45px;
+    width: 60px;
     height: 60px;
   }
 
@@ -750,7 +850,7 @@
     font-size: 7px;
     padding: 1px 4px;
     top: 7px;
-    right: 28px;
+    right: 35px;
   }
 
   /* Player pool adjustments */
@@ -839,7 +939,7 @@
   }
 
   .pitch-wrapper.vertical .pitch-slot {
-    width: 60px;  /* Slightly widened to accommodate larger icons */
+    width: 77px;  /* Slightly widened to accommodate larger icons */
     height: 77px;
   }
 
@@ -850,20 +950,22 @@
     margin: 0 auto 2px auto;
   }
   .slot-card img {
-    width:55px;
-    height: 515px;
+    width:56px;
+    height: 56px;
+    aspect-ratio: 1 / 1; 
   }
 
   /* 2. Name Font Size 15% Larger (Base 8px -> ~9.5px) */
   .slot-name {
-    font-size: 9.5px;
+    font-size: 10.5px;
     max-width: 49px;
   }
 
   /* 3. Rating Badge 20% Smaller (Base 13px -> ~10.5px) */
   .card-rating-badge {
   position: absolute;
-  top: 9px;       /* Moved downward */
+  top: 5px;       /* Moved downward */
+  right: -2px;
   background: #0f172a; 
   color: #fff;
   font-family: 'Oswald', sans-serif;
