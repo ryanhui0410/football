@@ -542,7 +542,11 @@
           "rating": 6.1,
           "picture": "./Jackson.jpeg"
         },
-        null,
+        {
+          "Contributor": "QC1",
+          "rating": 6.3,
+          "picture": "/images/QC1.jpeg"
+        },
         {
           "Contributor": "Jacob",
           "rating": 5.9,
