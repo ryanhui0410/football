@@ -128,7 +128,7 @@ function MatchLineup({
       >
         {player ? (
           <div className={`slot-card ${player.isMotm ? 'motm' : ''}`}>
-            {/* Remove Button for Subs */}
+            {/* Remove Button for Subs
             {editMode && (
               <button 
                 className="slot-remove" 
@@ -136,7 +136,7 @@ function MatchLineup({
               >
                 ×
               </button>
-            )}
+            )} */}
 
             {player.isMotm && <div className="motm-badge">MOTM</div>}
             
@@ -200,7 +200,7 @@ function MatchLineup({
         >
           {player ? (
             <div className={`slot-card ${player.isMotm ? 'motm' : ''}`}>
-              {/* Remove Button (Only show in edit mode) */}
+              {/* Remove Button (Only show in edit mode)
               {editMode && (
                 <button 
                   className="slot-remove" 
@@ -208,7 +208,7 @@ function MatchLineup({
                 >
                   ×
                 </button>
-              )}
+              )} */}
 
               {player.isMotm && <div className="motm-badge">MOTM</div>}
               

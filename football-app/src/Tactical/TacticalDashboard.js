@@ -247,7 +247,7 @@ function TacticalDashboard() {
       {slotToEdit && (
         <div className="td-slot-overlay" onClick={() => setSlotToEdit(null)}>
           <div className="td-slot-modal" onClick={e => e.stopPropagation()}>
-            <button className="td-slot-close" onClick={() => setSlotToEdit(null)}>✕</button>
+            {/* <button className="td-slot-close" onClick={() => setSlotToEdit(null)}>✕</button> */}
             <h3>{slotToEdit.player ? "Edit Player" : "Add Player"}</h3>
             
             <div className="td-modal-field">
