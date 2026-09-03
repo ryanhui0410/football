@@ -350,14 +350,131 @@
   background-color: #f8fafc;
 }
 
-/* ================= Mobile Specific (Android UI) ================= */
-@media (max-width: 768px) {
-  /* On mobile, let the filter panel take full width since max-width is already handled */
+/* ================= Mobile Portrait ================= */
+@media (max-width: 768px) and (orientation: portrait) {
+  .stats-summary-wrap {
+    padding: 24px 16px;
+  }
+  .stats-header {
+    font-size: 28px;
+    margin-bottom: 24px;
+  }
   .filter-panel {
-    max-width: 100%;
+    padding: 16px;
+  }
+  .player-card {
+    padding: 16px;
+  }
+  .player-name {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+  .chart-container {
+    height: 220px;
+    width: 220px;
+  }
+  .location-table th, .location-table td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+}
+
+/* ================= Mobile Landscape (Dashboard Layout) ================= */
+@media (max-height: 600px) and (orientation: landscape) {
+  .stats-summary-wrap {
+    padding: 16px 24px;
+    min-height: auto;
+  }
+  
+  .stats-header {
+    font-size: 24px;
+    margin-bottom: 16px;
   }
 
-  .cards-grid {
+  /* Horizontal Filter Panel */
+  .filter-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
     max-width: 100%;
+    padding: 16px;
+  }
+  
+  .filter-title {
+    width: 100%;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    font-size: 16px;
+  }
+  
+  .filter-group {
+    flex: 1;
+    min-width: 180px;
+  }
+  
+  .filter-label { margin-bottom: 4px; }
+  .filter-select { margin-bottom: 0; }
+  .filter-active { margin-top: 8px; }
+
+  .cards-grid { max-width: 100%; }
+
+  /* 2-Column Grid Layout for Player Card */
+  .player-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 
+      "name name"
+      "summary chart"
+      "form streak"
+      "location location";
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .player-name {
+    grid-area: name;
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+
+  .summary-list {
+    grid-area: summary;
+    margin-bottom: 0;
+  }
+
+  .chart-container {
+    grid-area: chart;
+    height: 180px;
+    width: 180px;
+    margin: 0 auto;
+  }
+  
+  .card-section.form-section { grid-area: form; }
+  .card-section.streak-section { grid-area: streak; }
+
+  .location-section {
+    grid-area: location;
+    margin-top: 0;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+  }
+  
+  /* Simple card layout for seasonal profile */
+  .simple-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 
+      "name name"
+      "summary location";
+    gap: 16px;
+  }
+  .simple-card .player-name { grid-area: name; }
+  .simple-card .summary-list { grid-area: summary; margin-bottom: 0; }
+  .simple-card .location-section { grid-area: location; margin-top: 0; border-top: none; padding-top: 0; }
+  
+  .location-table th, .location-table td {
+    padding: 8px 6px;
+    font-size: 12px;
   }
 }

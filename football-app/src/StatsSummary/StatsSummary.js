@@ -254,9 +254,9 @@ function StatsSummary({ stats }) {
     const maxContrib = locationData.length > 0 ? Math.max(...locationData.map((d) => d.avgContrib)) : 0;
     const lineupTotals = getLineupTotals(playerName);
     return (
-      
       <div className="player-card">
         <h3 className="player-name">⚔️ {playerName} - Attacking Stats</h3>
+        
         <div className="summary-list">
           <div className="summary-row"><span className="summary-label">Avg Rating</span><span className={`badge badge-rating-${ratingClass}`}>{avgRating.toFixed(2)}</span></div>
           <div className="summary-row"><span className="summary-label">Matches</span><span className="plain-value">{totalMatches}</span></div>
@@ -274,26 +274,40 @@ function StatsSummary({ stats }) {
             <span className="summary-label">MOTM</span>
             <span className="plain-value">{totalMotm}</span>
           </div>
+          
+          {/* ✅ MOVED INSIDE: Lineup Stats to prevent breaking the CSS Grid */}
+          {lineupTotals && lineupTotals.matches > 0 && (
+            <>
+              <div className="summary-row" style={{marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed #cbd5e1'}}>
+                <span className="summary-label">Lineup Matches</span>
+                <span className="plain-value">{lineupTotals.matches}</span>
+              </div>
+              <div className="summary-row">
+                <span className="summary-label">Lineup Avg Rating</span>
+                <span className="plain-value">{lineupTotals.avgRating.toFixed(2)}</span>
+              </div>
+            </>
+          )}
         </div>
+
         {totalGoals > 0 ? (
           <div className="chart-container">
             <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { color: "#475569", font: { family: "'Barlow', sans-serif", size: 12 } } } } }} />
           </div>
-        ) : (<p className="no-data">No goal source data</p>)}
-        <FormTrendGraph matches={statsData.matches} />
-        <StreakTracker matches={statsData.matches} />
-        {lineupTotals && lineupTotals.matches > 0 && (
-  <>
-    <div className="summary-row">
-      <span className="summary-label">Lineup Matches</span>
-      <span className="plain-value">{lineupTotals.matches}</span>
-    </div>
-    <div className="summary-row">
-      <span className="summary-label">Lineup Avg Rating</span>
-      <span className="plain-value">{lineupTotals.avgRating.toFixed(2)}</span>
-    </div>
-  </>
-)}
+        ) : (
+          <div className="chart-container" style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+             <p className="no-data" style={{margin: 0}}>No goal source data</p>
+          </div>
+        )}
+        
+        {/* ✅ WRAPPED: Graphs in sections for Landscape Grid mapping */}
+        <div className="card-section form-section">
+          <FormTrendGraph matches={statsData.matches} />
+        </div>
+        <div className="card-section streak-section">
+          <StreakTracker matches={statsData.matches} />
+        </div>
+
         {locationData.length > 0 && (
           <div className="location-section">
             <div className="location-title">📍 地点表现</div>
@@ -396,7 +410,7 @@ function StatsSummary({ stats }) {
     );
   };
 
-  return (
+   return (
     <div className="stats-summary-wrap">
       <h2 className="stats-header">Stats Summary</h2>
       {debugInfo && (
@@ -416,21 +430,22 @@ function StatsSummary({ stats }) {
         <div className="filter-panel">
           <h3 className="filter-title">Filters</h3>
 
-          <label className="filter-label">Player:</label>
-          <select
-            value={selectedPlayer}
-            onChange={(e) => setSelectedPlayer(e.target.value)}
-            className="filter-select"
-            style={{ marginBottom: "20px" }}
-          >
-            {dropdownPlayers.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
+          {/* ✅ WRAPPED: Filter groups for horizontal landscape layout */}
+          <div className="filter-group">
+            <label className="filter-label">Player:</label>
+            <select
+              value={selectedPlayer}
+              onChange={(e) => setSelectedPlayer(e.target.value)}
+              className="filter-select"
+            >
+              {dropdownPlayers.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          </div>
 
-          {/* Show Season Filter if the selected player has detailed stats available */}
           {getDetailedPlayerStats(selectedPlayer) && (
-            <>
+            <div className="filter-group">
               <label className="filter-label">Season (Attacking Stats):</label>
               <select value={filterSeason} onChange={(e) => setFilterSeason(e.target.value)} className="filter-select">
                 <option value="">All Seasons</option>
@@ -440,15 +455,14 @@ function StatsSummary({ stats }) {
               </select>
               {filterSeason && (
                 <div className="filter-active">
-                  Showing: <strong>{filterSeason}</strong> season
+                  Showing: <strong>{filterSeason}</strong>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
 
         <div className="cards-grid">
-          {/* 🐛 FIX 4: Render Detailed Profile for ANY player who has stats. Fallback to Seasonal if they don't. */}
           {renderDetailedProfile(selectedPlayer) || renderSeasonalProfile(selectedPlayer)}
         </div>
       </div>
