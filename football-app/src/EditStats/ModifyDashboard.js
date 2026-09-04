@@ -342,7 +342,6 @@ const sanitizeTeam = (teamObj) => {
                   <th className="md-th md-th-date">Date & Location</th>
                   <th className="md-th md-th-result center">Match Result</th>
                   <th className="md-th md-th-contrib center">Contributions</th>
-                  <th className="md-th md-th-stats center">Goals / Assists</th>
                   <th className="md-th md-th-rating center">Rating</th>
                   <th className="md-th md-th-action center">Action</th>
                 </tr>
@@ -377,12 +376,6 @@ const sanitizeTeam = (teamObj) => {
                         ) : (
                           <span className="md-symbols empty">No symbols</span>
                         )}
-                      </td>
-                      <td className="md-td center" data-label="Goals / Assists">
-                        <div className="md-stat-box">
-                          <div className="md-stat"><div className="md-stat-val">{goals}</div><div className="md-stat-label">Goals</div></div>
-                          <div className="md-stat"><div className="md-stat-val">{match.assist || 0}</div><div className="md-stat-label">Assists</div></div>
-                        </div>
                       </td>
                       <td className="md-td center" data-label="Rating">
                         {match.manOfTheMatch ? (

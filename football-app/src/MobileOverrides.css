@@ -48,11 +48,16 @@ input, select, button, textarea {
 
 /* Fix all tables */
 table {
-  width: 100%;
+  width: 100% !important;
+  table-layout: auto;
   border-collapse: collapse;
   font-size: 13px;
 }
-
+td, th {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal !important;
+}
 /* Fix grids that overflow */
 .td-inputs,
 .apc-grid-2,
@@ -319,12 +324,6 @@ table {
   font-size: 12px;
 }
 
-/* Fix the stats grid cards */
-.pr-grid {
-  grid-template-columns: repeat(2, 1fr) !important;
-  gap: 12px !important;
-}
-
 /* Fix summary cards stacking */
 .cards-grid {
   grid-template-columns: 1fr !important;
@@ -440,10 +439,14 @@ button {
 /* Fix the ModifyDashboard table on mobile */
 .md-table {
   display: block;
-  overflow-x: auto;
-  white-space: nowrap;
+  overflow-x: hidden;        /* ✅ no scrolling, no glide */
+  white-space: normal;       /* ✅ cell text wraps instead of stretching */
+  table-layout: auto;
 }
-
+.md-table table {
+  width: 100% !important;
+  word-break: break-word;    /* long content wraps, never stretches */
+}
 /* Fix the EditMatchPage cards */
 .em-card {
   padding: 12px !important;
@@ -463,13 +466,6 @@ button {
 .pr-card {
   width: 100% !important;
   max-width: 600px !important;
-}
-/* Fix player ratings card sizing - MOBILE ONLY */
-@media (max-width: 768px) {
-  .pr-card {
-    width: 100% !important;
-    max-width: 200px !important;
-  }
 }
 /* Fix the stats summary filter panel */
 .filter-panel {

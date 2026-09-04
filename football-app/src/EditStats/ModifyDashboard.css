@@ -168,6 +168,85 @@
   color: #083a29;
   box-shadow: 0 6px 16px rgba(242, 193, 78, 0.25);
 }
+/* =========================================================
+   ANDROID LANDSCAPE PHONE - 2 MATCHES PER ROW (COMPACT)
+   ========================================================= */
+@media (orientation: landscape) and (max-width: 1024px) and (max-height: 500px) {
+
+  .md-wrap { padding: 6px 10px; }
+
+  .md-contributor-section { margin-bottom: 14px; }
+  .md-contributor-header {
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    gap: 10px;
+  }
+  .md-contributor-name { font-size: 20px; }
+  .md-match-count { font-size: 11px; }
+
+  .md-filter-bar { padding: 6px 10px; margin-bottom: 12px; }
+  .md-pill { padding: 4px 12px; font-size: 11px; }
+
+  .md-thead { display: none !important; }
+  .md-table { display: block; border-spacing: 0; }
+
+  /* 2 match cards per row */
+  .md-tbody {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* ✅ Only 2 content rows now — much shorter cards */
+  .md-row {
+    margin-bottom: 0;
+    padding: 8px 10px !important;
+    display: grid !important;
+    grid-template-columns: 1.2fr 0.9fr auto;
+    grid-template-areas:
+      "date    result  action"
+      "contrib contrib rating";
+    gap: 6px 10px;
+    border-radius: 10px !important;
+    align-items: center;
+  }
+
+  .md-td {
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    min-width: 0;
+  }
+
+  .md-td[data-label="Date & Location"] { grid-area: date; }
+  .md-td[data-label="Match Result"]    { grid-area: result; }
+  .md-td[data-label="Contributions"]   { grid-area: contrib; }
+  .md-td[data-label="Rating"]          { grid-area: rating; }
+  .md-td[data-label="Action"]          { grid-area: action; }
+  /* ✅ Goals/Assists rule deleted — cell no longer exists */
+
+  /* Compact typography */
+  .md-date { font-size: 14px; margin-bottom: 1px; }
+  .md-location { font-size: 10px; }
+  .md-result-box { padding: 3px 8px; min-width: 55px; }
+  .md-score { font-size: 16px; }
+  .md-outcome { font-size: 8px; padding: 1px 6px; }
+  .md-symbol-icon { font-size: 14px; }
+  .md-symbols-row { justify-content: flex-start; }
+  .md-symbols-wrapper { align-items: flex-start; }
+
+  .md-rating {
+    min-width: 34px;
+    height: 34px;
+    font-size: 14px;
+    padding: 0 7px;
+    justify-self: end;      /* rating badge hugs the right edge */
+  }
+
+  .md-action-btns { justify-content: flex-end; gap: 5px; }
+  .md-edit-btn { padding: 5px 12px !important; font-size: 10px !important; }
+  .md-compare-btn { padding: 5px 9px; font-size: 12px; }
+}
 
 /* Responsive Mobile View */
 @media (max-width: 768px) {
@@ -179,11 +258,19 @@
     padding: 16px;
     display: grid;
     grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "date   result"
+      "contrib contrib"
+      "rating action";
     gap: 16px;
     border-radius: 12px !important;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
   }
-  
+  .md-td[data-label="Date & Location"] { grid-area: date; }
+  .md-td[data-label="Match Result"]    { grid-area: result; }
+  .md-td[data-label="Contributions"]   { grid-area: contrib; }
+  .md-td[data-label="Rating"]          { grid-area: rating; }
+  .md-td[data-label="Action"]          { grid-area: action; }
   .md-td { padding: 0; border: none !important; border-radius: 0 !important; }
   
   .md-td::before {
@@ -494,7 +581,84 @@
 .result-wl.win  { background: rgba(22, 163, 74, 0.15); color: #65ee97; }
 .result-wl.draw { background: rgba(100, 116, 139, 0.15); color: #64748b; }
 .result-wl.loss, .result-wl.lose { background: rgba(220, 38, 38, 0.15); color: #dc2626; }
+/* =========================================================
+   ANDROID LANDSCAPE - COMPACT CHOICE MODAL (horizontal buttons)
+   ========================================================= */
+@media (orientation: landscape) and (max-width: 1024px) and (max-height: 500px) {
+    /* Slot Edit Modal — landscape compact */
+  .slot-edit-modal {
+    width: min(520px, 92vw) !important;
+    max-width: 92vw !important;
+    padding: 18px 22px !important;
+    max-height: 88vh !important;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
 
+  /* Report Modal — use the full landscape screen */
+  .report-modal {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 92vh !important;
+    padding: 15px !important;
+  }
+
+  /* Save/Cancel buttons inside report editor — inline row */
+  .report-modal button {
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+  }
+  /* Wider, shorter modal */
+  .choice-modal {
+    width: min(640px, 92vw) !important;
+    max-width: 92vw !important;
+    padding: 18px 22px !important;
+    max-height: 88vh !important;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+
+  .choice-modal h3 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .choice-subtitle {
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+
+  .choice-close {
+    top: 8px; right: 10px;
+    font-size: 18px;
+    min-height: 36px;   /* easier tap without being huge */
+    min-width: 36px;
+  }
+
+  /* ✅ Buttons side by side instead of stacked */
+  .choice-buttons {
+    flex-direction: row !important;
+    gap: 10px;
+  }
+
+  .choice-btn {
+    flex: 1;                  /* equal share of the row */
+    flex-direction: column !important;
+    gap: 4px;
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+    border-width: 2px;
+    min-height: 64px;         /* still a good touch target */
+  }
+
+  .choice-btn span {
+    font-size: 12px;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .choice-btn:hover { transform: none; }  /* hover lifts cause clipping in tight modals */
+}
 @media (max-width: 600px) {
   .report-result-header { padding: 12px 16px; }
   .result-score { font-size: 32px; }
@@ -631,12 +795,12 @@
 
 
 /* ---- 列宽控制 ---- */
-.md-th-date { width: 16%; }
-.md-th-result { width: 12%; }
-.md-th-contrib { width: 34%; }   /* 加宽 Contributions 列 */
-.md-th-stats { width: 14%; }
-.md-th-rating { width: 12%; }
-.md-th-action { width: 12%; }
+.md-th-date { width: 20%; }
+.md-th-result { width: 15%; }
+.md-th-contrib { width: 45%; }   /* was 34% — takes the freed space */
+.md-th-rating { width: 10%; }
+.md-th-action { width: 10%; }
+/* .md-th-stats — DELETE, no longer used */
 
 /* ---- Edit 按钮改为黄色 ---- */
 .md-edit-btn {

@@ -137,3 +137,98 @@
   .h2h-name { font-size: 18px; }
   .h2h-stat-val { font-size: 20px; }
 }
+/* =========================================================
+   ANDROID LANDSCAPE PHONE - COMPACT HEAD-TO-HEAD
+   ========================================================= */
+@media (orientation: landscape) and (max-width: 1024px) and (max-height: 500px) {
+
+  .h2h-modal {
+    padding: 14px 16px !important;
+    width: min(720px, 94vw);
+    max-width: 94vw;
+    max-height: 92vh;
+    overflow-y: auto;           /* safety net if fonts render taller */
+    box-sizing: border-box;
+  }
+
+  .h2h-close {
+    top: 6px; right: 8px;
+    font-size: 18px;
+    min-height: 36px; min-width: 36px;   /* tappable */
+  }
+
+  .h2h-title {
+    font-size: 18px;
+    margin-bottom: 2px;
+  }
+
+  .h2h-match-info {
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+
+  /* ✅ Side-by-side stays, but tight */
+  .h2h-body {
+    gap: 0;
+    align-items: stretch;
+  }
+
+  .h2h-player {
+    padding: 10px 10px;
+    border-radius: 10px;
+  }
+
+  .h2h-name {
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  .h2h-rating-badge {
+    font-size: 26px;
+    margin-bottom: 8px;
+  }
+
+  .h2h-stats-grid {
+    gap: 5px;
+    margin-bottom: 8px;
+  }
+
+  .h2h-stat {
+    padding: 5px 2px;
+    border-radius: 6px;
+  }
+
+  .h2h-stat-val {
+    font-size: 18px;
+  }
+
+  .h2h-stat-label {
+    font-size: 8px;
+    margin-top: 2px;
+  }
+
+  .h2h-breakdown { gap: 4px; }
+
+  .h2h-chip {
+    padding: 3px 7px;
+    min-width: 30px;
+    border-radius: 6px;
+  }
+
+  .h2h-chip-val { font-size: 13px; }
+  .h2h-chip-label { font-size: 8px; margin-top: 1px; }
+
+  /* Slim VS divider */
+  .h2h-vs {
+    padding: 0 10px;
+    font-size: 20px;
+  }
+
+  /* Compact footer */
+  .h2h-footer { margin-top: 10px; }
+  .h2h-btn {
+    padding: 8px 28px;
+    font-size: 12px;
+  }
+  .h2h-btn:hover { transform: none; }   /* hover lift clips in tight modal */
+}

@@ -38,11 +38,15 @@
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
-    height: 100%;
+    width: 100%;
     box-sizing: border-box;
     max-height: 620px
   }
-
+  /* Put this ABOVE all the media queries, outside any @media block */
+  .pr-grid {
+    display: grid;
+    width: 100%;
+  }
   .pr-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
@@ -237,11 +241,194 @@
     color: #fff;
   }
 }
+/* =========================================================
+   ANDROID LANDSCAPE PHONE - 3 CARDS PER ROW (COMPACT)
+   ========================================================= */
+@media (orientation: landscape) and (max-width: 1024px) {
 
+  .pr-page {
+    padding: 6px 10px 20px;
+  }
+
+  .pr-title {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+
+  /* ✅ 3 cards per row in landscape */
+  .pr-page .pr-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    padding: 0;
+  }
+
+  /* Compact vertical card — fits ~350px screen height */
+  .pr-page .pr-card {
+    padding: 6px 6px !important;
+    border-radius: 10px;
+    transform: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    position: relative;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .pr-card .pr-accent-bar { height: 3px; }
+  .pr-card .pr-corner { display: none !important; }  /* cleaner in tight space */
+
+  /* Smaller photo to save vertical space */
+  .pr-card .pr-picture {
+    width: 50px !important;
+    height: 62px !important;
+    margin: 0 auto 4px !important;
+    border-radius: 6px;
+  }
+
+  .pr-card .pr-info,
+  .pr-card .pr-info-block {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 2px;
+    margin: 1px 0;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .pr-card .pr-name {
+    font-size: 11px !important;
+    font-weight: 700;
+    color: #1e293b;
+    text-align: center;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;   /* long names truncate instead of stretching */
+    max-width: 100%;
+  }
+
+  .pr-card .pr-badges,
+  .pr-card .pr-badges-row {
+    display: flex !important;
+    gap: 4px;
+    justify-content: center;
+  }
+
+  .pr-card .pr-position-box,
+  .pr-card .pr-overall-box {
+    padding: 1px 6px !important;
+    font-size: 9px !important;
+    line-height: 1.5;
+    border-radius: 4px;
+    color: #fff !important;
+    font-weight: 700;
+  }
+  .gold   .pr-position-box, .gold   .pr-overall-box { background: linear-gradient(135deg, #d4af37, #c19420); }
+  .silver .pr-position-box, .silver .pr-overall-box { background: linear-gradient(135deg, #9ca3af, #7c8694); }
+  .bronze .pr-position-box, .bronze .pr-overall-box { background: linear-gradient(135deg, #b87333, #a0622a); }
+
+  /* Stats: 2 columns, 3 rows — same compact grid as portrait */
+  .pr-card .pr-stats,
+  .pr-card .pr-stats-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 2px !important;
+    margin-top: 4px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .pr-card .pr-stat-item {
+    padding: 2px 4px !important;
+    border-radius: 4px;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: rgba(0,0,0,0.04);
+  }
+
+  .pr-card .pr-stat-label { font-size: 8px !important; }
+
+  .pr-card .pr-score-box {
+    padding: 0 5px !important;
+    font-size: 10px !important;
+    line-height: 1.5;
+    min-width: 20px;
+    border-radius: 3px;
+    color: #fff !important;
+    text-align: center;
+    font-weight: 700;
+  }
+  .gold   .pr-score-box { background: linear-gradient(135deg, #d4af37, #c19420); }
+  .silver .pr-score-box { background: linear-gradient(135deg, #9ca3af, #7c8694); }
+  .bronze .pr-score-box { background: linear-gradient(135deg, #b87333, #a0622a); }
+
+  /* Extra details: single horizontal row to save height */
+  .pr-card .pr-extra,
+  .pr-card .pr-extra-details {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 4px;
+    width: 100%;
+    gap: 6px;
+  }
+
+  .pr-card .pr-pref-foot,
+  .pr-card .pr-weak-foot,
+  .pr-card .pr-form {
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .pr-card .pr-pref-foot-label,
+  .pr-card .pr-weak-foot-label,
+  .pr-card .pr-form-label {
+    font-size: 9px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .pr-card .pr-stars { display: flex; gap: 1px; }
+  .pr-card .pr-star { font-size: 10px; line-height: 1; }
+  .pr-star.filled { color: #fbbf24; }
+  .pr-star.empty { color: #cbd5e1; }
+
+  .pr-card .pr-form-grade {
+    padding: 0 7px !important;
+    font-size: 10px !important;
+    line-height: 1.5;
+    min-width: 18px;
+    border-radius: 4px;
+    color: #fff !important;
+    text-align: center;
+    font-weight: 700;
+  }
+}
+@media (orientation: landscape) and (max-width: 1024px) {
+
+  /* ✅ 3 cards per row in landscape */
+  .pr-page .pr-grid {
+    display: grid !important;               /* ← ADD THIS */
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    padding: 0;
+  }
+  /* ...rest of block unchanged... */
+}
 /* =========================================================
    MOBILE COMPACT PLAYER CARDS - 2 COL LAYOUT
    ========================================================= */
-@media (max-width: 768px) {
+@media (max-width: 768px)  and (orientation: portrait){
   .pr-page {
     padding: 8px 4px 90px;
   }
@@ -254,10 +441,10 @@
   /* 2 cards per row */
   .pr-grid {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 8px !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 5px !important;
     padding: 0 2px;
-    max-width: 100%;
+    max-width: 96%;
   }
 
   .pr-card {
@@ -461,31 +648,5 @@
     color: #fff !important;
     text-align: center;
     font-weight: 700;
-  }
-}
-
-/* =========================================================
-   EXTRA SMALL PHONES (< 360px)
-   ========================================================= */
-@media (max-width: 360px) {
-  .pr-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .pr-picture {
-    width: 55px !important;
-    height: 66px !important;
-  }
-
-  .pr-name {
-    font-size: 11px !important;
-  }
-
-  .pr-stat-label {
-    font-size: 7px !important;
-  }
-
-  .pr-score-box {
-    font-size: 9px !important;
   }
 }
