@@ -814,3 +814,130 @@
     font-weight: 700;
   }
 }
+/* =========================================================
+   🛡️ SHIELD PLAYER CARD SKIN (complete)
+   ========================================================= */
+.pr-card.skin-shield {
+  --pr-clip: polygon(
+    50% 0,
+    100% 5%, 100% 78%,
+    50% 100%,
+    0 78%, 0 5%
+  );
+  clip-path: var(--pr-clip);
+  border: none !important;
+  overflow: hidden;
+  filter: drop-shadow(0 6px 14px rgba(15, 23, 42, 0.3));
+  transition: filter 0.25s ease, transform 0.2s ease;
+}
+.pr-card.skin-shield:hover {
+  filter: drop-shadow(0 10px 22px rgba(15, 23, 42, 0.4));
+}
+
+/* Tier frame (outer) */
+.pr-card.skin-shield.gold   { background: linear-gradient(160deg, #f9e79a 0%, #d4af37 45%, #8a6d1f 100%); }
+.pr-card.skin-shield.silver { background: linear-gradient(160deg, #f8fafc 0%, #b7c1cc 45%, #6b7684 100%); }
+.pr-card.skin-shield.bronze { background: linear-gradient(160deg, #f6dcc0 0%, #c08552 45%, #6e4118 100%); }
+
+/* Light panel (inner) */
+.pr-card.skin-shield::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  clip-path: var(--pr-clip);
+  z-index: 0;
+}
+.pr-card.skin-shield.gold::before   { background: linear-gradient(165deg, #fffef7, #fdf3d0 55%, #f9ecb8); }
+.pr-card.skin-shield.silver::before { background: linear-gradient(165deg, #ffffff, #f2f5f8 55%, #e7ecf1); }
+.pr-card.skin-shield.bronze::before { background: linear-gradient(165deg, #fffaf3, #faeede 55%, #f3e2cb); }
+
+/* Content above panel */
+.pr-card.skin-shield > *:not(.pr-accent-bar) { position: relative; z-index: 1; }
+.pr-card.skin-shield .pr-accent-bar { z-index: 2; height: 5px !important; }
+.pr-card.skin-shield.gold   .pr-accent-bar { background: #b8860b !important; }
+.pr-card.skin-shield.silver .pr-accent-bar { background: #7c8694 !important; }
+.pr-card.skin-shield.bronze .pr-accent-bar { background: #a0622a !important; }
+.pr-card.skin-shield .pr-corner { display: none !important; }
+
+/* Shine sweep (hover devices only) */
+.pr-card.skin-shield::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 3;
+  pointer-events: none;
+  clip-path: var(--pr-clip);
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.5) 50%, transparent 65%);
+  background-size: 250% 100%;
+  background-position: 130% 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+@media (hover: hover) {
+  .pr-card.skin-shield:hover::after {
+    opacity: 1;
+    animation: prShine 0.9s ease;
+  }
+}
+@keyframes prShine {
+  from { background-position: 130% 0; }
+  to   { background-position: -130% 0; }
+}
+
+/* Picture ring */
+.pr-card.skin-shield .pr-picture {
+  border: 3px solid rgba(255,255,255,0.95);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.28);
+  border-radius: 8px;
+}
+
+/* Dark name banner */
+.pr-card.skin-shield .pr-name {
+  background: rgba(15, 23, 42, 0.88);
+  color: #ffffff !important;
+  padding: 3px 14px;
+  border-radius: 999px;
+  font-family: 'Oswald', sans-serif !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+}
+
+/* Badges */
+.pr-card.skin-shield .pr-overall-box {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.35);
+}
+.pr-card.skin-shield.gold   .pr-overall-box { color: #f2c14e !important; }
+.pr-card.skin-shield.silver .pr-overall-box { color: #e2e8f0 !important; }
+.pr-card.skin-shield.bronze .pr-overall-box { color: #e8b48a !important; }
+
+.pr-card.skin-shield .pr-position-box {
+  background: rgba(15, 23, 42, 0.08) !important;
+  color: #1e293b !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.3);
+  border-radius: 6px;
+}
+
+/* Stat chips */
+.pr-card.skin-shield .pr-stat-item {
+  background: rgba(15, 23, 42, 0.06);
+  border-radius: 6px;
+}
+.pr-card.skin-shield .pr-stat-label { color: #475569 !important; }
+.pr-card.skin-shield .pr-score-box {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  border-radius: 4px;
+}
+.pr-card.skin-shield.gold   .pr-score-box { color: #f2c14e !important; }
+.pr-card.skin-shield.silver .pr-score-box { color: #e2e8f0 !important; }
+.pr-card.skin-shield.bronze .pr-score-box { color: #e8b48a !important; }
+
+/* Mobile: keep skin, drop the expensive effects */
+@media (max-width: 768px) {
+  .pr-card.skin-shield { filter: none; }
+  .pr-card.skin-shield::after { display: none; }
+  .pr-card.skin-shield .pr-name { padding: 2px 10px; }
+  .pr-card.skin-shield .pr-picture { border-width: 2px; }
+}
