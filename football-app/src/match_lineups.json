@@ -515,7 +515,11 @@
           "rating": 5.5,
           "picture": "/Eugene.jpeg"
         },
-        null,
+        {
+          "Contributor": "Ken",
+          "rating": 6.6,
+          "picture": "/images/Ken.jpeg"
+        },
         {
           "Contributor": "Kit",
           "rating": 5.7,
