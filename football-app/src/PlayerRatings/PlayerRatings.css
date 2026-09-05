@@ -77,7 +77,37 @@
   from { background-position: 130% 0; }
   to   { background-position: -130% 0; }
 }
-
+.pr-card.skin-hex {
+  --pr-clip: polygon(
+    12px 0, calc(100% - 12px) 0,
+    100% 50%,
+    calc(100% - 12px) 100%,
+    12px 100%,
+    0 50%
+  );
+  clip-path: var(--pr-clip);
+  filter: drop-shadow(0 6px 12px rgba(15, 23, 42, 0.3));
+}
+.pr-card.skin-hex::before {
+  inset: 5px;
+  clip-path: var(--pr-clip);
+}
+/* diagonal tier stripe across the hex */
+.pr-card.skin-hex::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  clip-path: var(--pr-clip);
+  background: linear-gradient(115deg,
+    transparent 40%,
+    currentColor 41%, currentColor 46%,
+    transparent 47%);
+  opacity: 0.25;
+  pointer-events: none;
+}
+.pr-card.skin-hex.gold   { color: #d4af37; }
+.pr-card.skin-hex.silver { color: #9ca3af; }
+.pr-card.skin-hex.bronze { color: #c08552; }
 /* --- 4. Picture with tier ring --- */
 .pr-card .pr-picture {
   border: 3px solid rgba(255, 255, 255, 0.95);

@@ -167,7 +167,7 @@ function PlayerRatings() {
           return (
             <div
               key={name}
-              className={`pr-card ${tier}`}
+              className={`pr-card ${tier} skin-shield`}  
               onClick={() => handleCardClick(name)}
             >
               <div className="pr-accent-bar" />
