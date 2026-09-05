@@ -3,6 +3,140 @@
 /* =========================================================
    DESKTOP 3-COLUMN GRID PLAYER CARDS (min-width > 768px)
    ========================================================= */
+/* =========================================================
+   🎴 PLAYER CARD SKIN — FUT-STYLE BADGE (all screen sizes)
+   Layouts (2-col portrait / 3-col landscape) are unchanged.
+   ========================================================= */
+
+/* --- 1. The silhouette + depth --- */
+.pr-card {
+  --pr-clip: polygon(
+    0 16px, 16px 0, calc(100% - 16px) 0, 100% 16px,
+    100% calc(100% - 10px), calc(100% - 10px) 100%,
+    10px 100%, 0 calc(100% - 10px)
+  );
+  clip-path: var(--pr-clip);
+  border: none !important;               /* borders get clipped — frame comes from ::before */
+  overflow: hidden;
+  filter: drop-shadow(0 5px 12px rgba(15, 23, 42, 0.25));
+  transition: filter 0.25s ease, transform 0.2s ease;
+}
+.pr-card:hover {
+  filter: drop-shadow(0 10px 22px rgba(15, 23, 42, 0.35));
+}
+
+/* --- 2. Tier frame (outer) + panel (inner) --- */
+.pr-card.gold   { background: linear-gradient(160deg, #f9e79a 0%, #d4af37 45%, #8a6d1f 100%); }
+.pr-card.silver { background: linear-gradient(160deg, #f8fafc 0%, #b7c1cc 45%, #6b7684 100%); }
+.pr-card.bronze { background: linear-gradient(160deg, #f6dcc0 0%, #c08552 45%, #6e4118 100%); }
+
+.pr-card::before {
+  content: '';
+  position: absolute;
+  inset: 5px;                            /* frame thickness */
+  clip-path: var(--pr-clip);
+  z-index: 0;
+}
+.pr-card.gold::before   { background: linear-gradient(165deg, #fffef7 0%, #fdf3d0 55%, #f9ecb8 100%); }
+.pr-card.silver::before { background: linear-gradient(165deg, #ffffff 0%, #f2f5f8 55%, #e7ecf1 100%); }
+.pr-card.bronze::before { background: linear-gradient(165deg, #fffaf3 0%, #faeede 55%, #f3e2cb 100%); }
+
+/* Content sits above the panel */
+.pr-card > *:not(.pr-accent-bar) { position: relative; z-index: 1; }
+
+/* Accent bar follows the bevel — angled ends look intentional now */
+.pr-card .pr-accent-bar { z-index: 2; height: 5px !important; }
+.pr-card.gold   .pr-accent-bar { background: #b8860b !important; }
+.pr-card.silver .pr-accent-bar { background: #7c8694 !important; }
+.pr-card.bronze .pr-accent-bar { background: #a0622a !important; }
+
+/* Corner deco no longer fits the shape — retire it */
+.pr-card .pr-corner { display: none !important; }
+
+/* --- 3. Shine sweep (hover-capable devices only) --- */
+.pr-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  clip-path: var(--pr-clip);
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.5) 50%, transparent 65%);
+  background-size: 250% 100%;
+  background-position: 130% 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+@media (hover: hover) {
+  .pr-card:hover::after {
+    opacity: 1;
+    animation: prShine 0.9s ease;
+  }
+}
+@keyframes prShine {
+  from { background-position: 130% 0; }
+  to   { background-position: -130% 0; }
+}
+
+/* --- 4. Picture with tier ring --- */
+.pr-card .pr-picture {
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.28);
+  border-radius: 8px;
+}
+
+/* --- 5. Dark name banner --- */
+.pr-card .pr-name {
+  background: rgba(15, 23, 42, 0.88);
+  color: #ffffff !important;
+  padding: 3px 14px;
+  border-radius: 999px;
+  font-family: 'Oswald', sans-serif !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+}
+
+/* --- 6. Badges: dark overall chip + outlined position chip --- */
+.pr-card .pr-overall-box {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.35);
+}
+.pr-card.gold   .pr-overall-box { color: #f2c14e !important; }
+.pr-card.silver .pr-overall-box { color: #e2e8f0 !important; }
+.pr-card.bronze .pr-overall-box { color: #e8b48a !important; }
+
+.pr-card .pr-position-box {
+  background: rgba(15, 23, 42, 0.08) !important;
+  color: #1e293b !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.3);
+  border-radius: 6px;
+}
+
+/* --- 7. Stat chips: dark tiles on light panel --- */
+.pr-card .pr-stat-item {
+  background: rgba(15, 23, 42, 0.06);
+  border-radius: 6px;
+}
+.pr-card .pr-stat-label { color: #475569 !important; }
+.pr-card .pr-score-box {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  border-radius: 4px;
+}
+.pr-card.gold   .pr-score-box { color: #f2c14e !important; }
+.pr-card.silver .pr-score-box { color: #e2e8f0 !important; }
+.pr-card.bronze .pr-score-box { color: #e8b48a !important; }
+
+/* --- 8. Mobile tuning: keep the skin but lighten the cost --- */
+@media (max-width: 768px) {
+  .pr-card { filter: none; }              /* drop-shadow is costly in long lists */
+  .pr-card::after { display: none; }      /* no hover shine on touch anyway */
+  .pr-card .pr-name { padding: 2px 10px; }
+  .pr-card .pr-picture { border-width: 2px; }
+}
 @media (min-width: 769px) {
   .pr-page {
     padding: 40px 32px;
