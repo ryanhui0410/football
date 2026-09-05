@@ -13,13 +13,31 @@ function TacticalDashboard() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [slotToEdit, setSlotToEdit] = useState(null);
-  
-  // Detect mobile to switch pitch layout only
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // ✅ Three-way layout detection:
+  //   "vertical"   → portrait phone (vertical pitch)
+  //   "landscape"  → landscape phone (subs on top, details left, pitch below)
+  //   "horizontal" → desktop (standard horizontal pitch)
+  const getLayoutType = () => {
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    if (isPortrait && w <= 850) return "vertical";
+    if (!isPortrait && w <= 1024 && h <= 500) return "landscape";
+    return "horizontal";
+  };
+
+  const [layout, setLayout] = useState(getLayoutType());
+
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    const handleResize = () => setLayout(getLayoutType());
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
   }, []);
 
   useEffect(() => {
@@ -47,7 +65,7 @@ function TacticalDashboard() {
       if (existing) {
         setLineupData(existing);
       } else {
-                setLineupData({
+        setLineupData({
           date: matchDetails.Date,
           location: matchDetails.Location,
           time: matchDetails.Time,
@@ -56,13 +74,13 @@ function TacticalDashboard() {
         });
       }
     } else if (matchDetails.Date) {
-              setLineupData({
-          date: matchDetails.Date,
-          location: matchDetails.Location,
-          time: matchDetails.Time,
-          teamA: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] },
-          teamB: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] }
-        });
+      setLineupData({
+        date: matchDetails.Date,
+        location: matchDetails.Location,
+        time: matchDetails.Time,
+        teamA: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] },
+        teamB: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] }
+      });
     } else {
       setLineupData(null);
     }
@@ -81,7 +99,7 @@ function TacticalDashboard() {
 
     setSaving(true);
 
-        const sanitizeTeam = (teamObj) => {
+    const sanitizeTeam = (teamObj) => {
       if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] };
       
       const cleanPlayers = (teamObj.players || []).map(p => {
@@ -90,7 +108,6 @@ function TacticalDashboard() {
       });
       while (cleanPlayers.length < 11) cleanPlayers.push(null);
       
-      // Clean Subs
       const cleanSubs = (teamObj.subs || []).map(p => {
         if (!p) return null;
         return { Contributor: p.Contributor, rating: parseFloat(p.rating) || 0, picture: p.picture || `/${p.Contributor}.jpeg` };
@@ -113,29 +130,29 @@ function TacticalDashboard() {
     };
 
     try {
-  const res = await fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  const result = await res.json();
+      const res = await fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
 
-  if (!res.ok) {
-    // ✅ NOW YOU'LL SEE THE REAL ERROR
-    setMessage(`⚠️ Saved locally, but GitHub failed: ${result.githubError || result.error}`);
-    setTimeout(() => setMessage(""), 6000);
-    return;
-  }
+      if (!res.ok) {
+        setMessage(`⚠️ Saved locally, but GitHub failed: ${result.githubError || result.error}`);
+        setTimeout(() => setMessage(""), 6000);
+        return;
+      }
 
-  // ... rest of your success logic
-  setMessage("✅ Tactical Lineup saved AND synced to GitHub!");
-} catch (err) {
-  setMessage(`❌ Network error: ${err.message}`);
-  setTimeout(() => setMessage(""), 5000);
-}
+      setMessage("✅ Tactical Lineup saved AND synced to GitHub!");
+    } catch (err) {
+      setMessage(`❌ Network error: ${err.message}`);
+      setTimeout(() => setMessage(""), 5000);
+    } finally {
+      setSaving(false);
+    }
   };
 
-    const handleSaveSlot = () => {
+  const handleSaveSlot = () => {
     const { team, idx, player } = slotToEdit;
     
     let targetTeam = team;
@@ -161,13 +178,11 @@ function TacticalDashboard() {
     setLineupData(prev => {
       const newLineup = JSON.parse(JSON.stringify(prev));
       
-      // Handle Sub Slots
       if (typeof targetIdx === 'string' && targetIdx.startsWith('sub')) {
         const subIdx = parseInt(targetIdx.replace('sub', ''));
         if (!Array.isArray(newLineup[teamKey].subs)) newLineup[teamKey].subs = [null, null];
         newLineup[teamKey].subs[subIdx] = player;
       } 
-      // Handle Pitch Slots
       else {
         if (!Array.isArray(newLineup[teamKey].players)) newLineup[teamKey].players = Array(11).fill(null);
         newLineup[teamKey].players[targetIdx] = player;
@@ -183,43 +198,51 @@ function TacticalDashboard() {
     setSlotToEdit(null);
   };
 
+  // ✅ Reusable details card (rendered standalone OR inside the grid)
+  const renderDetailsCard = () => (
+    <div className="td-details-card">
+      <h3>Match Details</h3>
+      <div className="td-inputs">
+        <div className="td-field">
+          <label>📅 Match Date</label>
+          <input type="text" name="Date" value={matchDetails.Date} onChange={handleChange} placeholder="e.g. 8/9/2026" />
+        </div>
+        <div className="td-field">
+          <label>📍 Location</label>
+          <input type="text" name="Location" value={matchDetails.Location} onChange={handleChange} placeholder="e.g. 傑志" />
+        </div>
+        <div className="td-field">
+          <label>🕒 Time</label>
+          <input type="text" name="Time" value={matchDetails.Time} onChange={handleChange} placeholder="e.g. 10:30 AM" list="time-history-list" />
+          <datalist id="time-history-list">
+            {timeHistory.map((time, idx) => <option key={idx} value={time} />)}
+          </datalist>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="td-wrap">
       <h2 className="td-title">⚔️ Tactical Dashboard</h2>
       
       {message && <div className={`td-toast ${message.includes("✅") ? 'success' : 'warning'}`}>{message}</div>}
 
-      <div className="td-details-card">
-        <h3>Match Details</h3>
-        <div className="td-inputs">
-          <div className="td-field">
-            <label>📅 Match Date</label>
-            <input type="text" name="Date" value={matchDetails.Date} onChange={handleChange} placeholder="e.g. 8/9/2026" />
-          </div>
-          <div className="td-field">
-            <label>📍 Location</label>
-            <input type="text" name="Location" value={matchDetails.Location} onChange={handleChange} placeholder="e.g. 傑志" />
-          </div>
-          <div className="td-field">
-            <label>🕒 Time</label>
-            <input type="text" name="Time" value={matchDetails.Time} onChange={handleChange} placeholder="e.g. 10:30 AM" list="time-history-list" />
-            <datalist id="time-history-list">
-              {timeHistory.map((time, idx) => <option key={idx} value={time} />)}
-            </datalist>
-          </div>
-        </div>
-      </div>
-
       {lineupData && matchDetails.Date.trim() ? (
         <>
+          {/* ✅ Details card now INSIDE the pitch container so the landscape
+              CSS grid can place it in the left column */}
           <div className="td-pitch-container">
+            {renderDetailsCard()}
+
             <div className="td-remark">
               💡 <strong>Tactical Rule:</strong> Ryan is always assigned to <strong>Team A (Left Side)</strong>.
             </div>
+
             <MatchLineup 
               matchData={matchDetails} 
               initialLineup={lineupData}
-              layout={isMobile ? "vertical" : "horizontal"} 
+              layout={layout} 
               editMode={true}
               availablePlayers={availablePlayers}
               onLineupChange={(newLineup) => {
@@ -238,16 +261,20 @@ function TacticalDashboard() {
           </div>
         </>
       ) : (
-        <div className="td-placeholder">
-          <p>⚽ Please enter a <strong>Match Date</strong> to load the tactical pitch.</p>
-        </div>
+        <>
+          {/* No date yet → details card standalone + placeholder */}
+          {renderDetailsCard()}
+
+          <div className="td-placeholder">
+            <p>⚽ Please enter a <strong>Match Date</strong> to load the tactical pitch.</p>
+          </div>
+        </>
       )}
 
-      {/* SLOT EDIT MODAL (works on both web and Android) */}
+      {/* SLOT EDIT MODAL */}
       {slotToEdit && (
         <div className="td-slot-overlay" onClick={() => setSlotToEdit(null)}>
           <div className="td-slot-modal" onClick={e => e.stopPropagation()}>
-            {/* <button className="td-slot-close" onClick={() => setSlotToEdit(null)}>✕</button> */}
             <h3>{slotToEdit.player ? "Edit Player" : "Add Player"}</h3>
             
             <div className="td-modal-field">
