@@ -2565,5 +2565,27 @@
     "Assist to": "Darren",
     "Assist to count": 1,
     "Man of the Match": false
+  },
+  {
+    "Date": "9/6/2026",
+    "Contributor": "Darren",
+    "Symbol": "⚽⚽⚽",
+    "Goal": 3,
+    "Assist": 0,
+    "Rating": 9.6,
+    "Location": "傑志",
+    "Time": "10:30 AM",
+    "Goal Contribution": 3,
+    "source": "Barry",
+    "Left Foot": 0,
+    "Right Foot": 2,
+    "Head": 1,
+    "Other body parts": 0,
+    "Season": "2026-2027",
+    "Match result": "7-2",
+    "Win/Loss?": "Win",
+    "Assist to": "Ryan",
+    "Assist to count": 1,
+    "Man of the Match": true
   }
 ]
