@@ -575,5 +575,138 @@
         null
       ]
     }
+  },
+  {
+    "date": "9/6/2026",
+    "location": "傑志",
+    "time": "10:30 AM",
+    "teamA": {
+      "formation": "4-4-2",
+      "players": [
+        {
+          "Contributor": "Jackson",
+          "rating": 6.4,
+          "picture": "./Jackson.jpeg"
+        },
+        {
+          "Contributor": "Eugene",
+          "rating": 6.5,
+          "picture": "/Eugene.jpeg"
+        },
+        {
+          "Contributor": "Po",
+          "rating": 7,
+          "picture": "/images/Po.jpeg"
+        },
+        {
+          "Contributor": "普巴",
+          "rating": 6.8,
+          "picture": "/普巴.jpeg"
+        },
+        {
+          "Contributor": "KK",
+          "rating": 7.1,
+          "picture": "/KK.jpeg"
+        },
+        {
+          "Contributor": "Chris",
+          "rating": 8.7,
+          "picture": "/Chris.jpeg"
+        },
+        {
+          "Contributor": "Chun",
+          "rating": 6.7,
+          "picture": "/Chun.jpeg"
+        },
+        {
+          "Contributor": "子睿",
+          "rating": 7.8,
+          "picture": "/子睿.jpeg"
+        },
+        {
+          "Contributor": "Raymond",
+          "rating": 7.4,
+          "picture": "/images/Raymond.jpeg"
+        },
+        {
+          "Contributor": "Ryan",
+          "rating": 7.8,
+          "picture": "/Ryan.jpeg"
+        },
+        {
+          "Contributor": "Darren",
+          "rating": 9.6,
+          "picture": "/Darren.jpeg"
+        }
+      ],
+      "subs": [
+        null,
+        null
+      ]
+    },
+    "teamB": {
+      "formation": "4-4-2",
+      "players": [
+        {
+          "Contributor": "Pierre",
+          "rating": 4.2,
+          "picture": "/Pierre.jpeg"
+        },
+        {
+          "Contributor": "大嚿",
+          "rating": 6.9,
+          "picture": "/大嚿.jpeg"
+        },
+        {
+          "Contributor": "Nick",
+          "rating": 5,
+          "picture": "/Nick.jpeg"
+        },
+        {
+          "Contributor": "Tiga",
+          "rating": 6.8,
+          "picture": "/images/Tiga.jpeg"
+        },
+        {
+          "Contributor": "QC",
+          "rating": 6.7,
+          "picture": "/images/QC.jpeg"
+        },
+        {
+          "Contributor": "Derek",
+          "rating": 7,
+          "picture": "/images/Derek.jpeg"
+        },
+        {
+          "Contributor": "hong",
+          "rating": 7.4,
+          "picture": "/hong.jpeg"
+        },
+        {
+          "Contributor": "Lu",
+          "rating": 7.2,
+          "picture": "/Lu.jpeg"
+        },
+        {
+          "Contributor": "Ken",
+          "rating": 7,
+          "picture": "/images/Ken.jpeg"
+        },
+        {
+          "Contributor": "Jacob",
+          "rating": 7.3,
+          "picture": "/Jacob.jpeg"
+        },
+        {
+          "Contributor": "Gawai",
+          "rating": 7.9,
+          "picture": "/images/Gawai.jpeg"
+        }
+      ],
+      "subs": [
+        null,
+        null
+      ]
+    }
   }
 ]
