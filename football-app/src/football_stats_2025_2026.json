@@ -2587,5 +2587,27 @@
     "Assist to": "Ryan",
     "Assist to count": 1,
     "Man of the Match": true
+  },
+  {
+    "Date": "9/8/2026",
+    "Contributor": "Ryan",
+    "Symbol": "⚽⚽⚽👟👟👟👟",
+    "Goal": 3,
+    "Assist": 4,
+    "Rating": 10,
+    "Location": "興華街西",
+    "Time": "8:00 PM",
+    "Goal Contribution": 7,
+    "source": "馬哲",
+    "Left Foot": 1,
+    "Right Foot": 2,
+    "Head": 0,
+    "Other body parts": 0,
+    "Season": "2026-2027",
+    "Match result": "19-13",
+    "Win/Loss?": "Win",
+    "Assist to": "",
+    "Assist to count": 0,
+    "Man of the Match": true
   }
 ]
