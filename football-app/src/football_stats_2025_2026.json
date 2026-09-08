@@ -2609,5 +2609,27 @@
     "Assist to": "",
     "Assist to count": 0,
     "Man of the Match": true
+  },
+  {
+    "Date": "9/8/2026",
+    "Contributor": "Darren",
+    "Symbol": "⚽⚽👟👟👟",
+    "Goal": 2,
+    "Assist": 3,
+    "Rating": 10,
+    "Location": "興華街西",
+    "Time": "8:00 PM",
+    "Goal Contribution": 5,
+    "source": "馬哲",
+    "Left Foot": 0,
+    "Right Foot": 1,
+    "Head": 0,
+    "Other body parts": 1,
+    "Season": "2026-2027",
+    "Match result": "19-13",
+    "Win/Loss?": "Win",
+    "Assist to": "",
+    "Assist to count": 0,
+    "Man of the Match": false
   }
 ]
