@@ -708,5 +708,66 @@
         null
       ]
     }
+  },
+  {
+    "date": "9/8/2026",
+    "location": "興華街西",
+    "time": "8:00 PM",
+    "teamA": {
+      "formation": "4-4-2",
+      "players": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "Contributor": "Ben",
+          "rating": 10,
+          "picture": "/images/Ben.jpeg"
+        },
+        null,
+        {
+          "Contributor": "Darren",
+          "rating": 10,
+          "picture": "/Darren.jpeg"
+        },
+        {
+          "Contributor": "Ryan",
+          "rating": 10,
+          "picture": "/Ryan.jpeg"
+        }
+      ],
+      "subs": [
+        null,
+        null
+      ]
+    },
+    "teamB": {
+      "formation": "4-4-2",
+      "players": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "Contributor": "Tony",
+          "rating": 6,
+          "picture": "/Tony.jpeg"
+        },
+        null
+      ],
+      "subs": [
+        null,
+        null
+      ]
+    }
   }
 ]
