@@ -99,7 +99,7 @@
         },
         {
           "Contributor": "Raymond",
-          "rating": 6,
+          "rating": 6.9,
           "picture": "/images/Raymond.jpeg"
         },
         {
@@ -122,6 +122,10 @@
           "rating": 10,
           "picture": "/Darren.jpeg"
         }
+      ],
+      "subs": [
+        null,
+        null
       ]
     },
     "teamB": {
@@ -182,6 +186,10 @@
           "rating": 9.1,
           "picture": "/Daniel.jpeg"
         }
+      ],
+      "subs": [
+        null,
+        null
       ]
     }
   },
