@@ -314,7 +314,11 @@
           "rating": 5.5,
           "picture": "/Jackson.jpeg"
         },
-        null,
+        {
+          "Contributor": "QC1",
+          "rating": 6.7,
+          "picture": "/images/QC1.jpeg"
+        },
         {
           "Contributor": "普巴",
           "rating": 6.5,
