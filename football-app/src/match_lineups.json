@@ -644,7 +644,11 @@
         }
       ],
       "subs": [
-        null,
+        {
+          "Contributor": "Leung Gor",
+          "rating": 6.3,
+          "picture": "/Leung Gor.jpeg"
+        },
         null
       ]
     },
