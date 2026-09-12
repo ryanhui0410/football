@@ -770,7 +770,11 @@
       "players": [
         null,
         null,
-        null,
+        {
+          "Contributor": "Jack",
+          "rating": 5.2,
+          "picture": "/Jack.jpeg"
+        },
         null,
         null,
         null,
@@ -786,7 +790,11 @@
           "rating": 7.1,
           "picture": "/Tony.jpeg"
         },
-        null
+        {
+          "Contributor": "Ronson",
+          "rating": 9.3,
+          "picture": "/Ronson.jpeg"
+        }
       ],
       "subs": [
         null,
