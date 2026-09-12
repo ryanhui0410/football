@@ -367,7 +367,11 @@
       ],
       "subs": [
         null,
-        null
+        {
+          "Contributor": "Leung Gor",
+          "rating": 6.1,
+          "picture": "/Leung Gor.jpeg"
+        }
       ]
     },
     "teamB": {
