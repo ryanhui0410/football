@@ -766,7 +766,11 @@
         null,
         null,
         null,
-        null,
+        {
+          "Contributor": "杜威",
+          "rating": 7.1,
+          "picture": "/images/杜威.jpeg"
+        },
         null,
         null,
         {
