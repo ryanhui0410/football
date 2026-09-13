@@ -409,7 +409,24 @@
    ANDROID LANDSCAPE PHONE - 3 CARDS PER ROW (COMPACT)
    ========================================================= */
 @media (orientation: landscape) and (max-width: 1024px) {
+  /* Buttons: compact, icon-only refresh */
+.pr-actions-row {
+  gap: 6px;
+  margin-bottom: 8px;
+}
 
+.pr-btn {
+  padding: 5px 10px !important;
+  font-size: 12px !important;
+}
+
+/* Shrink the Add button text and swap Refresh to icon-only */
+.pr-btn-add {
+  font-size: 11px !important;
+}
+
+.pr-btn-refresh-label { display: none; }
+.pr-btn-refresh-icon  { display: inline; font-size: 16px; }
   .pr-page {
     padding: 6px 10px 20px;
   }
@@ -814,3 +831,34 @@
     font-weight: 700;
   }
 }
+/* ---- Action buttons row ---- */
+.pr-actions-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;          /* keep them on one line */
+  margin-bottom: 24px;
+}
+
+.pr-btn {
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 10px 20px;
+  color: #fff;
+  white-space: nowrap;
+}
+.pr-btn-add {
+  background: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+}
+.pr-btn-refresh {
+  background: #64748b;
+  box-shadow: 0 4px 12px rgba(100,116,139,0.3);
+}
+
+/* Hide the icon-only variant by default */
+.pr-btn-refresh-icon { display: none; }

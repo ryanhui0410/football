@@ -60,6 +60,7 @@ function PlayerRatings() {
   const [uploadedNames, setUploadedNames] = useState([]);
   const [uploadingName, setUploadingName] = useState(null);
   const [picModalMsg, setPicModalMsg] = useState("");
+    const [refreshTs, setRefreshTs] = useState(0); // ✅ ADD THIS LINE
   useEffect(() => {
     fetchData();
   }, []);
@@ -263,6 +264,7 @@ const closePicModal = () => {
         </select>
       </div>
       {/* ---- Add Missing Pictures Button ---- */}
+{/* ---- Add Missing Pictures Button ---- */}
 <div style={{ marginBottom: "24px", textAlign: "center" }}>
   <button
     onClick={openPicModal}
