@@ -13,7 +13,35 @@ const getTierClass = (overall) => {
   if (overall >= 75) return 'silver';
   return 'bronze';
 };
+// Tries each candidate picture path in order, falls back to first letter
+function PlayerPicture({ name, savedPath }) {
+  // Build candidate list: saved path from JSON first, then convention paths
+  const candidates = [
+    ...(savedPath ? [savedPath] : []),
+    `/images/${encodeURIComponent(name)}.jpeg`,
+    `/images/${encodeURIComponent(name)}.jpg`,
+    `/${name}.jpeg`, // legacy root-level paths
+  ];
 
+  const [attempt, setAttempt] = useState(0);
+
+  if (attempt >= candidates.length) {
+    // All failed (or none) — show first letter
+    return (
+      <span style={{ fontSize: '40px', color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontWeight: 700 }}>
+        {name.charAt(0)}
+      </span>
+    );
+  }
+
+  return (
+    <img
+      src={candidates[attempt]}
+      alt={name}
+      onError={() => setAttempt((a) => a + 1)}
+    />
+  );
+}
 function PlayerRatings() {
   const [profiles, setProfiles] = useState([]);
   const [stats, setStats] = useState([]);
@@ -21,7 +49,11 @@ function PlayerRatings() {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState("All"); 
-
+  const [showPicModal, setShowPicModal] = useState(false);
+  const [missingPictures, setMissingPictures] = useState([]);
+  const [uploadedNames, setUploadedNames] = useState([]);
+  const [uploadingName, setUploadingName] = useState(null);
+  const [picModalMsg, setPicModalMsg] = useState("");
   useEffect(() => {
     fetchData();
   }, []);
@@ -46,7 +78,78 @@ function PlayerRatings() {
 
   const getProfile = (name) =>
     profiles.find(p => p.Contributor === name) || { Contributor: name };
+  // Probe a URL — resolves true if the image actually loads
+const probeImage = (url) =>
+  new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
 
+const openPicModal = async () => {
+  setPicModalMsg("🔍 Checking which players are missing pictures...");
+  setShowPicModal(true);
+  setUploadedNames([]);
+
+  const missing = [];
+  for (const name of names) {
+    const profile = getProfile(name);
+    if (profile.picture) continue; // JSON has a saved path — skip
+    const exists =
+      (await probeImage(`/images/${encodeURIComponent(name)}.jpeg`)) ||
+      (await probeImage(`/images/${encodeURIComponent(name)}.jpg`)) ||
+      (await probeImage(`/${name}.jpeg`)); // legacy root path
+    if (!exists) missing.push(name);
+  }
+
+  setMissingPictures(missing);
+  setPicModalMsg(missing.length === 0 ? "✅ All players have pictures!" : "");
+};
+
+const handlePicUpload = (name, file) => {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onloadend = async () => {
+    setUploadingName(name);
+    setPicModalMsg("");
+    try {
+      // STEP 1: upload & process the image → github public/images/{name}.jpeg
+      const res = await fetch("https://football-stats-xbx6.onrender.com/upload-player-picture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, image: reader.result }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.githubError || result.error || "Upload failed");
+
+      // STEP 2: also save the path into player_attributes.json so it's primary
+      await fetch("https://football-stats-xbx6.onrender.com/player-attributes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          Contributor: name,
+          picture: `/images/${name}.jpeg`,
+        }),
+      });
+
+      setUploadedNames((prev) => [...prev, name]);
+    } catch (err) {
+      setPicModalMsg(`❌ ${name}: ${err.message}`);
+    } finally {
+      setUploadingName(null);
+    }
+  };
+  reader.readAsDataURL(file);
+};
+
+const closePicModal = () => {
+  setShowPicModal(false);
+  setMissingPictures([]);
+  setUploadedNames([]);
+  setPicModalMsg("");
+  fetchData(); // refresh profiles so new picture paths show up
+};
   const getForm = (name) => {
     if (name !== 'Ryan' && name !== 'Darren') return null;
     const playerStats = stats.filter(s => s.Contributor?.trim() === name);
@@ -134,7 +237,25 @@ function PlayerRatings() {
           <option value="馬哲">馬哲</option>
         </select>
       </div>
-
+      {/* ---- Add Missing Pictures Button ---- */}
+<div style={{ marginBottom: "24px", textAlign: "center" }}>
+  <button
+    onClick={openPicModal}
+    style={{
+      padding: "10px 20px",
+      borderRadius: "8px",
+      border: "none",
+      background: "#3b82f6",
+      color: "#fff",
+      fontWeight: "600",
+      fontSize: "15px",
+      cursor: "pointer",
+      boxShadow: "0 4px 12px rgba(59,130,246,0.3)",
+    }}
+  >
+    📷 Add Missing Profile Pictures
+  </button>
+</div>
       {/* ---- Cards Grid ---- */}
       <div className="pr-grid">
         {names.map(name => {
@@ -177,23 +298,9 @@ function PlayerRatings() {
               <div className="pr-corner br" />
 
               {/* 1. Profile Picture */}
-              <div className="pr-picture">
-                {profile.picture ? (
-                  <img
-                    src={profile.picture}
-                    alt={name}
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.parentNode.innerHTML = `<span style="font-size:40px;color:#888;display:flex;align-items:center;justify-content:center;height:100%;font-weight:700;">${name.charAt(0)}</span>`;
-                    }}
-                  />
-                ) : (
-                  // No picture saved — show first letter directly
-                  <span style={{ fontSize: '40px', color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontWeight: 700 }}>
-                    {name.charAt(0)}
-                  </span>
-                )}
-              </div>
+            <div className="pr-picture">
+              <PlayerPicture name={name} savedPath={profile.picture} />
+            </div>
 
               {/* 2. Name, Position, Overall */}
               <div className="pr-info-block">
@@ -257,7 +364,71 @@ function PlayerRatings() {
           );
         })}
       </div>
+      {/* ---- Add Pictures Modal ---- */}
+{showPicModal && (
+  <div
+    onClick={closePicModal}
+    style={{
+      position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)",
+      display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: "16px",
+    }}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        background: "#fff", borderRadius: "12px", padding: "24px",
+        width: "100%", maxWidth: "480px", maxHeight: "80vh", overflowY: "auto",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+        <h3 style={{ margin: 0, color: "#1e293b" }}>📷 Missing Profile Pictures</h3>
+        <button onClick={closePicModal} style={{ border: "none", background: "none", fontSize: "20px", cursor: "pointer" }}>✕</button>
+      </div>
 
+      {picModalMsg && <p style={{ color: "#475569", fontSize: "14px" }}>{picModalMsg}</p>}
+
+      {missingPictures.map((name) => {
+        const done = uploadedNames.includes(name);
+        return (
+          <div
+            key={name}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              gap: "12px", padding: "10px", marginBottom: "8px",
+              borderRadius: "8px", background: done ? "#f0fdf4" : "#f8fafc",
+              border: `1px solid ${done ? "#bbf7d0" : "#e2e8f0"}`,
+            }}
+          >
+            <span style={{ fontWeight: 600, color: "#1e293b" }}>{name}</span>
+            {done ? (
+              <span style={{ color: "#16a34a", fontWeight: 700 }}>✅ Uploaded</span>
+            ) : uploadingName === name ? (
+              <span style={{ color: "#64748b", fontSize: "14px" }}>Uploading...</span>
+            ) : (
+              <label
+                style={{
+                  padding: "6px 14px", background: "#10b981", color: "#fff",
+                  borderRadius: "6px", cursor: "pointer", fontWeight: 600, fontSize: "13px",
+                }}
+              >
+                Choose Photo
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    handlePicUpload(name, e.target.files[0]);
+                    e.target.value = ""; // allow re-picking same file
+                  }}
+                />
+              </label>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
       {showModal && (
         <PlayerStatsModal 
           selectedPlayer={selectedPlayer} 
