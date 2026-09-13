@@ -809,15 +809,47 @@
     "teamA": {
       "formation": "4-4-2",
       "players": [
+        {
+          "Contributor": "Barry",
+          "rating": 6.7,
+          "picture": "/Barry.jpeg"
+        },
+        {
+          "Contributor": "大嚿",
+          "rating": 7.9,
+          "picture": "/大嚿.jpeg"
+        },
         null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
+        {
+          "Contributor": "Nick",
+          "rating": 6.9,
+          "picture": "/Nick.jpeg"
+        },
+        {
+          "Contributor": "Hong1",
+          "rating": 7.4,
+          "picture": "/Hong1.jpeg"
+        },
+        {
+          "Contributor": "Eugene",
+          "rating": 6.7,
+          "picture": "/Eugene.jpeg"
+        },
+        {
+          "Contributor": "Lu",
+          "rating": 8,
+          "picture": "/Lu.jpeg"
+        },
+        {
+          "Contributor": "Raymond",
+          "rating": 7.4,
+          "picture": "/images/Raymond.jpeg"
+        },
+        {
+          "Contributor": "Derek",
+          "rating": 8.7,
+          "picture": "/images/Derek.jpeg"
+        },
         {
           "Contributor": "Ryan",
           "rating": 9.8,
@@ -830,24 +862,72 @@
         }
       ],
       "subs": [
-        null,
-        null
+        {
+          "Contributor": "局長",
+          "rating": 8.4,
+          "picture": "/局長.jpeg"
+        },
+        {
+          "Contributor": "Chris",
+          "rating": 6.7,
+          "picture": "/Chris.jpeg"
+        }
       ]
     },
     "teamB": {
       "formation": "4-4-2",
       "players": [
+        {
+          "Contributor": "Pierre",
+          "rating": 6.7,
+          "picture": "/Pierre.jpeg"
+        },
+        {
+          "Contributor": "普巴",
+          "rating": 6.1,
+          "picture": "/普巴.jpeg"
+        },
         null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        {
+          "Contributor": "Tiga",
+          "rating": 6.4,
+          "picture": "/images/Tiga.jpeg"
+        },
+        {
+          "Contributor": "KK",
+          "rating": 5.2,
+          "picture": "/KK.jpeg"
+        },
+        {
+          "Contributor": "Alex",
+          "rating": 6.3,
+          "picture": "/Alex.jpeg"
+        },
+        {
+          "Contributor": "hong",
+          "rating": 7.9,
+          "picture": "/hong.jpeg"
+        },
+        {
+          "Contributor": "Chun",
+          "rating": 5.9,
+          "picture": "/Chun.jpeg"
+        },
+        {
+          "Contributor": "Ken",
+          "rating": 5.4,
+          "picture": "/images/Ken.jpeg"
+        },
+        {
+          "Contributor": "Jacob",
+          "rating": 7.1,
+          "picture": "/Jacob.jpeg"
+        },
+        {
+          "Contributor": "QC",
+          "rating": 6,
+          "picture": "/images/QC.jpeg"
+        }
       ],
       "subs": [
         null,
