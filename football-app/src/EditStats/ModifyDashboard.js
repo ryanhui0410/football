@@ -146,21 +146,28 @@ function ModifyDashboard({ contributors, onSave }) {
   };
 
     const calcTeamAverage = (teamObj) => {
-    if (!teamObj?.players) return null;
-    
-    // Handle both new Array format and old Object format
-    const playersArr = Array.isArray(teamObj.players) 
-      ? teamObj.players 
-      : Object.values(teamObj.players);
-      
-    const ratings = playersArr
-      .filter(p => p && p.rating != null) // ✨ Safely ignore null/empty slots
-      .map(p => parseFloat(p.rating))
-      .filter(r => !isNaN(r));
-      
-    if (ratings.length === 0) return null;
-    return (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1);
-  };
+  if (!teamObj) return null;
+
+  // Handle both new Array format and old Object format
+  const playersArr = Array.isArray(teamObj.players)
+    ? teamObj.players
+    : Object.values(teamObj.players || {});
+
+  // ✅ Include subs (new format) — old format has no subs, so this stays empty
+  const subsArr = Array.isArray(teamObj.subs)
+    ? teamObj.subs
+    : Object.values(teamObj.subs || {});
+
+  const allPlayers = [...playersArr, ...subsArr];
+
+  const ratings = allPlayers
+    .filter(p => p && p.rating != null) // ✨ Safely ignore null/empty slots
+    .map(p => parseFloat(p.rating))
+    .filter(r => !isNaN(r));
+
+  if (ratings.length === 0) return null;
+  return (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1);
+};
 
   const getPlayerMatchStats = (playerName, matchDate, matchLocation, matchTime) => {
     if (!playerName || !matchStatsData.length) return null;
