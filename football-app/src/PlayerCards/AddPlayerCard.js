@@ -71,19 +71,13 @@ function AddPlayerCard() {
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
-
   const handlePicture = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 500 * 1024) {
-      alert("⚠️ Image too large! Please use an image under 500 KB.");
-      return;
-    }
     const reader = new FileReader();
-    reader.onloadend = () => handleChange("picture", reader.result);
+    reader.onloadend = () => handleChange("picture", reader.result); // stores base64 data URL
     reader.readAsDataURL(file);
   };
-
   const autoCalculate = () => {
     const isGK = formData.position === "GK";
     const avg = (...vals) => {
@@ -133,15 +127,35 @@ function AddPlayerCard() {
   };
 
     const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.Contributor.trim()) {
-      alert("Please enter a player name.");
-      return;
+  e.preventDefault();
+  const playerName = formData.Contributor.trim();
+  if (!playerName) {
+    alert("Please enter a player name.");
+    return;
+  }
+
+  setSaving(true);
+  setMessage("");
+
+  try {
+    let picturePath = formData.picture;
+
+    // ── STEP 1: Upload picture if user picked a new one ──
+    if (picturePath && picturePath.startsWith("data:")) {
+      setMessage("📸 Uploading picture to GitHub...");
+      const imgRes = await fetch("https://football-stats-xbx6.onrender.com/upload-player-picture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: playerName, image: picturePath }),
+      });
+      const imgResult = await imgRes.json();
+      if (!imgRes.ok) {
+        throw new Error(imgResult.githubError || imgResult.error || "Picture upload failed");
+      }
+      picturePath = imgResult.picture; // "/images/PlayerName.jpeg"
     }
 
-    setSaving(true);
-    setMessage("");
-
+    // ── STEP 2: Save the player card with the picture PATH ──
     const posRatingsObj = {};
     positionRatings.forEach(({ position, rating }) => {
       posRatingsObj[position] = rating;
@@ -151,6 +165,7 @@ function AddPlayerCard() {
 
     const payload = {
       ...formData,
+      picture: picturePath,
       ...Object.fromEntries(
         Object.entries(formData).map(([k, v]) => [
           k,
@@ -160,32 +175,25 @@ function AddPlayerCard() {
       positionRatings: formData.position === "GK" ? {} : posRatingsObj,
     };
 
-    try {
-      const res = await fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`, { 
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      
-      // 🚨 Parse the JSON response to get the exact error details
-      const result = await res.json();
-      
-      if (!res.ok) {
-        // Throw the exact GitHub error so it shows on the screen!
-        throw new Error(result.githubError || result.error || "Save failed");
-      }
-      
-      setMessage(result.message || "✅ Player card saved successfully!");
-      
-      setFormData(buildEmptyForm());
-      setPositionRatings([]);
-    } catch (err) {
-      // Display the exact error on the screen
-      setMessage(`❌ Failed: ${err.message}`);
-    } finally {
-      setSaving(false);
+    const res = await fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = await res.json();
+    if (!res.ok) {
+      throw new Error(result.githubError || result.error || "Save failed");
     }
-  };
+
+    setMessage(result.message || "✅ Player card saved successfully!");
+    setFormData(buildEmptyForm());
+    setPositionRatings([]);
+  } catch (err) {
+    setMessage(`❌ Failed: ${err.message}`);
+  } finally {
+    setSaving(false);
+  }
+};
 
   const isGK = formData.position === "GK";
   const activeEAFields = isGK ? GK_EA_FIELDS : OUTFIELD_EA_FIELDS;

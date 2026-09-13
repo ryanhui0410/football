@@ -11,7 +11,77 @@ app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(cors());
 // Frontend Helper: Compress & Fix Smartphone Images
 const sharp = require('sharp');
+// ===================== Player Picture Upload (GitHub) =====================
 
+async function uploadImageToGitHub(imageBuffer, githubFilePath, commitMessage) {
+  const token = process.env.GITHUB_TOKEN;
+  const owner = process.env.GITHUB_OWNER;
+  const repo = process.env.GITHUB_REPO;
+  if (!token || !owner || !repo) return { success: false, error: "Missing GitHub Env Vars" };
+
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${githubFilePath}`;
+
+  // Get existing SHA (needed to overwrite)
+  let sha = "";
+  try {
+    const getRes = await fetch(apiUrl, {
+      headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" }
+    });
+    if (getRes.ok) sha = (await getRes.json()).sha;
+    else if (getRes.status !== 404) return { success: false, error: `Failed to get SHA (${getRes.status})` };
+  } catch (e) {
+    return { success: false, error: "Network error getting SHA" };
+  }
+
+  const body = { message: commitMessage, content: imageBuffer.toString("base64"), branch: "main" };
+  if (sha) body.sha = sha;
+
+  const putRes = await fetch(apiUrl, {
+    method: "PUT",
+    headers: {
+      Authorization: `token ${token}`,
+      Accept: "application/vnd.github.v3+json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (putRes.ok) return { success: true };
+  const errText = await putRes.text();
+  return { success: false, error: `GitHub rejected image push (${putRes.status}): ${errText}` };
+}
+
+app.post("/upload-player-picture", async (req, res) => {
+  try {
+    const { name, image } = req.body;
+    if (!name || !image) return res.status(400).json({ error: "Missing name or image" });
+
+    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+    const imageBuffer = Buffer.from(base64Data, "base64");
+
+    const processedBuffer = await sharp(imageBuffer)
+      .rotate()                                          // 📱 fixes sideways Android photos
+      .resize({ width: 500, height: 500, fit: "cover", withoutEnlargement: true })
+      .jpeg({ quality: 80, mozjpeg: true })              // ✅ always outputs valid JPEG named {name}.jpeg
+      .toBuffer();
+
+    const githubFilePath = `football-app/public/images/${name.trim()}.jpeg`;
+    const syncResult = await uploadImageToGitHub(
+      processedBuffer,
+      githubFilePath,
+      `Upload profile picture: ${name.trim()}`
+    );
+
+    if (syncResult.success) {
+      res.json({ message: "✅ Picture uploaded to GitHub", picture: `/images/${name.trim()}.jpeg` });
+    } else {
+      res.status(500).json({ error: "Image upload failed", githubError: syncResult.error });
+    }
+  } catch (err) {
+    console.error("❌ Picture upload error:", err);
+    res.status(500).json({ error: "Failed to process picture", details: err.message });
+  }
+});
 app.post("/process-image", async (req, res) => {
   try {
     // Assuming frontend sends the raw base64 string

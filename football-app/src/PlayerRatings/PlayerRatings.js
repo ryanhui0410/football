@@ -178,14 +178,21 @@ function PlayerRatings() {
 
               {/* 1. Profile Picture */}
               <div className="pr-picture">
-                <img
-                  src={profile.picture || `/${name}.jpeg`}
-                  alt={name}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.parentNode.innerHTML = `<span style="font-size:40px;color:#888;display:flex;align-items:center;justify-content:center;height:100%;font-weight:700;">${name.charAt(0)}</span>`;
-                  }}
-                />
+                {profile.picture ? (
+                  <img
+                    src={profile.picture}
+                    alt={name}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.parentNode.innerHTML = `<span style="font-size:40px;color:#888;display:flex;align-items:center;justify-content:center;height:100%;font-weight:700;">${name.charAt(0)}</span>`;
+                    }}
+                  />
+                ) : (
+                  // No picture saved — show first letter directly
+                  <span style={{ fontSize: '40px', color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontWeight: 700 }}>
+                    {name.charAt(0)}
+                  </span>
+                )}
               </div>
 
               {/* 2. Name, Position, Overall */}
