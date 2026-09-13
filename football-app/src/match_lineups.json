@@ -811,7 +811,7 @@
       "players": [
         {
           "Contributor": "Barry",
-          "rating": 6.6,
+          "rating": 6.5,
           "picture": "/Barry.jpeg"
         },
         {
@@ -821,12 +821,12 @@
         },
         {
           "Contributor": "Po",
-          "rating": 7,
+          "rating": 6.9,
           "picture": "/images/Po.jpeg"
         },
         {
           "Contributor": "Nick",
-          "rating": 6.9,
+          "rating": 6.8,
           "picture": "/Nick.jpeg"
         },
         {
@@ -836,7 +836,7 @@
         },
         {
           "Contributor": "Eugene",
-          "rating": 6.5,
+          "rating": 6.4,
           "picture": "/Eugene.jpeg"
         },
         {
@@ -851,7 +851,7 @@
         },
         {
           "Contributor": "Derek",
-          "rating": 8.7,
+          "rating": 8.4,
           "picture": "/images/Derek.jpeg"
         },
         {
@@ -873,7 +873,7 @@
         },
         {
           "Contributor": "Chris",
-          "rating": 6.5,
+          "rating": 6.4,
           "picture": "/Chris.jpeg"
         }
       ]
