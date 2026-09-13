@@ -17,16 +17,15 @@ const getTierClass = (overall) => {
   return 'bronze';
 };
 // Tries each candidate picture path in order, falls back to first letter
-function PlayerPicture({ name, savedPath, pictureMap }) {
+function PlayerPicture({ name, savedPath, pictureMap, refreshTs }) {
   const candidates = [
     ...(savedPath ? [savedPath] : []),
-    pictureMap?.[name.toLowerCase()], // GitHub raw URL found from directory listing
-    `/images/${encodeURIComponent(name)}.jpeg`, // local fallbacks
+    pictureMap?.[name.toLowerCase()],
+    `/images/${encodeURIComponent(name)}.jpeg`,
     `/${name}.jpeg`,
   ].filter(Boolean);
 
   const [attempt, setAttempt] = useState(0);
-  const [reloadKey, setReloadKey] = useState(0);
 
   if (attempt >= candidates.length) {
     return (
@@ -36,15 +35,16 @@ function PlayerPicture({ name, savedPath, pictureMap }) {
     );
   }
 
+  // Only cache-bust the current URL when a refresh was requested
+  const bust = refreshTs && candidates[attempt].includes("raw.githubusercontent")
+    ? `?t=${refreshTs}`
+    : "";
+
   return (
     <img
-      key={reloadKey} // forces remount when we retry after a re-upload
-      src={`${candidates[attempt]}${candidates[attempt].includes("raw.githubusercontent") ? `?t=${reloadKey}` : ""}`}
+      src={`${candidates[attempt]}${bust}`}
       alt={name}
       onError={() => setAttempt((a) => a + 1)}
-      onLoad={() => {
-        // if loaded from savedPath but it's a raw URL, no action needed — cache-bust param already applied
-      }}
     />
   );
 }
@@ -267,18 +267,28 @@ const closePicModal = () => {
   <button
     onClick={openPicModal}
     style={{
-      padding: "10px 20px",
-      borderRadius: "8px",
-      border: "none",
-      background: "#3b82f6",
-      color: "#fff",
-      fontWeight: "600",
-      fontSize: "15px",
-      cursor: "pointer",
+      padding: "10px 20px", borderRadius: "8px", border: "none",
+      background: "#3b82f6", color: "#fff", fontWeight: "600",
+      fontSize: "15px", cursor: "pointer", margin: "0 6px",
       boxShadow: "0 4px 12px rgba(59,130,246,0.3)",
     }}
   >
     📷 Add Missing Profile Pictures
+  </button>
+
+  <button
+    onClick={() => {
+      setRefreshTs(Date.now()); // cache-bust all images
+      fetchData();              // re-fetch JSON + GitHub image listing
+    }}
+    style={{
+      padding: "10px 20px", borderRadius: "8px", border: "none",
+      background: "#64748b", color: "#fff", fontWeight: "600",
+      fontSize: "15px", cursor: "pointer", margin: "0 6px",
+      boxShadow: "0 4px 12px rgba(100,116,139,0.3)",
+    }}
+  >
+    🔄 Refresh Pictures
   </button>
 </div>
       {/* ---- Cards Grid ---- */}
@@ -324,7 +334,7 @@ const closePicModal = () => {
 
               {/* 1. Profile Picture */}
             <div className="pr-picture">
-              <PlayerPicture name={name} savedPath={profile.picture} pictureMap={pictureMap} />
+              <PlayerPicture name={name} savedPath={profile.picture} pictureMap={pictureMap} refreshTs={refreshTs} />
             </div>
 
               {/* 2. Name, Position, Overall */}
