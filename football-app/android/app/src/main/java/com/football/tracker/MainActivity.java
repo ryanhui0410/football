@@ -15,7 +15,7 @@ public class MainActivity extends BridgeActivity {
         // 1. Enable Edge-to-Edge (Optional, but makes it look modern)
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
-        // 2. Handle Display Cutout (Notch/Camera) safely for API 28+
+        // 2    . Handle Display Cutout (Notch/Camera) safely for API 28+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             getWindow().getAttributes().layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;

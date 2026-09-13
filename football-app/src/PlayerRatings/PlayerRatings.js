@@ -7,9 +7,8 @@ const FILTER_GROUPS = {
   'The Bros': ['Ryan', 'Darren'],
   馬哲: ['Tony', '馬俊翔'],
 };
-// ✅ Correct structure
 const GITHUB_OWNER = "ryanhui0410";
-const GITHUB_REPO = "football-app"; // ← whatever made the test URL work
+const GITHUB_REPO = "football";   // ← repo name is "football", NOT "football/football-app"
 const IMAGES_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/football-app/public/images`;
 const getTierClass = (overall) => {
   if (overall >= 85) return 'gold';
@@ -17,15 +16,18 @@ const getTierClass = (overall) => {
   return 'bronze';
 };
 // Tries each candidate picture path in order, falls back to first letter
-function PlayerPicture({ name, savedPath, pictureMap, refreshTs }) {
+function PlayerPicture({ name, pictureMap, refreshTs }) {
   const candidates = [
-    ...(savedPath ? [savedPath] : []),
-    pictureMap?.[name.toLowerCase()],
-    `/images/${encodeURIComponent(name)}.jpeg`,
-    `/${name}.jpeg`,
+    pictureMap?.[name.toLowerCase()],           // ← primary: real file from GitHub listing
+    `/images/${encodeURIComponent(name)}.jpeg`, // local build fallback
+    `/${name}.jpeg`,                            // legacy root fallback
   ].filter(Boolean);
 
   const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    setAttempt(0);
+  }, [refreshTs, pictureMap]);
 
   if (attempt >= candidates.length) {
     return (
@@ -35,7 +37,6 @@ function PlayerPicture({ name, savedPath, pictureMap, refreshTs }) {
     );
   }
 
-  // Only cache-bust the current URL when a refresh was requested
   const bust = refreshTs && candidates[attempt].includes("raw.githubusercontent")
     ? `?t=${refreshTs}`
     : "";
@@ -336,8 +337,8 @@ const closePicModal = () => {
 
               {/* 1. Profile Picture */}
             <div className="pr-picture">
-              <PlayerPicture name={name} savedPath={profile.picture} pictureMap={pictureMap} refreshTs={refreshTs} />
-            </div>
+  <PlayerPicture name={name} pictureMap={pictureMap} refreshTs={refreshTs} />
+</div>
 
               {/* 2. Name, Position, Overall */}
               <div className="pr-info-block">
