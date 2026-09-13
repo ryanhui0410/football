@@ -891,7 +891,11 @@
           "rating": 6.1,
           "picture": "/普巴.jpeg"
         },
-        null,
+        {
+          "Contributor": "Dave",
+          "rating": 6.6,
+          "picture": "/images/Dave.jpeg"
+        },
         {
           "Contributor": "Tiga",
           "rating": 6.4,
