@@ -811,12 +811,12 @@
       "players": [
         {
           "Contributor": "Barry",
-          "rating": 6.7,
+          "rating": 6.6,
           "picture": "/Barry.jpeg"
         },
         {
           "Contributor": "大嚿",
-          "rating": 7.9,
+          "rating": 7.8,
           "picture": "/大嚿.jpeg"
         },
         {
@@ -831,12 +831,12 @@
         },
         {
           "Contributor": "Hong1",
-          "rating": 7.4,
+          "rating": 7.3,
           "picture": "/Hong1.jpeg"
         },
         {
           "Contributor": "Eugene",
-          "rating": 6.7,
+          "rating": 6.5,
           "picture": "/Eugene.jpeg"
         },
         {
@@ -868,12 +868,12 @@
       "subs": [
         {
           "Contributor": "局長",
-          "rating": 8.4,
+          "rating": 8.3,
           "picture": "/局長.jpeg"
         },
         {
           "Contributor": "Chris",
-          "rating": 6.7,
+          "rating": 6.5,
           "picture": "/Chris.jpeg"
         }
       ]
