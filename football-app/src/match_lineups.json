@@ -819,7 +819,11 @@
           "rating": 7.9,
           "picture": "/大嚿.jpeg"
         },
-        null,
+        {
+          "Contributor": "Po",
+          "rating": 7,
+          "picture": "/images/Po.jpeg"
+        },
         {
           "Contributor": "Nick",
           "rating": 6.9,
@@ -930,7 +934,11 @@
         }
       ],
       "subs": [
-        null,
+        {
+          "Contributor": "Leung Gor",
+          "rating": 5.8,
+          "picture": "/Leung Gor.jpeg"
+        },
         null
       ]
     }
