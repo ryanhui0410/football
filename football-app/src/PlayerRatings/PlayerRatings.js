@@ -109,6 +109,7 @@ const openPicModal = async () => {
 
 const handlePicUpload = (name, file) => {
   if (!file) return;
+  
   const reader = new FileReader();
   reader.onloadend = async () => {
     setUploadingName(name);
@@ -123,16 +124,18 @@ const handlePicUpload = (name, file) => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.githubError || result.error || "Upload failed");
 
-      // STEP 2: also save the path into player_attributes.json so it's primary
-      await fetch("https://football-stats-xbx6.onrender.com/player-attributes", {
+            // STEP 2: also save the path into player_attributes.json so it's primary
+      const attrRes = await fetch("https://football-stats-xbx6.onrender.com/player-attributes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          Contributor: name,
-          picture: `/images/${name}.jpeg`,
-        }),
+        body: JSON.stringify({ Contributor: name, picture: `/images/${name}.jpeg` }),
       });
-
+      if (!attrRes.ok) {
+        const errData = await attrRes.json().catch(() => ({}));
+        throw new Error(
+          `Picture uploaded, but card link failed: ${errData.githubError || errData.error || attrRes.status}`
+        );
+      }
       setUploadedNames((prev) => [...prev, name]);
     } catch (err) {
       setPicModalMsg(`❌ ${name}: ${err.message}`);

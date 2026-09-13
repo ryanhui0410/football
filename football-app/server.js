@@ -50,7 +50,55 @@ async function uploadImageToGitHub(imageBuffer, githubFilePath, commitMessage) {
   const errText = await putRes.text();
   return { success: false, error: `GitHub rejected image push (${putRes.status}): ${errText}` };
 }
+// ===================== Backfill picture paths =====================
+app.post("/backfill-picture-paths", async (req, res) => {
+  try {
+    const data = readAttributes();
+    const token = process.env.GITHUB_TOKEN;
+    const owner = process.env.GITHUB_OWNER;
+    const repo = process.env.GITHUB_REPO;
 
+    // List all files currently in football-app/public/images on GitHub
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/football-app/public/images`;
+    const listRes = await fetch(apiUrl, {
+      headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" }
+    });
+
+    if (!listRes.ok) {
+      return res.status(500).json({ error: `Failed to list images dir (${listRes.status})` });
+    }
+
+    const imageFiles = (await listRes.json())
+      .map(f => f.name)                      // e.g. "Jack.jpeg"
+      .filter(n => /\.(jpe?g|png)$/i.test(n));
+
+    let updated = 0;
+    for (const player of data) {
+      if (player.picture) continue; // already has a path
+      const match = imageFiles.find(img =>
+        img.replace(/\.(jpe?g|png)$/i, "").toLowerCase() === (player.Contributor || "").trim().toLowerCase()
+      );
+      if (match) {
+        player.picture = `/images/${match}`;
+        updated++;
+      }
+    }
+
+    if (updated > 0) {
+      writeAttributes(data);
+      const syncResult = await syncFileToGitHub(
+        ATTR_PATH, "football-app/src/player_attributes.json", "Backfill picture paths"
+      );
+      if (!syncResult.success) {
+        return res.status(500).json({ error: "Updated locally but GitHub sync failed", githubError: syncResult.error });
+      }
+    }
+
+    res.json({ message: `✅ Backfilled ${updated} picture path(s)` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 app.post("/upload-player-picture", async (req, res) => {
   try {
     const { name, image } = req.body;
