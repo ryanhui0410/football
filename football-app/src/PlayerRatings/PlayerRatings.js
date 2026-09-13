@@ -7,9 +7,10 @@ const FILTER_GROUPS = {
   'The Bros': ['Ryan', 'Darren'],
   馬哲: ['Tony', '馬俊翔'],
 };
-const GITHUB_OWNER = "ryanhui0410";   // same as GITHUB_OWNER env var on Render
-const GITHUB_REPO = "football/football-app";     // same as GITHUB_REPO env var on Render
-const IMAGES_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/public/images`;
+// ✅ Correct structure
+const GITHUB_OWNER = "ryanhui0410";
+const GITHUB_REPO = "football-app"; // ← whatever made the test URL work
+const IMAGES_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/football-app/public/images`;
 const getTierClass = (overall) => {
   if (overall >= 85) return 'gold';
   if (overall >= 75) return 'silver';
