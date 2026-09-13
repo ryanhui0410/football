@@ -7,26 +7,27 @@ const FILTER_GROUPS = {
   'The Bros': ['Ryan', 'Darren'],
   馬哲: ['Tony', '馬俊翔'],
 };
-
+const GITHUB_OWNER = "ryanhui0410";   // same as GITHUB_OWNER env var on Render
+const GITHUB_REPO = "football/football-app";     // same as GITHUB_REPO env var on Render
+const IMAGES_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/public/images`;
 const getTierClass = (overall) => {
   if (overall >= 85) return 'gold';
   if (overall >= 75) return 'silver';
   return 'bronze';
 };
 // Tries each candidate picture path in order, falls back to first letter
-function PlayerPicture({ name, savedPath }) {
-  // Build candidate list: saved path from JSON first, then convention paths
+function PlayerPicture({ name, savedPath, pictureMap }) {
   const candidates = [
     ...(savedPath ? [savedPath] : []),
-    `/images/${encodeURIComponent(name)}.jpeg`,
-    `/images/${encodeURIComponent(name)}.jpg`,
-    `/${name}.jpeg`, // legacy root-level paths
-  ];
+    pictureMap?.[name.toLowerCase()], // GitHub raw URL found from directory listing
+    `/images/${encodeURIComponent(name)}.jpeg`, // local fallbacks
+    `/${name}.jpeg`,
+  ].filter(Boolean);
 
   const [attempt, setAttempt] = useState(0);
+  const [reloadKey, setReloadKey] = useState(0);
 
   if (attempt >= candidates.length) {
-    // All failed (or none) — show first letter
     return (
       <span style={{ fontSize: '40px', color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontWeight: 700 }}>
         {name.charAt(0)}
@@ -36,9 +37,13 @@ function PlayerPicture({ name, savedPath }) {
 
   return (
     <img
-      src={candidates[attempt]}
+      key={reloadKey} // forces remount when we retry after a re-upload
+      src={`${candidates[attempt]}${candidates[attempt].includes("raw.githubusercontent") ? `?t=${reloadKey}` : ""}`}
       alt={name}
       onError={() => setAttempt((a) => a + 1)}
+      onLoad={() => {
+        // if loaded from savedPath but it's a raw URL, no action needed — cache-bust param already applied
+      }}
     />
   );
 }
@@ -57,24 +62,40 @@ function PlayerRatings() {
   useEffect(() => {
     fetchData();
   }, []);
-
+  const [pictureMap, setPictureMap] = useState({});
   const fetchData = async () => {
-    try {
-      // ✅ FIX: Use backticks
-      const [attrRes, statsRes] = await Promise.all([
-        fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`),
-        fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`),
-      ]);
-      const profilesData = await attrRes.json();
-      const statsData = await statsRes.json();
-      setProfiles(Array.isArray(profilesData) ? profilesData : []);
-      setStats(Array.isArray(statsData) ? statsData : []);
-    } catch (err) {
-      console.error('Failed to load data:', err);
-    } finally {
-      setLoading(false);
+  try {
+    const [attrRes, statsRes, imgRes] = await Promise.all([
+      fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`),
+      fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`),
+      fetch(`${IMAGES_API_URL}?t=${Date.now()}`), // GitHub contents API (public repo = no auth needed)
+    ]);
+
+    const profilesData = await attrRes.json();
+    const statsData = await statsRes.json();
+    setProfiles(Array.isArray(profilesData) ? profilesData : []);
+    setStats(Array.isArray(statsData) ? statsData : []);
+
+    // Build map: lowercase player name → raw GitHub URL
+    if (imgRes.ok) {
+      const files = await imgRes.json();
+      if (Array.isArray(files)) {
+        const map = {};
+        files
+          .filter(f => /\.(jpe?g|png)$/i.test(f.name))
+          .forEach(f => {
+            const baseName = f.name.replace(/\.(jpe?g|png)$/i, "").toLowerCase();
+            map[baseName] = f.download_url; // GitHub gives you a ready-to-use raw URL
+          });
+        setPictureMap(map);
+      }
     }
-  };
+  } catch (err) {
+    console.error('Failed to load data:', err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getProfile = (name) =>
     profiles.find(p => p.Contributor === name) || { Contributor: name };
@@ -302,7 +323,7 @@ const closePicModal = () => {
 
               {/* 1. Profile Picture */}
             <div className="pr-picture">
-              <PlayerPicture name={name} savedPath={profile.picture} />
+              <PlayerPicture name={name} savedPath={profile.picture} pictureMap={pictureMap} />
             </div>
 
               {/* 2. Name, Position, Overall */}
