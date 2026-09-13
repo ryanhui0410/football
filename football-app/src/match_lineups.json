@@ -883,7 +883,7 @@
       "players": [
         {
           "Contributor": "Pierre",
-          "rating": 6.7,
+          "rating": 6.5,
           "picture": "/Pierre.jpeg"
         },
         {
@@ -893,17 +893,17 @@
         },
         {
           "Contributor": "Dave",
-          "rating": 6.6,
+          "rating": 6.5,
           "picture": "/images/Dave.jpeg"
         },
         {
           "Contributor": "Tiga",
-          "rating": 6.2,
+          "rating": 6.1,
           "picture": "/images/Tiga.jpeg"
         },
         {
           "Contributor": "KK",
-          "rating": 5,
+          "rating": 4.8,
           "picture": "/KK.jpeg"
         },
         {
@@ -913,7 +913,7 @@
         },
         {
           "Contributor": "hong",
-          "rating": 7.9,
+          "rating": 7.8,
           "picture": "/hong.jpeg"
         },
         {
@@ -923,7 +923,7 @@
         },
         {
           "Contributor": "Ken",
-          "rating": 5.4,
+          "rating": 5.2,
           "picture": "/images/Ken.jpeg"
         },
         {
