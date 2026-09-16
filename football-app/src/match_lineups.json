@@ -37,6 +37,10 @@
           "rating": 10,
           "picture": "/Darren.jpeg"
         }
+      ],
+      "subs": [
+        null,
+        null
       ]
     },
     "teamB": {
@@ -44,7 +48,11 @@
       "players": [
         null,
         null,
-        null,
+        {
+          "Contributor": "Jack",
+          "rating": 5.1,
+          "picture": "/images/Jack.jpeg"
+        },
         null,
         null,
         null,
@@ -55,6 +63,14 @@
           "rating": 6.4,
           "picture": "/Tony.jpeg"
         },
+        {
+          "Contributor": "Ronson",
+          "rating": 7.2,
+          "picture": "/images/Ronson.jpeg"
+        },
+        null
+      ],
+      "subs": [
         null,
         null
       ]
