@@ -4,7 +4,9 @@ import "./TacticalDashboard.css";
 
 function TacticalDashboard() {
   const [matchDetails, setMatchDetails] = useState({ Date: "", Location: "", Time: "" });
-  
+  const GITHUB_OWNER = "ryanhui0410";
+const GITHUB_REPO = "football";
+const IMAGES_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/football-app/public/images`;
   const [timeHistory, setTimeHistory] = useState([]);
   const [allLineups, setAllLineups] = useState([]);
   const [availablePlayers, setAvailablePlayers] = useState([]);
@@ -13,7 +15,11 @@ function TacticalDashboard() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [slotToEdit, setSlotToEdit] = useState(null);
+  const [pictureMap, setPictureMap] = useState({});
 
+// Helper: GitHub raw URL for a player, or null if not uploaded yet
+const getPicture = (name) =>
+  name ? pictureMap[name.trim().toLowerCase()] || null : null;
   // ✅ Three-way layout detection:
   //   "vertical"   → portrait phone (vertical pitch)
   //   "landscape"  → landscape phone (subs on top, details left, pitch below)
@@ -41,50 +47,62 @@ function TacticalDashboard() {
   }, []);
 
   useEffect(() => {
-    Promise.all([
-      fetch(`https://football-stats-xbx6.onrender.com/stats-history?t=${Date.now()}`).then(res => res.json()),
-      fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`).then(res => res.json()),
-      fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`).then(res => res.json())
-    ])
-      .then(([history, lineups, players]) => {
-        setTimeHistory(history.times || []);
-        setAllLineups(Array.isArray(lineups) ? lineups : []);
-        setAvailablePlayers(Array.isArray(players) ? players : []);
-      })
-      .catch(err => console.error("Failed to fetch initial data", err));
-  }, []);
+  Promise.all([
+    fetch(`https://football-stats-xbx6.onrender.com/stats-history?t=${Date.now()}`).then(res => res.json()),
+    fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`).then(res => res.json()),
+    fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`).then(res => res.json()),
+    fetch(`${IMAGES_API_URL}?t=${Date.now()}`).then(res => res.ok ? res.json() : []),
+  ])
+    .then(([history, lineups, players, imageFiles]) => {
+      setTimeHistory(history.times || []);
+      setAllLineups(Array.isArray(lineups) ? lineups : []);
+      setAvailablePlayers(Array.isArray(players) ? players : []);
+
+      // Build: lowercase player name → raw GitHub URL
+      if (Array.isArray(imageFiles)) {
+        const map = {};
+        imageFiles
+          .filter(f => /\.(jpe?g|png)$/i.test(f.name))
+          .forEach(f => {
+            map[f.name.replace(/\.(jpe?g|png)$/i, "").toLowerCase()] = f.download_url;
+          });
+        setPictureMap(map);
+      }
+    })
+    .catch(err => console.error("Failed to fetch initial data", err));
+}, []);
 
   useEffect(() => {
-    if (matchDetails.Date && matchDetails.Location && matchDetails.Time) {
-      const existing = allLineups.find(l => 
-        l.date === matchDetails.Date && 
-        l.location === matchDetails.Location && 
-        l.time === matchDetails.Time
-      );
+  if (!matchDetails.Date) {
+    setLineupData(null);
+    return;
+  }
 
-      if (existing) {
-        setLineupData(existing);
-      } else {
-        setLineupData({
-          date: matchDetails.Date,
-          location: matchDetails.Location,
-          time: matchDetails.Time,
-          teamA: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] },
-          teamB: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] }
-        });
-      }
-    } else if (matchDetails.Date) {
-      setLineupData({
-        date: matchDetails.Date,
-        location: matchDetails.Location,
-        time: matchDetails.Time,
-        teamA: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] },
-        teamB: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] }
-      });
-    } else {
-      setLineupData(null);
+  const existing = allLineups.find(l =>
+    l.date === matchDetails.Date &&
+    l.location === matchDetails.Location &&
+    l.time === matchDetails.Time
+  );
+
+  setLineupData(prev => {
+    // ✅ Already showing this exact match? Keep the current object (no reset)
+    if (
+      prev &&
+      prev.date === matchDetails.Date &&
+      prev.location === matchDetails.Location &&
+      prev.time === matchDetails.Time
+    ) {
+      return prev;
     }
-  }, [matchDetails, allLineups]);
+    return existing || {
+      date: matchDetails.Date,
+      location: matchDetails.Location,
+      time: matchDetails.Time,
+      teamA: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] },
+      teamB: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] }
+    };
+  });
+}, [matchDetails.Date, matchDetails.Location, matchDetails.Time, allLineups]);
 
   const handleChange = (e) => {
     setMatchDetails({ ...matchDetails, [e.target.name]: e.target.value });
@@ -104,15 +122,21 @@ function TacticalDashboard() {
       
       const cleanPlayers = (teamObj.players || []).map(p => {
         if (!p) return null;
-        return { Contributor: p.Contributor, rating: parseFloat(p.rating) || 0, picture: p.picture || `/${p.Contributor}.jpeg` };
+        return {
+          Contributor: p.Contributor,
+          rating: parseFloat(p.rating) || 0,
+          picture: getPicture(p.Contributor) || p.picture || `/${p.Contributor}.jpeg`
+        };
       });
-      while (cleanPlayers.length < 11) cleanPlayers.push(null);
-      
+
       const cleanSubs = (teamObj.subs || []).map(p => {
         if (!p) return null;
-        return { Contributor: p.Contributor, rating: parseFloat(p.rating) || 0, picture: p.picture || `/${p.Contributor}.jpeg` };
+        return {
+          Contributor: p.Contributor,
+          rating: parseFloat(p.rating) || 0,
+          picture: getPicture(p.Contributor) || p.picture || `/${p.Contributor}.jpeg`
+        };
       });
-      while (cleanSubs.length < 2) cleanSubs.push(null);
 
       return {
         formation: teamObj.formation || "4-4-2",
@@ -223,36 +247,35 @@ function TacticalDashboard() {
   );
 
   return (
-    <div className="td-wrap">
-      <h2 className="td-title">⚔️ Tactical Dashboard</h2>
-      
-      {message && <div className={`td-toast ${message.includes("✅") ? 'success' : 'warning'}`}>{message}</div>}
+  <div className="td-wrap">
+    <h2 className="td-title">⚔️ Tactical Dashboard</h2>
+
+    {message && <div className={`td-toast ${message.includes("✅") ? 'success' : 'warning'}`}>{message}</div>}
+
+    {/* ✅ ALWAYS rendered — the details card never unmounts while typing */}
+    <div className="td-pitch-container">
+      {renderDetailsCard()}
 
       {lineupData && matchDetails.Date.trim() ? (
         <>
-          {/* ✅ Details card now INSIDE the pitch container so the landscape
-              CSS grid can place it in the left column */}
-          <div className="td-pitch-container">
-            {renderDetailsCard()}
-
-            <div className="td-remark">
-              💡 <strong>Tactical Rule:</strong> Ryan is always assigned to <strong>Team A (Left Side)</strong>.
-            </div>
-
-            <MatchLineup 
-              matchData={matchDetails} 
-              initialLineup={lineupData}
-              layout={layout} 
-              editMode={true}
-              availablePlayers={availablePlayers}
-              onLineupChange={(newLineup) => {
-                setLineupData(prev => ({ ...prev, ...newLineup }));
-              }}
-              onSlotClick={(team, idx, player) => {
-                setSlotToEdit({ team, idx, player });
-              }}
-            />
+          <div className="td-remark">
+            💡 <strong>Tactical Rule:</strong> Ryan is always assigned to <strong>Team A (Left Side)</strong>.
           </div>
+
+          <MatchLineup
+            matchData={matchDetails}
+            initialLineup={lineupData}
+            layout={layout}
+            editMode={true}
+            availablePlayers={availablePlayers}
+            pictureMap={pictureMap}
+            onLineupChange={(newLineup) => {
+              setLineupData(prev => ({ ...prev, ...newLineup }));
+            }}
+            onSlotClick={(team, idx, player) => {
+              setSlotToEdit({ team, idx, player });
+            }}
+          />
 
           <div className="td-actions">
             <button className="td-save-btn" onClick={handleSaveLineup} disabled={saving}>
@@ -261,15 +284,11 @@ function TacticalDashboard() {
           </div>
         </>
       ) : (
-        <>
-          {/* No date yet → details card standalone + placeholder */}
-          {renderDetailsCard()}
-
-          <div className="td-placeholder">
-            <p>⚽ Please enter a <strong>Match Date</strong> to load the tactical pitch.</p>
-          </div>
-        </>
+        <div className="td-placeholder">
+          <p>⚽ Please enter a <strong>Match Date</strong> to load the tactical pitch.</p>
+        </div>
       )}
+    </div>
 
       {/* SLOT EDIT MODAL */}
       {slotToEdit && (
@@ -289,10 +308,10 @@ function TacticalDashboard() {
                     const selected = availablePlayers.find(p => p.Contributor === val);
                     setSlotToEdit(prev => ({
                       ...prev,
-                      player: { 
+                      player: {
                         Contributor: selected.Contributor,
-                        picture: selected.picture || `/${selected.Contributor}.jpeg`,
-                        rating: prev.player?.rating !== undefined ? prev.player.rating : "" 
+                        picture: getPicture(selected.Contributor) || `/${selected.Contributor}.jpeg`, // GitHub first
+                        rating: prev.player?.rating !== undefined ? prev.player.rating : ""
                       }
                     }));
                   }

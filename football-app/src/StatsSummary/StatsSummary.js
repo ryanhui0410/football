@@ -26,45 +26,47 @@ function getSeasonFromDate(dateStr) {
 
 // ✅ Helper: Normalize names to avoid whitespace/case mismatches
 const normalizeName = (name) => (name || "").trim().toLowerCase();
+
 // ✅ Capitalize first letter for display
 const prettyName = (name) => {
   if (!name) return "";
-  // Improved to handle names like "S Joe" -> "S Joe" instead of "S joe"
   return name.split(' ').map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()).join(' ');
 };
 
 function StatsSummary({ stats }) {
   const [filterSeason, setFilterSeason] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState("Ryan");
+  const [showAllPlayers, setShowAllPlayers] = useState(false);
   const [lineups, setLineups] = useState([]);
   const [debugInfo, setDebugInfo] = useState("");
 
   useEffect(() => {
     setDebugInfo("⏳ Loading lineups...");
     fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`)
-  .then((res) => res.json())
-  .then((data) => {
-    let arr = [];
-    if (Array.isArray(data)) {
-      arr = data;
-    } else if (data && typeof data === "object") {
-      if (Array.isArray(data.lineups)) arr = data.lineups;
-      else if (Array.isArray(data.matches)) arr = data.matches;
-      else arr = Object.values(data).filter((m) => m && (m.date || m.teamA || m.teamB));
-    }
-    console.log("lineups raw:", data, "→ parsed:", arr.length, "matches");
-    setLineups(arr);
-    setDebugInfo(`✅ Loaded ${arr.length} match lineups`);
-  })
+      .then((res) => res.json())
+      .then((data) => {
+        let arr = [];
+        if (Array.isArray(data)) {
+          arr = data;
+        } else if (data && typeof data === "object") {
+          if (Array.isArray(data.lineups)) arr = data.lineups;
+          else if (Array.isArray(data.matches)) arr = data.matches;
+          else arr = Object.values(data).filter((m) => m && (m.date || m.teamA || m.teamB));
+        }
+        console.log("lineups raw:", data, "→ parsed:", arr.length, "matches");
+        setLineups(arr);
+        setDebugInfo(`✅ Loaded ${arr.length} match lineups`);
+      })
+      .catch(() => setDebugInfo("❌ Failed to load lineups"));
   }, []);
 
   const dropdownPlayers = useMemo(() => {
     const names = new Set();
-    
+
     stats.forEach(s => {
       if (s.Contributor) names.add(prettyName(s.Contributor));
     });
-    
+
     lineups.forEach(match => {
       const teams = [match.teamA, match.teamB].filter(Boolean);
       teams.forEach(team => {
@@ -82,21 +84,8 @@ function StatsSummary({ stats }) {
 
     return Array.from(names).filter(Boolean).sort();
   }, [stats, lineups]);
-  const getLineupTotals = (playerName) => {
-  const playerData = lineupStats[normalizeName(playerName)];
-  if (!playerData) return null;
-  let matches = 0, totalRating = 0;
-  Object.entries(playerData).forEach(([season, d]) => {
-    if (!filterSeason || season === filterSeason) {
-      matches += d.matches;
-      totalRating += d.totalRating;
-    }
-  });
-  return {
-    matches,
-    avgRating: matches > 0 ? totalRating / matches : 0,
-  };
-};
+
+  // ✅ FIX: lineupStats is now declared BEFORE getLineupTotals (avoids TDZ risk)
   const lineupStats = useMemo(() => {
     const map = {};
 
@@ -111,11 +100,11 @@ function StatsSummary({ stats }) {
         const allPlayers = [];
         const players = Array.isArray(team.players) ? team.players : Object.values(team.players || {});
         allPlayers.push(...players);
-        
+
         if (Array.isArray(team.subs)) {
           allPlayers.push(...team.subs);
         }
-        
+
         allPlayers.forEach((player) => {
           if (!player || !player.Contributor) return;
 
@@ -141,6 +130,22 @@ function StatsSummary({ stats }) {
     return map;
   }, [lineups]);
 
+  const getLineupTotals = (playerName) => {
+    const playerData = lineupStats[normalizeName(playerName)];
+    if (!playerData) return null;
+    let matches = 0, totalRating = 0;
+    Object.entries(playerData).forEach(([season, d]) => {
+      if (!filterSeason || season === filterSeason) {
+        matches += d.matches;
+        totalRating += d.totalRating;
+      }
+    });
+    return {
+      matches,
+      avgRating: matches > 0 ? totalRating / matches : 0,
+    };
+  };
+
   const allSeasons = [...new Set(stats.map((s) => getSeasonFromDate(s.Date)).filter(Boolean))].sort();
   const filteredStats = filterSeason
     ? stats.filter((s) => getSeasonFromDate(s.Date) === filterSeason)
@@ -161,6 +166,49 @@ function StatsSummary({ stats }) {
     });
     return map;
   }, [stats]);
+
+  // ✅ All-players table: matches + avg rating, season-aware, merged from lineups + stats
+  const allPlayersTable = useMemo(() => {
+    const rows = new Map(); // normalizedName -> { name, matches, totalRating, source }
+
+    // 1. Lineup-based records (season-filtered)
+    Object.entries(lineupStats).forEach(([name, seasons]) => {
+      let matches = 0, totalRating = 0;
+      Object.entries(seasons).forEach(([season, d]) => {
+        if (!filterSeason || season === filterSeason) {
+          matches += d.matches;
+          totalRating += d.totalRating;
+        }
+      });
+      if (matches > 0) {
+        rows.set(name, { name: prettyName(name), matches, totalRating, source: "lineup" });
+      }
+    });
+
+    // 2. Fill gaps with match-stats records for players without lineup data
+    const seasonFilteredStats = filterSeason
+      ? stats.filter((s) => getSeasonFromDate(s.Date) === filterSeason)
+      : stats;
+
+    seasonFilteredStats.forEach((s) => {
+      const name = normalizeName(s.Contributor);
+      if (!name) return;
+      if (rows.has(name)) return; // lineup data already covers this player
+
+      const rating = parseFloat(s.Rating) || 0;
+      if (!rows.has(name)) {
+        rows.set(name, { name: prettyName(name), matches: 0, totalRating: 0, source: "stats" });
+      }
+      const row = rows.get(name);
+      row.matches += 1;
+      row.totalRating += rating;
+    });
+
+    return Array.from(rows.values())
+      .filter((r) => r.matches > 0)
+      .map((r) => ({ ...r, avgRating: r.totalRating / r.matches }))
+      .sort((a, b) => b.avgRating - a.avgRating); // highest rated first
+  }, [lineupStats, stats, filterSeason]);
 
   const getDetailedPlayerStats = (playerName) => {
     // 🐛 FIX 1: Normalize the target playerName so it matches the lowercase keys in stats
@@ -253,10 +301,11 @@ function StatsSummary({ stats }) {
     });
     const maxContrib = locationData.length > 0 ? Math.max(...locationData.map((d) => d.avgContrib)) : 0;
     const lineupTotals = getLineupTotals(playerName);
+
     return (
       <div className="player-card">
         <h3 className="player-name">⚔️ {playerName} - Attacking Stats</h3>
-        
+
         <div className="summary-list">
           <div className="summary-row"><span className="summary-label">Avg Rating</span><span className={`badge badge-rating-${ratingClass}`}>{avgRating.toFixed(2)}</span></div>
           <div className="summary-row"><span className="summary-label">Matches</span><span className="plain-value">{totalMatches}</span></div>
@@ -274,8 +323,8 @@ function StatsSummary({ stats }) {
             <span className="summary-label">MOTM</span>
             <span className="plain-value">{totalMotm}</span>
           </div>
-          
-          {/* ✅ MOVED INSIDE: Lineup Stats to prevent breaking the CSS Grid */}
+
+          {/* ✅ Lineup Stats (inside summary-list to preserve the CSS grid) */}
           {lineupTotals && lineupTotals.matches > 0 && (
             <>
               <div className="summary-row" style={{marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed #cbd5e1'}}>
@@ -299,8 +348,8 @@ function StatsSummary({ stats }) {
              <p className="no-data" style={{margin: 0}}>No goal source data</p>
           </div>
         )}
-        
-        {/* ✅ WRAPPED: Graphs in sections for Landscape Grid mapping */}
+
+        {/* ✅ Graphs in sections for Landscape Grid mapping */}
         <div className="card-section form-section">
           <FormTrendGraph matches={statsData.matches} />
         </div>
@@ -377,7 +426,7 @@ function StatsSummary({ stats }) {
             <span className="plain-value">{totalMotm}</span>
           </div>
         </div>
-        
+
         {seasons.length > 0 && (
           <div className="location-section">
             <div className="location-title">📅 Season Breakdown</div>
@@ -410,14 +459,14 @@ function StatsSummary({ stats }) {
     );
   };
 
-   return (
+  return (
     <div className="stats-summary-wrap">
       <h2 className="stats-header">Stats Summary</h2>
       {debugInfo && (
         <div style={{
-          textAlign: "center", 
-          color: debugInfo.includes("❌") ? "#ef4444" : "#64748b", 
-          fontSize: "13px", 
+          textAlign: "center",
+          color: debugInfo.includes("❌") ? "#ef4444" : "#64748b",
+          fontSize: "13px",
           marginBottom: "15px",
           padding: "8px 12px",
           background: debugInfo.includes("❌") ? "#fef2f2" : "#f8fafc",
@@ -460,10 +509,61 @@ function StatsSummary({ stats }) {
               )}
             </div>
           )}
+
+          {/* ✅ All-Players toggle button */}
+          <div className="filter-group">
+            <button
+              className={`all-players-btn ${showAllPlayers ? "active" : ""}`}
+              onClick={() => setShowAllPlayers((prev) => !prev)}
+            >
+              {showAllPlayers ? "👤 Show Single Player" : "📋 Show All Players"}
+            </button>
+          </div>
         </div>
 
         <div className="cards-grid">
-          {renderDetailedProfile(selectedPlayer) || renderSeasonalProfile(selectedPlayer)}
+          {showAllPlayers ? (
+            <div className="player-card all-players-card">
+              <h3 className="player-name">
+                📊 All Players {filterSeason ? `(${filterSeason})` : "(All Seasons)"}
+              </h3>
+              {allPlayersTable.length > 0 ? (
+                <table className="all-players-table">
+                  <thead>
+                    <tr>
+                      <th>Player</th>
+                      <th>Matches</th>
+                      <th>Avg Rating</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allPlayersTable.map(({ name, matches, avgRating }) => {
+                      const ratingClass = avgRating < 6 ? "low" : avgRating <= 8 ? "mid" : "high";
+                      return (
+                        <tr
+                          key={name}
+                          onClick={() => { setSelectedPlayer(name); setShowAllPlayers(false); }}
+                          title="Click to view detailed stats"
+                        >
+                          <td className="apt-player">{name}</td>
+                          <td>{matches}</td>
+                          <td>
+                            <span className={`badge badge-rating-${ratingClass}`}>
+                              {avgRating.toFixed(2)}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="no-data">No player records for this filter.</div>
+              )}
+            </div>
+          ) : (
+            renderDetailedProfile(selectedPlayer) || renderSeasonalProfile(selectedPlayer)
+          )}
         </div>
       </div>
     </div>

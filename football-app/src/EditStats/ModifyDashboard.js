@@ -20,24 +20,21 @@ function ModifyDashboard({ contributors, onSave }) {
   const [slotToEdit, setSlotToEdit] = useState(null);
   const [editedLineup, setEditedLineup] = useState(null);
   const [lineupVersion, setLineupVersion] = useState(0);
+  const [reportPerspective, setReportPerspective] = useState("");
   const contributorNames = ["All", ...contributors.map(c => c.name)];
   const filteredContributors = activeFilter === "All" ? contributors : contributors.filter(c => c.name === activeFilter);
-  const [reportPerspective, setReportPerspective] = useState(""); // ✨ ADD THIS
+
   const openModal = (match, contributorName) => setSelectedMatch({ ...match, contributorName });
   const openStatsModal = (match, contributorName) => {
     setSelectedStats({ ...match, contributorName });
     setStatsModalOpen(true);
   };
-      const getLayoutType = () => {
-    // Consider it a mobile device if width is <= 850px
+
+  const getLayoutType = () => {
     const isMobileWidth = window.innerWidth <= 850;
-    // Check if the device is held vertically
     const isPortrait = window.innerHeight > window.innerWidth;
-    
-    if (isMobileWidth && isPortrait) {
-      return "vertical";
-    }
-    return "horizontal"; // Desktop OR Mobile Landscape
+    if (isMobileWidth && isPortrait) return "vertical";
+    return "horizontal";
   };
 
   const [layout, setLayout] = useState(getLayoutType());
@@ -134,6 +131,22 @@ function ModifyDashboard({ contributors, onSave }) {
     return '#ef4444';
   };
 
+  // ✨ FotMob-style row helpers
+  const getWinLossLetter = (winLoss) => {
+    const w = (winLoss || "").trim().toLowerCase();
+    if (w === "win" || w === "w") return "W";
+    if (w === "loss" || w === "lose" || w === "l") return "L";
+    if (w === "draw" || w === "d") return "D";
+    return "";
+  };
+
+  const getFmRatingClass = (rating, isMotm) => {
+    if (isMotm) return "motm";               // blue — takes priority
+    const r = parseFloat(rating);
+    if (!isNaN(r) && r >= 7) return "good";  // green
+    return "";                               // default dark
+  };
+
   const splitSymbols = (symbolStr) => {
     if (!symbolStr) return [];
     const chars = [...symbolStr];
@@ -145,29 +158,22 @@ function ModifyDashboard({ contributors, onSave }) {
     return rows;
   };
 
-    const calcTeamAverage = (teamObj) => {
-  if (!teamObj) return null;
-
-  // Handle both new Array format and old Object format
-  const playersArr = Array.isArray(teamObj.players)
-    ? teamObj.players
-    : Object.values(teamObj.players || {});
-
-  // ✅ Include subs (new format) — old format has no subs, so this stays empty
-  const subsArr = Array.isArray(teamObj.subs)
-    ? teamObj.subs
-    : Object.values(teamObj.subs || {});
-
-  const allPlayers = [...playersArr, ...subsArr];
-
-  const ratings = allPlayers
-    .filter(p => p && p.rating != null) // ✨ Safely ignore null/empty slots
-    .map(p => parseFloat(p.rating))
-    .filter(r => !isNaN(r));
-
-  if (ratings.length === 0) return null;
-  return (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1);
-};
+  const calcTeamAverage = (teamObj) => {
+    if (!teamObj) return null;
+    const playersArr = Array.isArray(teamObj.players)
+      ? teamObj.players
+      : Object.values(teamObj.players || {});
+    const subsArr = Array.isArray(teamObj.subs)
+      ? teamObj.subs
+      : Object.values(teamObj.subs || {});
+    const allPlayers = [...playersArr, ...subsArr];
+    const ratings = allPlayers
+      .filter(p => p && p.rating != null)
+      .map(p => parseFloat(p.rating))
+      .filter(r => !isNaN(r));
+    if (ratings.length === 0) return null;
+    return (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1);
+  };
 
   const getPlayerMatchStats = (playerName, matchDate, matchLocation, matchTime) => {
     if (!playerName || !matchStatsData.length) return null;
@@ -180,50 +186,44 @@ function ModifyDashboard({ contributors, onSave }) {
     ) || null;
   };
 
-    const enrichLineupWithMotm = (lineup) => {
-  if (!lineup || !matchStatsData.length) return lineup;
-  const enriched = JSON.parse(JSON.stringify(lineup));
-  ['teamA', 'teamB'].forEach(team => {
-    // Enrich players
-    if (Array.isArray(enriched[team]?.players)) {
-      enriched[team].players = enriched[team].players.map(player => {
-        if (!player) return null;
-        const stat = getPlayerMatchStats(
-          player.Contributor, enriched.date, enriched.location, enriched.time
-        );
-        return {
-          ...player,
-          isMotm: stat?.["Man of the Match"] === true,
-          goals: parseInt(stat?.Goal) || 0,
-          assists: parseInt(stat?.Assist) || 0,
-        };
-      });
-    }
+  const enrichLineupWithMotm = (lineup) => {
+    if (!lineup || !matchStatsData.length) return lineup;
+    const enriched = JSON.parse(JSON.stringify(lineup));
+    ['teamA', 'teamB'].forEach(team => {
+      if (Array.isArray(enriched[team]?.players)) {
+        enriched[team].players = enriched[team].players.map(player => {
+          if (!player) return null;
+          const stat = getPlayerMatchStats(player.Contributor, enriched.date, enriched.location, enriched.time);
+          return {
+            ...player,
+            isMotm: stat?.["Man of the Match"] === true,
+            goals: parseInt(stat?.Goal) || 0,
+            assists: parseInt(stat?.Assist) || 0,
+          };
+        });
+      }
+      if (Array.isArray(enriched[team]?.subs)) {
+        enriched[team].subs = enriched[team].subs.map(player => {
+          if (!player) return null;
+          const stat = getPlayerMatchStats(player.Contributor, enriched.date, enriched.location, enriched.time);
+          return {
+            ...player,
+            isMotm: stat?.["Man of the Match"] === true,
+            goals: parseInt(stat?.Goal) || 0,
+            assists: parseInt(stat?.Assist) || 0,
+          };
+        });
+      }
+    });
+    return enriched;
+  };
 
-    // ✅ Enrich subs too
-    if (Array.isArray(enriched[team]?.subs)) {
-      enriched[team].subs = enriched[team].subs.map(player => {
-        if (!player) return null;
-        const stat = getPlayerMatchStats(
-          player.Contributor, enriched.date, enriched.location, enriched.time
-        );
-        return {
-          ...player,
-          isMotm: stat?.["Man of the Match"] === true,
-          goals: parseInt(stat?.Goal) || 0,
-          assists: parseInt(stat?.Assist) || 0,
-        };
-      });
-    }
-  });
-  return enriched;
-};
-      const fetchAndOpenReport = async (isEditMode = false) => {
+  const fetchAndOpenReport = async (isEditMode = false) => {
     try {
       const [lineupsRes, statsRes] = await Promise.all([
-  fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`),
-  fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`)
-]);
+        fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`),
+        fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`)
+      ]);
       const lineups = await lineupsRes.json();
       const stats = await statsRes.json();
 
@@ -237,17 +237,15 @@ function ModifyDashboard({ contributors, onSave }) {
         (l.time || "").trim() === targetTime
       );
 
-      // ✨ RESTORED IF/ELSE BLOCK
       if (found) {
         setMatchReport(found);
         setEditedLineup(JSON.parse(JSON.stringify(found)));
         setMatchStatsData(stats);
         setIsEditingReport(isEditMode);
-        setReportPerspective(choiceMatch.name); 
+        setReportPerspective(choiceMatch.name);
         setLineupVersion(v => v + 1);
-        
-        // Always fetch latest player cards when entering edit mode
-        if (isEditMode) { 
+
+        if (isEditMode) {
           const pRes = await fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`);
           const pData = await pRes.json();
           setAvailablePlayers(Array.isArray(pData) ? pData : []);
@@ -262,38 +260,37 @@ function ModifyDashboard({ contributors, onSave }) {
     }
   };
 
-    const handleSaveReportLineup = async () => {
+  const handleSaveReportLineup = async () => {
     if (!editedLineup) return;
 
-    // ✅ FIXED - includes subs
-const sanitizeTeam = (teamObj) => {
-  if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] };
-  const cleanPlayers = (teamObj.players || []).map(p => {
-    if (!p) return null;
-    return {
-      Contributor: p.Contributor,
-      rating: parseFloat(p.rating) || 0,
-      picture: p.picture || `/${p.Contributor}.jpeg`
-    };
-  });
-  while (cleanPlayers.length < 11) cleanPlayers.push(null);
+    const sanitizeTeam = (teamObj) => {
+      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] };
+      const cleanPlayers = (teamObj.players || []).map(p => {
+        if (!p) return null;
+        return {
+          Contributor: p.Contributor,
+          rating: parseFloat(p.rating) || 0,
+          picture: p.picture || `/${p.Contributor}.jpeg`
+        };
+      });
+      while (cleanPlayers.length < 11) cleanPlayers.push(null);
 
-  const cleanSubs = (teamObj.subs || []).map(p => {
-    if (!p) return null;
-    return {
-      Contributor: p.Contributor,
-      rating: parseFloat(p.rating) || 0,
-      picture: p.picture || `/${p.Contributor}.jpeg`
-    };
-  });
-  while (cleanSubs.length < 2) cleanSubs.push(null);
+      const cleanSubs = (teamObj.subs || []).map(p => {
+        if (!p) return null;
+        return {
+          Contributor: p.Contributor,
+          rating: parseFloat(p.rating) || 0,
+          picture: p.picture || `/${p.Contributor}.jpeg`
+        };
+      });
+      while (cleanSubs.length < 2) cleanSubs.push(null);
 
-  return { 
-    formation: teamObj.formation || "4-4-2", 
-    players: cleanPlayers.slice(0, 11),
-    subs: cleanSubs.slice(0, 2)
-  };
-};
+      return {
+        formation: teamObj.formation || "4-4-2",
+        players: cleanPlayers.slice(0, 11),
+        subs: cleanSubs.slice(0, 2)
+      };
+    };
 
     const payload = {
       date: editedLineup.date,
@@ -312,10 +309,10 @@ const sanitizeTeam = (teamObj) => {
       const result = await res.json();
       console.log("📥 Server response:", result);
       alert("✅ Match Report saved!");
-      
+
       setIsEditingReport(false);
-      setMatchReport(JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB }))); 
-      setLineupVersion(v => v + 1); 
+      setMatchReport(JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB })));
+      setLineupVersion(v => v + 1);
     } catch (err) {
       console.error("Save failed:", err);
       alert("❌ Failed to save match report");
@@ -343,6 +340,8 @@ const sanitizeTeam = (teamObj) => {
               <h2 className="md-contributor-name">{contributor.name}</h2>
               <span className="md-match-count">{sortedMatches.length} Matches</span>
             </div>
+
+            {/* ===== DESKTOP/PORTRAIT: original table (hidden in landscape via CSS) ===== */}
             <table className="md-table">
               <thead className="md-thead">
                 <tr>
@@ -355,7 +354,6 @@ const sanitizeTeam = (teamObj) => {
               </thead>
               <tbody className="md-tbody">
                 {sortedMatches.map((match, idx) => {
-                  const goals = Math.max(0, (match.goalContribution || 0) - (match.assist || 0));
                   const sameMatchPlayers = getSameMatchPlayers(match, contributor.name);
                   return (
                     <tr key={idx} className="md-row" onClick={() => setChoiceMatch({ match: match, name: contributor.name })}>
@@ -387,16 +385,16 @@ const sanitizeTeam = (teamObj) => {
                       <td className="md-td center" data-label="Rating">
                         {match.manOfTheMatch ? (
                           <span className="md-rating-motm-wrapper">
-                            <span 
-                              className="md-rating md-rating-motm" 
+                            <span
+                              className="md-rating md-rating-motm"
                               style={{ backgroundColor: getRatingBgColor(match.rating) }}
                             >
                               {match.rating || "—"}
                             </span>
                           </span>
                         ) : (
-                          <span 
-                            className="md-rating" 
+                          <span
+                            className="md-rating"
                             style={{ backgroundColor: getRatingBgColor(match.rating) }}
                           >
                             {match.rating || "—"}
@@ -423,6 +421,92 @@ const sanitizeTeam = (teamObj) => {
                 })}
               </tbody>
             </table>
+
+            {/* ===== MOBILE (portrait + landscape): FotMob-style list ===== */}
+<div className="fm-list">
+  {sortedMatches.map((match, idx) => {
+    const goals = Math.max(0, (match.goalContribution || 0) - (match.assist || 0));
+    const assists = match.assist || 0;
+    const wlLetter = getWinLossLetter(match.winLoss);
+    const sameMatchPlayers = getSameMatchPlayers(match, contributor.name);
+    const isMotm = !!match.manOfTheMatch;
+    return (
+      <div
+        key={`fm-${idx}`}
+        className="fm-row"
+        onClick={() => setChoiceMatch({ match: match, name: contributor.name })}
+      >
+        {/* Sub-row 1: date top-left + location */}
+        <div className="fm-row-top">
+          <span className="fm-date">{match.date}</span>
+          <span className="fm-location">📍 {match.location || "Unknown"}</span>
+        </div>
+
+        {/* Sub-row 2: W/D/L + result (left) · G/A icons + actions + rating (right) */}
+        <div className="fm-row-main">
+          <div className="fm-left">
+            {wlLetter && (
+              <span className={`fm-wl fm-wl-${wlLetter.toLowerCase()}`}>{wlLetter}</span>
+            )}
+            <span className="fm-score">{match.matchResult || "—"}</span>
+          </div>
+          <div className="fm-right">
+            {/* ✨ Expanded goal/assist icons — one icon per goal/assist */}
+            {goals > 0 && (
+              <span className="fm-icons fm-goals" title={`${goals} goal(s)`}>
+                {[...Array(goals)].map((_, i) => (
+                  <span key={`g-${i}`} className="fm-icon">⚽</span>
+                ))}
+              </span>
+            )}
+            {assists > 0 && (
+              <span className="fm-icons fm-assists" title={`${assists} assist(s)`}>
+                {[...Array(assists)].map((_, i) => (
+                  <span key={`a-${i}`} className="fm-icon">👟</span>
+                ))}
+              </span>
+            )}
+            {goals === 0 && assists === 0 && <span className="fm-ga fm-none">—</span>}
+
+            {/* ✏️/⚔️ moved into this row */}
+            <div className="fm-actions" onClick={(e) => e.stopPropagation()}>
+              <button
+                className="fm-action-btn"
+                title="Edit"
+                onClick={(e) => { e.stopPropagation(); openModal(match, contributor.name); }}
+              >
+                ✏️
+              </button>
+              {sameMatchPlayers.length > 0 && (
+                <button
+                  className="fm-action-btn"
+                  title="Compare"
+                  onClick={(e) => handleCompareClick(e, match, contributor.name)}
+                >
+                  ⚔️
+                </button>
+              )}
+              {compareMenu && compareMenu.match === match && compareMenu.contributorName === contributor.name && (
+                <div className="md-compare-dropdown fm-compare-dropdown" onClick={(e) => e.stopPropagation()}>
+                  {compareMenu.players.map((p, pIdx) => (
+                    <div key={pIdx} className="md-compare-option" onClick={(e) => { e.stopPropagation(); selectCompareTarget(p); }}>
+                      vs {p.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ✨ Rating in a rounded rectangle box */}
+            <span className={`fm-rating-box ${getFmRatingClass(match.rating, isMotm)}`}>
+              {match.rating || "—"}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  })}
+</div>
           </div>
         );
       })}
@@ -438,7 +522,7 @@ const sanitizeTeam = (teamObj) => {
             <button className="choice-close" onClick={() => setChoiceMatch(null)}>✕</button>
             <h3>Match on {choiceMatch.match.date}</h3>
             <p className="choice-subtitle">What would you like to view for <strong>{choiceMatch.name}</strong>?</p>
-                        <div className="choice-buttons">
+            <div className="choice-buttons">
               <button className="choice-btn stats" onClick={() => { openStatsModal(choiceMatch.match, choiceMatch.name); setChoiceMatch(null); }}>
                 📊 <span>View Individual Stats</span>
               </button>
@@ -461,24 +545,21 @@ const sanitizeTeam = (teamObj) => {
             <h2 className="report-title">⚽ Match Report: {matchReport.date}</h2>
             {matchReport.location && <p className="report-meta">📍 {matchReport.location} {matchReport.time && `• 🕒 ${matchReport.time}`}</p>}
 
-                                                                        {(() => {
-              // ✨ Calculate averages once for the badges
+            {(() => {
               const avgA = calcTeamAverage(matchReport.teamA);
               const avgB = calcTeamAverage(matchReport.teamB);
 
               let matchResult = '', winLoss = '';
-              
-              // 1. Fetch the exact result for the player whose row was clicked
+
               const perspectiveStat = getPlayerMatchStats(reportPerspective, matchReport.date, matchReport.location, matchReport.time);
               if (perspectiveStat && perspectiveStat["Match result"]) {
                 matchResult = perspectiveStat["Match result"];
                 winLoss = perspectiveStat["Win/Loss?"] || '';
               } else {
-                // 2. Fallback: If the clicked player doesn't have a stats record yet
                 const playersA = Array.isArray(matchReport.teamA?.players) ? matchReport.teamA.players : Object.values(matchReport.teamA?.players || {});
                 const playersB = Array.isArray(matchReport.teamB?.players) ? matchReport.teamB.players : Object.values(matchReport.teamB?.players || {});
                 const allPlayers = [...playersA, ...playersB].filter(p => p != null);
-                
+
                 for (const p of allPlayers) {
                   const stat = getPlayerMatchStats(p.Contributor, matchReport.date, matchReport.location, matchReport.time);
                   if (stat && stat["Match result"]) {
@@ -491,7 +572,6 @@ const sanitizeTeam = (teamObj) => {
 
               return (
                 <>
-                  {/* SMART RESULT HEADER (Simplified to just the Score) */}
                   <div className="report-result-header" style={{ justifyContent: 'center', border: 'none', background: 'transparent', padding: '10px 0', marginBottom: '10px' }}>
                     <div className="result-score-center">
                       <span className="result-score">{matchResult || '—'}</span>
@@ -499,21 +579,12 @@ const sanitizeTeam = (teamObj) => {
                     </div>
                   </div>
 
-                  {/* TACTICAL PITCH LINEUP (Read-only / Editable) */}
                   <div style={{ marginTop: '10px' }}>
                     <h3 style={{ textAlign: 'center', marginBottom: '15px', color: '#444' }}>
                       {isEditingReport ? "✏️ Edit Tactical Lineup" : "Tactical Lineup"}
                     </h3>
-                    
-                    {/* ✨ Pitch Container with Floating Avg Badges */}
-                    <div style={{ position: 'relative' }}>
-                      <div className="pitch-avg-badge pitch-avg-left" style={{ color: getRatingColor(avgA) }}>
-                        Avg: {avgA ?? '—'}
-                      </div>
-                      <div className="pitch-avg-badge pitch-avg-right" style={{ color: getRatingColor(avgB) }}>
-                        Avg: {avgB ?? '—'}
-                      </div>
 
+                    <div style={{ position: 'relative' }}>
                       <MatchLineup
                         key={`lineup-${isEditingReport ? 'edit' : 'view'}-${lineupVersion}`}
                         matchData={{ Date: matchReport.date, Location: matchReport.location, Time: matchReport.time }}
@@ -535,16 +606,16 @@ const sanitizeTeam = (teamObj) => {
 
                     {isEditingReport && (
                       <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                        <button 
+                        <button
                           onClick={() => { setIsEditingReport(false); setEditedLineup(null); setLineupVersion(v => v + 1); }}
                           style={{ padding: '10px 20px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
                         >
                           Cancel
                         </button>
-                        <button 
+                        <button
                           onClick={handleSaveReportLineup}
-                          style={{ 
-                            padding: '10px 20px', background: '#10b981', color: '#fff', border: 'none', 
+                          style={{
+                            padding: '10px 20px', background: '#10b981', color: '#fff', border: 'none',
                             borderRadius: '6px', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(16,185,129,0.3)'
                           }}
                         >
@@ -557,91 +628,89 @@ const sanitizeTeam = (teamObj) => {
               );
             })()}
 
-                  {/* SLOT EDIT MODAL */}
-      {slotToEdit && (
-        <div className="slot-edit-overlay" onClick={() => setSlotToEdit(null)}>
-          <div className="slot-edit-modal" onClick={e => e.stopPropagation()}>
-            <button className="slot-edit-close" onClick={() => setSlotToEdit(null)}>✕</button>
-            <h3>{slotToEdit.player ? "Edit Player" : "Add Player"}</h3>
-            
-                        <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Select Player:</label>
-              <select 
-                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '15px' }}
-                value={slotToEdit.player?.Contributor || ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (!val) {
-                    setSlotToEdit(prev => ({ ...prev, player: null }));
-                  } else {
-                    const selected = availablePlayers.find(p => p.Contributor === val);
-                    setSlotToEdit(prev => ({
-                      ...prev,
-                      player: { 
-                        Contributor: selected.Contributor,
-                        picture: selected.picture || `/${selected.Contributor}.jpeg`,
-                        rating: prev.player?.rating !== undefined ? prev.player.rating : "" // FIX: Changed from 50 to ""
-                      }
-                    }));
-                  }
-                }}
-              >
-                <option value="">-- Empty Slot --</option>
-                {availablePlayers.map(p => (
-                  <option key={p.Contributor} value={p.Contributor}>{p.Contributor}</option>
-                ))}
-              </select>
-            </div>
-            
-            {slotToEdit.player && (
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Match Rating (0-10.0):</label>
-                <input 
-                  type="number" min="0" max="10" step="0.1"
-                  value={slotToEdit.player.rating !== "" && slotToEdit.player.rating !== undefined ? slotToEdit.player.rating : ""}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setSlotToEdit(prev => ({
-                      ...prev,
-                      player: { ...prev.player, rating: val === "" ? "" : parseFloat(val) }
-                    }));
-                  }}
-                />
+            {/* SLOT EDIT MODAL */}
+            {slotToEdit && (
+              <div className="slot-edit-overlay" onClick={() => setSlotToEdit(null)}>
+                <div className="slot-edit-modal" onClick={e => e.stopPropagation()}>
+                  <button className="slot-edit-close" onClick={() => setSlotToEdit(null)}>✕</button>
+                  <h3>{slotToEdit.player ? "Edit Player" : "Add Player"}</h3>
+
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Select Player:</label>
+                    <select
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '15px' }}
+                      value={slotToEdit.player?.Contributor || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (!val) {
+                          setSlotToEdit(prev => ({ ...prev, player: null }));
+                        } else {
+                          const selected = availablePlayers.find(p => p.Contributor === val);
+                          setSlotToEdit(prev => ({
+                            ...prev,
+                            player: {
+                              Contributor: selected.Contributor,
+                              picture: selected.picture || `/${selected.Contributor}.jpeg`,
+                              rating: prev.player?.rating !== undefined ? prev.player.rating : ""
+                            }
+                          }));
+                        }
+                      }}
+                    >
+                      <option value="">-- Empty Slot --</option>
+                      {availablePlayers.map(p => (
+                        <option key={p.Contributor} value={p.Contributor}>{p.Contributor}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {slotToEdit.player && (
+                    <div style={{ marginBottom: '24px' }}>
+                      <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Match Rating (0-10.0):</label>
+                      <input
+                        type="number" min="0" max="10" step="0.1"
+                        value={slotToEdit.player.rating !== "" && slotToEdit.player.rating !== undefined ? slotToEdit.player.rating : ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setSlotToEdit(prev => ({
+                            ...prev,
+                            player: { ...prev.player, rating: val === "" ? "" : parseFloat(val) }
+                          }));
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                    <button onClick={() => setSlotToEdit(null)} style={{ padding: '10px 16px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+                    <button onClick={() => {
+                      const { team, idx, player } = slotToEdit;
+                      const teamKey = team === 'A' ? 'teamA' : 'teamB';
+                      setEditedLineup(prev => {
+                        const newLineup = JSON.parse(JSON.stringify(prev));
+
+                        if (typeof idx === 'string' && idx.startsWith('sub')) {
+                          const subIdx = parseInt(idx.replace('sub', ''));
+                          if (!Array.isArray(newLineup[teamKey].subs)) {
+                            newLineup[teamKey].subs = [null, null];
+                          }
+                          newLineup[teamKey].subs[subIdx] = player;
+                        } else {
+                          if (!Array.isArray(newLineup[teamKey].players)) {
+                            newLineup[teamKey].players = Array(11).fill(null);
+                          }
+                          newLineup[teamKey].players[idx] = player;
+                        }
+                        return newLineup;
+                      });
+                      setLineupVersion(v => v + 1);
+                      setSlotToEdit(null);
+                    }} style={{ padding: '10px 16px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>
+                      Save to Pitch
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button onClick={() => setSlotToEdit(null)} style={{ padding: '10px 16px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
-              <button onClick={() => {
-                  const { team, idx, player } = slotToEdit;
-                  const teamKey = team === 'A' ? 'teamA' : 'teamB';
-                  setEditedLineup(prev => {
-                    const newLineup = JSON.parse(JSON.stringify(prev));
-
-                    if (typeof idx === 'string' && idx.startsWith('sub')) {
-                      // Handle sub slots
-                      const subIdx = parseInt(idx.replace('sub', ''));
-                      if (!Array.isArray(newLineup[teamKey].subs)) {
-                        newLineup[teamKey].subs = [null, null];
-                      }
-                      newLineup[teamKey].subs[subIdx] = player;
-                    } else {
-                      // Handle pitch slots
-                      if (!Array.isArray(newLineup[teamKey].players)) {
-                        newLineup[teamKey].players = Array(11).fill(null);
-                      }
-                      newLineup[teamKey].players[idx] = player;
-                    }
-                    return newLineup;
-                  });
-                  setLineupVersion(v => v + 1);
-                  setSlotToEdit(null);
-                }} style={{ padding: '10px 16px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>
-                Save to Pitch
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
           </div>
         </div>
       )}
