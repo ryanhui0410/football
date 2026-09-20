@@ -5,12 +5,12 @@ function BottomNav({ activeView, onNavigate }) {
   const items = [
     { key: "home", label: "Home", icon: "🏠", onClick: onNavigate.home },
     { key: "add", label: "Add Stats", icon: "➕", onClick: onNavigate.add },
-    { key: "modify", label: "Modify", icon: "✏️", onClick: onNavigate.modify },
+    { key: "modify", label: "Matches", icon: "✏️", onClick: onNavigate.modify },
     { key: "summary", label: "Summary", icon: "📊", onClick: onNavigate.summary },
     { key: "calendar", label: "Calendar", icon: "📅", onClick: onNavigate.calendar },
     { key: "ratings", label: "Ratings", icon: "⭐", onClick: onNavigate.ratings },
     { key: "addPlayerCard", label: "Cards", icon: "🃏", onClick: onNavigate.cards },
-    { key: "tactical", label: "Tactical", icon: "⚽", onClick: onNavigate.tactical },
+    { key: "tactical", label: "Add Lineup", icon: "⚽", onClick: onNavigate.tactical },
   ];
 
   return (

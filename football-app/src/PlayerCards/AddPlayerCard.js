@@ -31,7 +31,7 @@ const ALL_POSITIONS = [
   "LB", "CB", "GK", "RB",
 ];
 
-const FILTER_OPTIONS = ["Barry", "The Bros", "馬哲"];
+const FILTER_OPTIONS = ["Barry", "The Bros", "馬哲", "梁哥"];
 
 // Combine all possible sub-stats to initialize the form state
 const ALL_SUB_STATS = [

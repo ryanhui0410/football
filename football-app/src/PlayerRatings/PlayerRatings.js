@@ -262,6 +262,7 @@ const closePicModal = () => {
           <option value="Barry">Barry</option>
           <option value="The Bros">The Bros</option>
           <option value="馬哲">馬哲</option>
+          <option value="梁哥">梁哥</option>   {/* ✅ NEW */}
         </select>
       </div>
       {/* ---- Add Missing Pictures Button ---- */}

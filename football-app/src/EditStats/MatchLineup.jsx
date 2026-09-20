@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "./MatchLineup.css";
 const GITHUB_OWNER = "ryanhui0410";
 const GITHUB_REPO = "football";   // ← repo name is "football", NOT "football/football-app"
