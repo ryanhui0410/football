@@ -878,7 +878,7 @@
   {
     "Contributor": "KK",
     "picture": "/KK.jpeg",
-    "overall": 64,
+    "overall": 65,
     "position": "CB",
     "weakFoot": 2,
     "preferredFoot": "Right",
@@ -887,7 +887,7 @@
     "PAS": 60,
     "DRI": 56,
     "DEF": 65,
-    "PHY": 60,
+    "PHY": 61,
     "Acceleration": 52,
     "Sprint Speed": 50,
     "Positioning": 49,
@@ -908,17 +908,18 @@
     "Ball Control": 65,
     "Dribbling": 62,
     "Composure": 58,
-    "Interceptions": 65,
+    "Interceptions": 66,
     "Heading Accuracy": 61,
     "Def Awareness": 66,
     "Standing Tackle": 60,
     "Sliding Tackle": 60,
-    "Jumping": 58,
+    "Jumping": 61,
     "Stamina": 63,
-    "Strength": 59,
+    "Strength": 60,
     "Aggression": 57,
     "positionRatings": {
-      "RB": 65
+      "RB": 65,
+      "CB": 65
     }
   },
   {
