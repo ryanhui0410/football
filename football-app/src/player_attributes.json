@@ -2983,8 +2983,8 @@
     "SHO": 57,
     "PAS": 63,
     "DRI": 60,
-    "DEF": 66,
-    "PHY": 64,
+    "DEF": 64,
+    "PHY": 63,
     "DIV": 0,
     "HAN": 0,
     "KIC": 0,
@@ -3011,14 +3011,14 @@
     "Ball Control": 61,
     "Dribbling": 57,
     "Composure": 58,
-    "Interceptions": 67,
+    "Interceptions": 65,
     "Heading Accuracy": 62,
-    "Def Awareness": 66,
+    "Def Awareness": 64,
     "Standing Tackle": 62,
     "Sliding Tackle": 61,
-    "Jumping": 64,
+    "Jumping": 63,
     "Stamina": 61,
-    "Strength": 66,
+    "Strength": 64,
     "Aggression": 60,
     "GK Diving": 0,
     "GK Handling": 0,
@@ -3026,8 +3026,8 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "RB": 66,
-      "CB": 66
+      "RB": 64,
+      "CB": 64
     }
   }
 ]
