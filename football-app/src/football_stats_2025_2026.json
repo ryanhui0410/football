@@ -2675,5 +2675,27 @@
     "Assist to": "Darren",
     "Assist to count": 1,
     "Man of the Match": false
+  },
+  {
+    "Date": "20/9/2026",
+    "Contributor": "Darren",
+    "Symbol": "⚽⚽⚽⚽⚽👟",
+    "Goal": 5,
+    "Assist": 1,
+    "Rating": 10,
+    "Location": "香港仔",
+    "Time": "4:00 PM",
+    "Goal Contribution": 6,
+    "source": "梁哥",
+    "Left Foot": 2,
+    "Right Foot": 3,
+    "Head": 0,
+    "Other body parts": 0,
+    "Season": "2026-2027",
+    "Match result": "6-10",
+    "Win/Loss?": "Loss",
+    "Assist to": "",
+    "Assist to count": 0,
+    "Man of the Match": true
   }
 ]
