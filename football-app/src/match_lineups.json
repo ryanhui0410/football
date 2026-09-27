@@ -1104,7 +1104,11 @@
         }
       ],
       "subs": [
-        null,
+        {
+          "Contributor": "Dave",
+          "rating": 6.9,
+          "picture": "/images/Dave.jpeg"
+        },
         null
       ]
     },
