@@ -2697,5 +2697,27 @@
     "Assist to": "",
     "Assist to count": 0,
     "Man of the Match": true
+  },
+  {
+    "Date": "26/9/2026",
+    "Contributor": "Ryan",
+    "Symbol": "⚽⚽",
+    "Goal": 2,
+    "Assist": 0,
+    "Rating": 8.7,
+    "Location": "香港仔",
+    "Time": "11:30 AM",
+    "Goal Contribution": 2,
+    "source": "Barry",
+    "Left Foot": 0,
+    "Right Foot": 2,
+    "Head": 0,
+    "Other body parts": 0,
+    "Season": "2026-2027",
+    "Match result": "4-4",
+    "Win/Loss?": "Draw",
+    "Assist to": "",
+    "Assist to count": 0,
+    "Man of the Match": false
   }
 ]
