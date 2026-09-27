@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import "./MatchLineup.css";
 const GITHUB_OWNER = "ryanhui0410";
 const GITHUB_REPO = "football";   // ← repo name is "football", NOT "football/football-app"
 const IMAGES_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/football-app/public/images`;
+
 // Standardized 11-slot formations
 const FORMATIONS = {
   "4-4-2": {
@@ -83,7 +84,8 @@ function MatchLineup({
   const [teamASubs, setTeamASubs] = useState([null, null]);
   const [teamBSubs, setTeamBSubs] = useState([null, null]);
   const [ownPictureMap, setOwnPictureMap] = useState({});
-    useEffect(() => {
+
+  useEffect(() => {
     if (pictureMapProp && Object.keys(pictureMapProp).length > 0) return; // parent supplied one
     let cancelled = false;
     fetch(`${IMAGES_API_URL}?t=${Date.now()}`)
@@ -105,6 +107,7 @@ function MatchLineup({
   const pictureMap = pictureMapProp && Object.keys(pictureMapProp).length > 0
     ? pictureMapProp
     : ownPictureMap;
+
   // SINGLE useEffect to load all initial data
   useEffect(() => {
     if (initialLineup) {
@@ -119,29 +122,38 @@ function MatchLineup({
       setTeamBSubs(migratedB.subs || [null, null]);
     }
   }, [initialLineup]);
+
   // ── Team average rating (players + subs, null-safe) ──
-const calcTeamAvg = (players, subs) => {
-  const all = [...(players || []), ...(subs || [])];
-  const ratings = all
-    .filter(p => p && p.rating != null && !isNaN(parseFloat(p.rating)))
-    .map(p => parseFloat(p.rating));
-  if (ratings.length === 0) return null;
-  return (ratings.reduce((s, r) => s + r, 0) / ratings.length).toFixed(1);
-};
+  const calcTeamAvg = (players, subs) => {
+    const all = [...(players || []), ...(subs || [])];
+    const ratings = all
+      .filter(p => p && p.rating != null && !isNaN(parseFloat(p.rating)))
+      .map(p => parseFloat(p.rating));
+    if (ratings.length === 0) return null;
+    return (ratings.reduce((s, r) => s + r, 0) / ratings.length).toFixed(1);
+  };
 
-const avgA = calcTeamAvg(teamAPlayers, teamASubs);
-const avgB = calcTeamAvg(teamBPlayers, teamBSubs);
+  const avgA = calcTeamAvg(teamAPlayers, teamASubs);
+  const avgB = calcTeamAvg(teamBPlayers, teamBSubs);
 
-// Same color logic as the pitch avg badges — uses parent's getRatingColor if given
-const getAvgColor = (avg) => {
-  if (getRatingColor) return getRatingColor(avg);
-  const r = parseFloat(avg);
-  if (isNaN(r)) return '#9e9e9e';
-  if (r >= 9.0) return '#2563eb';
-  if (r >= 7.0) return '#16a34a';
-  if (r >= 5.0) return '#ea580c';
-  return '#dc2626';
-};
+  // Same color logic as the pitch avg badges — uses parent's getRatingColor if given
+  const getAvgColor = (avg) => {
+    if (getRatingColor) return getRatingColor(avg);
+    const r = parseFloat(avg);
+    if (isNaN(r)) return '#9e9e9e';
+    if (r >= 9.0) return '#2563eb';
+    if (r >= 7.0) return '#16a34a';
+    if (r >= 5.0) return '#ea580c';
+    return '#dc2626';
+  };
+
+  // ✨ Resolve stats from the player object itself (lineup fields) OR enrichment fields
+  const resolveStats = (player) => ({
+    goals: parseInt(player.goals ?? player.goal) || 0,
+    assists: parseInt(player.assists ?? player.assist) || 0,
+    isMotm: player.isMotm === true || player.manOfTheMatch === true,
+  });
+
   const getSlotPosition = (pos, team) => {
     if (!isVertical) {
       return { 
@@ -174,50 +186,55 @@ const getAvgColor = (avg) => {
         onClick={() => handleSlotClick(team, `sub${subIdx}`, player)}
       >
         {player ? (
-          <div className={`slot-card ${player.isMotm ? 'motm' : ''}`}>
+          (() => {
+            const { goals, assists, isMotm } = resolveStats(player);
+            return (
+              <div className={`slot-card ${isMotm ? 'motm' : ''}`}>
 
-            {player.isMotm && <div className="motm-badge">MOTM</div>}
-            
-            <div 
-              className="card-rating-badge" 
-              style={{ backgroundColor: getRatingColor ? getRatingColor(player.rating) : '#9e9e9e' }}
-            >
-              {player.rating != null ? parseFloat(player.rating).toFixed(1) : '—'}
-            </div>
-
-                        <div className="player-icon-wrapper">
-              <img 
-                src={
-                  pictureMap?.[player.Contributor?.toLowerCase()]
-                  || ""   // nothing found — hide instead of guessing a path
-                } 
-                alt={player.Contributor}
-                style={{ visibility: pictureMap?.[player.Contributor?.toLowerCase()] ? "visible" : "hidden" }}
-              />
-              
-              {/* Assists Icons */}
-              {player.assists > 0 && (
-                <div className="stat-badge assists">
-                  {[...Array(player.assists)].map((_, i) => (
-                    <span key={`sub-assist-${i}`} className="icon">👟</span>
-                  ))}
+                {isMotm && <div className="motm-badge">MOTM</div>}
+                
+                <div 
+                  className="card-rating-badge" 
+                  style={{ backgroundColor: getRatingColor ? getRatingColor(player.rating) : '#9e9e9e' }}
+                >
+                  {player.rating != null ? parseFloat(player.rating).toFixed(1) : '—'}
                 </div>
-              )}
-              
-              {/* Goals Icons */}
-              {player.goals > 0 && (
-                <div className="stat-badge goals">
-                  {[...Array(player.goals)].map((_, i) => (
-                    <span key={`sub-goal-${i}`} className="icon">⚽</span>
-                  ))}
-                </div>
-              )}
-            </div>
 
-            <div className="slot-info">
-              <span className="slot-name">{player.Contributor}</span>
-            </div>
-          </div>
+                <div className="player-icon-wrapper">
+                  <img 
+                    src={
+                      pictureMap?.[player.Contributor?.toLowerCase()]
+                      || ""   // nothing found — hide instead of guessing a path
+                    } 
+                    alt={player.Contributor}
+                    style={{ visibility: pictureMap?.[player.Contributor?.toLowerCase()] ? "visible" : "hidden" }}
+                  />
+                  
+                  {/* Assists Icons */}
+                  {assists > 0 && (
+                    <div className="stat-badge assists">
+                      {[...Array(assists)].map((_, i) => (
+                        <span key={`sub-assist-${i}`} className="icon">👟</span>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Goals Icons */}
+                  {goals > 0 && (
+                    <div className="stat-badge goals">
+                      {[...Array(goals)].map((_, i) => (
+                        <span key={`sub-goal-${i}`} className="icon">⚽</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="slot-info">
+                  <span className="slot-name">{player.Contributor}</span>
+                </div>
+              </div>
+            );
+          })()
         ) : (
           <div className="empty-sub-card">
             <span className="empty-sub-label">SUB {subIdx + 1}</span>
@@ -244,53 +261,57 @@ const getAvgColor = (avg) => {
           onClick={() => handleSlotClick(team, idx, player)}
         >
           {player ? (
-            <div className={`slot-card ${player.isMotm ? 'motm' : ''}`}>
+            (() => {
+              const { goals, assists, isMotm } = resolveStats(player);
+              return (
+                <div className={`slot-card ${isMotm ? 'motm' : ''}`}>
 
-              {player.isMotm && <div className="motm-badge">MOTM</div>}
-              
-              {/* 1. Top-Right Rating Badge */}
-              <div 
-                className="card-rating-badge" 
-                style={{ backgroundColor: getRatingColor ? getRatingColor(player.rating) : '#9e9e9e' }}
-              >
-                {player.rating != null ? parseFloat(player.rating).toFixed(1) : '—'}
-              </div>
-
-              {/* 2. Icon Wrapper (Holds Image + Stats) */}
-                            {/* 2. Icon Wrapper (Holds Image + Stats) */}
-              <div className="player-icon-wrapper">
-                <img 
-                  src={
-                    pictureMap?.[player.Contributor?.toLowerCase()]
-                    || ""   // nothing found — hide instead of guessing a path
-                  } 
-                  alt={player.Contributor}
-                  style={{ visibility: pictureMap?.[player.Contributor?.toLowerCase()] ? "visible" : "hidden" }}
-                />
-                
-                {/* Bottom-Left: Assists Icons */}
-                {player.assists > 0 && (
-                  <div className="stat-badge assists">
-                    {[...Array(player.assists)].map((_, i) => (
-                      <span key={`pitch-assist-${i}`} className="icon">👟</span>
-                    ))}
+                  {isMotm && <div className="motm-badge">MOTM</div>}
+                  
+                  {/* 1. Top-Right Rating Badge */}
+                  <div 
+                    className="card-rating-badge" 
+                    style={{ backgroundColor: getRatingColor ? getRatingColor(player.rating) : '#9e9e9e' }}
+                  >
+                    {player.rating != null ? parseFloat(player.rating).toFixed(1) : '—'}
                   </div>
-                )}
-                
-                {/* Bottom-Right: Goals Icons */}
-                {player.goals > 0 && (
-                  <div className="stat-badge goals">
-                    {[...Array(player.goals)].map((_, i) => (
-                      <span key={`pitch-goal-${i}`} className="icon">⚽</span>
-                    ))}
-                  </div>
-                )}
-              </div>
 
-              <div className="slot-info">
-                <span className="slot-name">{player.Contributor}</span>
-              </div>
-            </div>
+                  {/* 2. Icon Wrapper (Holds Image + Stats) */}
+                  <div className="player-icon-wrapper">
+                    <img 
+                      src={
+                        pictureMap?.[player.Contributor?.toLowerCase()]
+                        || ""   // nothing found — hide instead of guessing a path
+                      } 
+                      alt={player.Contributor}
+                      style={{ visibility: pictureMap?.[player.Contributor?.toLowerCase()] ? "visible" : "hidden" }}
+                    />
+                    
+                    {/* Bottom-Left: Assists Icons */}
+                    {assists > 0 && (
+                      <div className="stat-badge assists">
+                        {[...Array(assists)].map((_, i) => (
+                          <span key={`pitch-assist-${i}`} className="icon">👟</span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Bottom-Right: Goals Icons */}
+                    {goals > 0 && (
+                      <div className="stat-badge goals">
+                        {[...Array(goals)].map((_, i) => (
+                          <span key={`pitch-goal-${i}`} className="icon">⚽</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="slot-info">
+                    <span className="slot-name">{player.Contributor}</span>
+                  </div>
+                </div>
+              );
+            })()
           ) : (
             <div className="empty-slot-card">
               <div className="empty-slot-icon">
@@ -325,16 +346,14 @@ const getAvgColor = (avg) => {
     }
   };
 
-    return (
+  return (
     <div className={`match-lineup-container ${isVertical ? "layout-vertical" : "layout-horizontal"}`}>
       <div className="lineup-content">
         <div className="pitch-and-controls">
 
           {/* THE PITCH */}
-                    {/* THE PITCH */}
           <div className={`pitch-wrapper ${isVertical ? "vertical" : ""}`}>
             
-            {/* ✅ CORNER LABELS (Inside the pitch) */}
             {/* ✅ CORNER LABELS with live average rating */}
             <div className="team-label team-b-label">
               Team B

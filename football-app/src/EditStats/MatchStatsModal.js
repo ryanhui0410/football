@@ -4,7 +4,7 @@ import "./MatchStatsModal.css";
 function MatchStatsModal({ open, match, onClose }) {
   if (!open || !match) return null;
 
-  const goals = Math.max(0, (match.goalContribution || 0) - (match.assist || 0));
+  const goals = match.goal ?? Math.max(0, (match.goalContribution || 0) - (match.assist || 0));
   
   // 判断目标球员（互助攻）
   const player = match.contributorName;
@@ -50,6 +50,10 @@ function MatchStatsModal({ open, match, onClose }) {
                 <div className="msm-ov-item">
                   <span className="msm-ov-label">Time</span>
                   <span className="msm-ov-val">🕒 {match.time || "—"}</span>
+                </div>
+                <div className="msm-assist-to-row">
+                  <span className="msm-assist-to-label">Errors</span>
+                  <span className="msm-assist-to-value">{match.error ?? 0}</span>
                 </div>
               </div>
               {match.matchResult && (

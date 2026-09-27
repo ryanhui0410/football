@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import EditMatchModal from "./EditMatchModal";
 import HeadToHeadCompare from "./HeadToHeadCompare";
 import MatchStatsModal from "./MatchStatsModal";
@@ -14,6 +14,7 @@ function ModifyDashboard({ contributors, onSave }) {
   const [choiceMatch, setChoiceMatch] = useState(null);
   const [matchReport, setMatchReport] = useState(null);
   const [matchStatsData, setMatchStatsData] = useState([]);
+  const [allLineups, setAllLineups] = useState([]);
   const [activeFilter, setActiveFilter] = useState("All");
   const [isEditingReport, setIsEditingReport] = useState(false);
   const [availablePlayers, setAvailablePlayers] = useState([]);
@@ -21,72 +22,26 @@ function ModifyDashboard({ contributors, onSave }) {
   const [editedLineup, setEditedLineup] = useState(null);
   const [lineupVersion, setLineupVersion] = useState(0);
   const [reportPerspective, setReportPerspective] = useState("");
+
   const contributorNames = ["All", ...contributors.map(c => c.name)];
   const filteredContributors = activeFilter === "All" ? contributors : contributors.filter(c => c.name === activeFilter);
 
   const openModal = (match, contributorName) => setSelectedMatch({ ...match, contributorName });
-  const openStatsModal = (match, contributorName) => {
-    setSelectedStats({ ...match, contributorName });
-    setStatsModalOpen(true);
-  };
 
-  const getLayoutType = () => {
-    const isMobileWidth = window.innerWidth <= 850;
-    const isPortrait = window.innerHeight > window.innerWidth;
-    if (isMobileWidth && isPortrait) return "vertical";
-    return "horizontal";
-  };
-
-  const [layout, setLayout] = useState(getLayoutType());
-
+  // ═══════════════ DATA FETCH (both sources, on mount) ═══════════════
   useEffect(() => {
-    const handleResize = () => setLayout(getLayoutType());
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-    };
+    Promise.all([
+      fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`).then(r => r.json()),
+      fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`).then(r => r.json()),
+    ])
+      .then(([lineups, stats]) => {
+        setAllLineups(Array.isArray(lineups) ? lineups : []);
+        setMatchStatsData(Array.isArray(stats) ? stats : []);
+      })
+      .catch(err => console.error("Failed to fetch lineups/stats:", err));
   }, []);
 
-  const closeModal = () => setSelectedMatch(null);
-  const closeCompare = () => setCompareData(null);
-
-  useEffect(() => {
-    const handleClickOutside = () => setCompareMenu(null);
-    if (compareMenu) {
-      document.addEventListener("click", handleClickOutside);
-      return () => document.removeEventListener("click", handleClickOutside);
-    }
-  }, [compareMenu]);
-
-  const getSameMatchPlayers = (currentMatch, currentContributorName) => {
-    const players = [];
-    contributors.forEach(contrib => {
-      if (contrib.name !== currentContributorName) {
-        const matchingMatch = contrib.matches.find(m =>
-          m.date === currentMatch.date && m.location === currentMatch.location && m.time === currentMatch.time
-        );
-        if (matchingMatch) players.push({ name: contrib.name, match: matchingMatch });
-      }
-    });
-    return players;
-  };
-
-  const handleCompareClick = (e, currentMatch, currentContributorName) => {
-    e.stopPropagation();
-    const players = getSameMatchPlayers(currentMatch, currentContributorName);
-    if (players.length === 1) {
-      setCompareData({
-        contributor1: currentContributorName, match1: currentMatch,
-        contributor2: players[0].name, match2: players[0].match
-      });
-    } else if (players.length > 1) {
-      setCompareMenu({ match: currentMatch, contributorName: currentContributorName, players });
-    } else {
-      alert("No other contributors found for this exact match.");
-    }
-  };
+  // ═══════════════ HELPERS ═══════════════
 
   const normalizeDate = (dateStr) => {
     if (!dateStr) return "";
@@ -96,14 +51,6 @@ function ModifyDashboard({ contributors, onSave }) {
       return `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
     }
     return dateStr;
-  };
-
-  const selectCompareTarget = (target) => {
-    setCompareData({
-      contributor1: compareMenu.contributorName, match1: compareMenu.match,
-      contributor2: target.name, match2: target.match
-    });
-    setCompareMenu(null);
   };
 
   const parseDate = (dateStr) => {
@@ -141,10 +88,10 @@ function ModifyDashboard({ contributors, onSave }) {
   };
 
   const getFmRatingClass = (rating, isMotm) => {
-    if (isMotm) return "motm";               // blue — takes priority
+    if (isMotm) return "motm";
     const r = parseFloat(rating);
-    if (!isNaN(r) && r >= 7) return "good";  // green
-    return "";                               // default dark
+    if (!isNaN(r) && r >= 7) return "good";
+    return "";
   };
 
   const splitSymbols = (symbolStr) => {
@@ -157,6 +104,277 @@ function ModifyDashboard({ contributors, onSave }) {
     }
     return rows;
   };
+
+  // ═══════════════ LINEUP-FIRST RESOLVER ═══════════════
+
+  const findLineupMatch = (match) => {
+    const normDate = normalizeDate(match.date);
+    return allLineups.find(l =>
+      normalizeDate(l.date) === normDate &&
+      (l.location || "").trim() === (match.location || "").trim() &&
+      (l.time || "").trim() === (match.time || "").trim()
+    ) || null;
+  };
+
+  const findLineupPlayer = (lineup, contributorName) => {
+    if (!lineup || !contributorName) return null;
+    const teams = [lineup.teamA, lineup.teamB].filter(Boolean);
+    for (const team of teams) {
+      const players = [
+        ...(Array.isArray(team.players) ? team.players : Object.values(team.players || {})),
+        ...(Array.isArray(team.subs) ? team.subs : []),
+      ];
+      const me = players.find(
+        p => p && p.Contributor &&
+        p.Contributor.trim().toLowerCase() === contributorName.trim().toLowerCase()
+      );
+      if (me) return me;
+    }
+    return null;
+  };
+
+  const getPlayerMatchStats = (playerName, matchDate, matchLocation, matchTime) => {
+    if (!playerName || !matchStatsData.length) return null;
+    const normDate = normalizeDate(matchDate);
+    return matchStatsData.find(s =>
+      (s.Contributor || "").trim().toLowerCase() === playerName.trim().toLowerCase() &&
+      normalizeDate(s.Date) === normDate &&
+      (s.Location || "").trim().toLowerCase() === (matchLocation || "").trim().toLowerCase() &&
+      (s.Time || "").trim().toLowerCase() === (matchTime || "").trim().toLowerCase()
+    ) || null;
+  };
+
+  // ✨ THE MERGE: match_lineups.json is PRIMARY, football_stats JSON fills the gaps
+const buildResolvedMatch = (match, contributorName) => {
+  const lineup = findLineupMatch(match);
+  const lp = findLineupPlayer(lineup, contributorName);
+  const stat = getPlayerMatchStats(contributorName, match.date, match.location, match.time);
+
+  // ✨ Lineup stat fields (camelCase in match_lineups.json)
+  const lpGoal = parseInt(lp?.goal) || 0;
+  const lpAssist = parseInt(lp?.assist) || 0;
+  const lpLeft = parseInt(lp?.leftFoot) || 0;
+  const lpRight = parseInt(lp?.rightFoot) || 0;
+  const lpHead = parseInt(lp?.head) || 0;
+  const lpOther = parseInt(lp?.other) || 0;
+  const lpError = parseInt(lp?.error) || 0;
+  const lpMotm = lp?.manOfTheMatch === true;
+
+  // Stats JSON fields (Title Case)
+  const stGoal = stat ? (parseFloat(stat.Goal) || 0) : 0;
+  const stAssist = stat ? (parseFloat(stat.Assist) || 0) : 0;
+  const stLeft = stat ? (parseFloat(stat["Left Foot"]) || 0) : 0;
+  const stRight = stat ? (parseFloat(stat["Right Foot"]) || 0) : 0;
+  const stHead = stat ? (parseFloat(stat.Head) || 0) : 0;
+  const stOther = stat ? (parseFloat(stat["Other body parts"]) || 0) : 0;
+  const stError = stat ? (parseInt(stat.Error) || 0) : 0;
+  const stMotm = stat?.["Man of the Match"] === true;
+
+  // ✨ Lineup wins when present; stats fill in for legacy matches
+  const hasLpStats = lp && (
+    lpGoal || lpAssist || lpLeft || lpRight || lpHead || lpOther || lpError || lpMotm
+  );
+
+  const goal = hasLpStats ? lpGoal : stGoal;
+  const assist = hasLpStats ? lpAssist : stAssist;
+  const leftFoot = hasLpStats ? lpLeft : stLeft;
+  const rightFoot = hasLpStats ? lpRight : stRight;
+  const head = hasLpStats ? lpHead : stHead;
+  const other = hasLpStats ? lpOther : stOther;
+  const error = hasLpStats ? lpError : stError;
+  const manOfTheMatch = hasLpStats ? lpMotm : stMotm;
+
+  // ✨ Derive symbol + goal contribution from the resolved values
+  const goalContribution = goal + assist;
+  const symbol = "⚽".repeat(goal) + "👟".repeat(assist);
+
+  // ✨ Assist-to pair rule: Ryan ↔ Darren
+  const cLower = (contributorName || "").trim().toLowerCase();
+  const assistRecipient =
+    cLower === "ryan" ? "Darren" :
+    cLower === "darren" ? "Ryan" : "";
+  // If lineup carries an explicit assistTo use it; otherwise for the pair, all assists go to the partner
+  const assistTo =
+    assist > 0 && assistRecipient
+      ? (lp?.assistTo || stat?.["Assist to"] || assistRecipient)
+      : "";
+  const assistToCount =
+    assist > 0 && assistTo
+      ? (lp?.assistToCount ?? (stat ? (parseFloat(stat["Assist to count"]) || 0) : (assistRecipient === assistTo ? assist : 0)))
+      : 0;
+
+  return {
+    // identity
+    date: match.date,
+    location: match.location,
+    time: match.time,
+    contributorName,
+
+    // LINEUP FIRST — rating & participation
+    rating: lp?.rating ?? (stat ? parseFloat(stat.Rating) : ""),
+    picture: lp?.picture || "",
+
+    // ✨ RESOLVED stats (lineup first, stats fallback)
+    goalContribution,
+    assist,
+    goal,
+    symbol,
+    leftFoot,
+    rightFoot,
+    head,
+    other,
+    error,
+    manOfTheMatch,
+    matchResult: stat?.["Match result"] || "",   // result only exists in stats JSON
+    winLoss: stat?.["Win/Loss?"] || "",
+    season: stat?.Season || "",
+    source: stat?.source || (lineup ? "Lineup only" : ""),
+    assistTo,
+    assistToCount,
+
+    // flags
+    hasStats: !!stat,
+    hasLineup: !!lineup,
+  };
+};
+
+  // ═══════════════ BUTTON HANDLERS (use pre-fetched data) ═══════════════
+
+  const openStatsModal = (match, contributorName) => {
+    // ✨ Resolves from lineup first, stats as fallback
+    const resolved = buildResolvedMatch(match, contributorName);
+    setSelectedStats(resolved);
+    setStatsModalOpen(true);
+  };
+
+  const fetchAndOpenReport = (isEditMode = false) => {
+    // ✨ Uses pre-fetched allLineups — no refetch needed
+    const found = findLineupMatch(choiceMatch.match);
+
+    if (!found) {
+      alert("No tactical report found.");
+      return;
+    }
+
+    setMatchReport(found);
+    setEditedLineup(JSON.parse(JSON.stringify(found)));
+    setIsEditingReport(isEditMode);
+    setReportPerspective(choiceMatch.name);
+    setLineupVersion(v => v + 1);
+
+    if (isEditMode) {
+      fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`)
+        .then(res => res.json())
+        .then(data => setAvailablePlayers(Array.isArray(data) ? data : []));
+    }
+  };
+
+  // ═══════════════ LINEUP-ONLY MATCH MERGE ═══════════════
+  // Matches created in Tactical Dashboard (no stats records yet) appear with a badge
+
+  const displayContributors = useMemo(() => {
+    return filteredContributors.map(contributor => {
+      const existingKeys = new Set(
+        contributor.matches.map(m =>
+          `${normalizeDate(m.date)}|${(m.location || "").trim()}|${(m.time || "").trim()}`
+        )
+      );
+
+      const lineupOnlyMatches = [];
+
+      allLineups.forEach(lineup => {
+        const key = `${normalizeDate(lineup.date)}|${(lineup.location || "").trim()}|${(lineup.time || "").trim()}`;
+        if (existingKeys.has(key)) return; // stats record exists — already shown
+
+        const me = findLineupPlayer(lineup, contributor.name);
+        if (me) {
+          lineupOnlyMatches.push({
+            date: lineup.date,
+            location: lineup.location,
+            time: lineup.time,
+            rating: me.rating ?? "",
+            matchResult: "",
+            winLoss: "",
+            goalContribution: (parseInt(me.goal) || 0) + (parseInt(me.assist) || 0),
+            assist: parseInt(me.assist) || 0,
+            symbol: "⚽".repeat(parseInt(me.goal) || 0) + "👟".repeat(parseInt(me.assist) || 0),
+            manOfTheMatch: me.manOfTheMatch === true,
+            isLineupOnly: true,
+          });
+        }
+      });
+
+      if (lineupOnlyMatches.length === 0) return contributor;
+      return { ...contributor, matches: [...contributor.matches, ...lineupOnlyMatches] };
+    });
+  }, [filteredContributors, allLineups]);
+
+  // ═══════════════ COMPARE / REPORT OVERLAY LOGIC ═══════════════
+
+  const getSameMatchPlayers = (currentMatch, currentContributorName) => {
+    const players = [];
+    contributors.forEach(contrib => {
+      if (contrib.name !== currentContributorName) {
+        const matchingMatch = contrib.matches.find(m =>
+          m.date === currentMatch.date && m.location === currentMatch.location && m.time === currentMatch.time
+        );
+        if (matchingMatch) players.push({ name: contrib.name, match: matchingMatch });
+      }
+    });
+    return players;
+  };
+
+  const handleCompareClick = (e, currentMatch, currentContributorName) => {
+    e.stopPropagation();
+    const players = getSameMatchPlayers(currentMatch, currentContributorName);
+    if (players.length === 1) {
+      setCompareData({
+        contributor1: currentContributorName, match1: currentMatch,
+        contributor2: players[0].name, match2: players[0].match
+      });
+    } else if (players.length > 1) {
+      setCompareMenu({ match: currentMatch, contributorName: currentContributorName, players });
+    } else {
+      alert("No other contributors found for this exact match.");
+    }
+  };
+
+  const selectCompareTarget = (target) => {
+    setCompareData({
+      contributor1: compareMenu.contributorName, match1: compareMenu.match,
+      contributor2: target.name, match2: target.match
+    });
+    setCompareMenu(null);
+  };
+
+  const enrichLineupWithMotm = (lineup) => {
+  if (!lineup) return lineup;
+  const enriched = JSON.parse(JSON.stringify(lineup));
+  ['teamA', 'teamB'].forEach(team => {
+    ['players', 'subs'].forEach(key => {
+      if (Array.isArray(enriched[team]?.[key])) {
+        enriched[team][key] = enriched[team][key].map(player => {
+          if (!player) return null;
+          const stat = getPlayerMatchStats(player.Contributor, enriched.date, enriched.location, enriched.time);
+          return {
+            ...player,
+            // ✅ Stats record wins when present; otherwise fall back to the lineup's own fields
+            isMotm: stat
+              ? stat["Man of the Match"] === true
+              : player.manOfTheMatch === true || player.isMotm === true,
+            goals: stat
+              ? (parseInt(stat.Goal) || 0)
+              : (parseInt(player.goal) || 0),
+            assists: stat
+              ? (parseInt(stat.Assist) || 0)
+              : (parseInt(player.assist) || 0),
+          };
+        });
+      }
+    });
+  });
+  return enriched;
+};
 
   const calcTeamAverage = (teamObj) => {
     if (!teamObj) return null;
@@ -175,114 +393,22 @@ function ModifyDashboard({ contributors, onSave }) {
     return (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1);
   };
 
-  const getPlayerMatchStats = (playerName, matchDate, matchLocation, matchTime) => {
-    if (!playerName || !matchStatsData.length) return null;
-    const normDate = normalizeDate(matchDate);
-    return matchStatsData.find(s =>
-      (s.Contributor || "").trim().toLowerCase() === playerName.trim().toLowerCase() &&
-      normalizeDate(s.Date) === normDate &&
-      (s.Location || "").trim().toLowerCase() === (matchLocation || "").trim().toLowerCase() &&
-      (s.Time || "").trim().toLowerCase() === (matchTime || "").trim().toLowerCase()
-    ) || null;
-  };
-
-  const enrichLineupWithMotm = (lineup) => {
-    if (!lineup || !matchStatsData.length) return lineup;
-    const enriched = JSON.parse(JSON.stringify(lineup));
-    ['teamA', 'teamB'].forEach(team => {
-      if (Array.isArray(enriched[team]?.players)) {
-        enriched[team].players = enriched[team].players.map(player => {
-          if (!player) return null;
-          const stat = getPlayerMatchStats(player.Contributor, enriched.date, enriched.location, enriched.time);
-          return {
-            ...player,
-            isMotm: stat?.["Man of the Match"] === true,
-            goals: parseInt(stat?.Goal) || 0,
-            assists: parseInt(stat?.Assist) || 0,
-          };
-        });
-      }
-      if (Array.isArray(enriched[team]?.subs)) {
-        enriched[team].subs = enriched[team].subs.map(player => {
-          if (!player) return null;
-          const stat = getPlayerMatchStats(player.Contributor, enriched.date, enriched.location, enriched.time);
-          return {
-            ...player,
-            isMotm: stat?.["Man of the Match"] === true,
-            goals: parseInt(stat?.Goal) || 0,
-            assists: parseInt(stat?.Assist) || 0,
-          };
-        });
-      }
-    });
-    return enriched;
-  };
-
-  const fetchAndOpenReport = async (isEditMode = false) => {
-    try {
-      const [lineupsRes, statsRes] = await Promise.all([
-        fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`),
-        fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`)
-      ]);
-      const lineups = await lineupsRes.json();
-      const stats = await statsRes.json();
-
-      const targetDate = normalizeDate(choiceMatch.match.date);
-      const targetLocation = (choiceMatch.match.location || "").trim();
-      const targetTime = (choiceMatch.match.time || "").trim();
-
-      const found = lineups.find(l =>
-        normalizeDate(l.date) === targetDate &&
-        (l.location || "").trim() === targetLocation &&
-        (l.time || "").trim() === targetTime
-      );
-
-      if (found) {
-        setMatchReport(found);
-        setEditedLineup(JSON.parse(JSON.stringify(found)));
-        setMatchStatsData(stats);
-        setIsEditingReport(isEditMode);
-        setReportPerspective(choiceMatch.name);
-        setLineupVersion(v => v + 1);
-
-        if (isEditMode) {
-          const pRes = await fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`);
-          const pData = await pRes.json();
-          setAvailablePlayers(Array.isArray(pData) ? pData : []);
-        }
-      } else {
-        alert(`No tactical report found.`);
-      }
-      setChoiceMatch(null);
-    } catch (err) {
-      console.error("Fetch error:", err);
-      alert("Failed to fetch match report.");
-    }
-  };
-
   const handleSaveReportLineup = async () => {
     if (!editedLineup) return;
 
     const sanitizeTeam = (teamObj) => {
       if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] };
-      const cleanPlayers = (teamObj.players || []).map(p => {
+      const cleanPlayer = (p) => {
         if (!p) return null;
         return {
-          Contributor: p.Contributor,
+          ...p,                                  // ✅ preserves goal/assist/leftFoot/... etc.
           rating: parseFloat(p.rating) || 0,
           picture: p.picture || `/${p.Contributor}.jpeg`
         };
-      });
-      while (cleanPlayers.length < 11) cleanPlayers.push(null);
+      };
 
-      const cleanSubs = (teamObj.subs || []).map(p => {
-        if (!p) return null;
-        return {
-          Contributor: p.Contributor,
-          rating: parseFloat(p.rating) || 0,
-          picture: p.picture || `/${p.Contributor}.jpeg`
-        };
-      });
+      const cleanPlayers = (teamObj.players || []).map(cleanPlayer);
+      const cleanSubs = (teamObj.subs || []).map(cleanPlayer);
       while (cleanSubs.length < 2) cleanSubs.push(null);
 
       return {
@@ -307,17 +433,63 @@ function ModifyDashboard({ contributors, onSave }) {
         body: JSON.stringify(payload),
       });
       const result = await res.json();
-      console.log("📥 Server response:", result);
+
+      if (!res.ok) {
+        alert(`⚠️ Saved locally, but GitHub failed: ${result.githubError || result.error}`);
+        return;
+      }
       alert("✅ Match Report saved!");
 
       setIsEditingReport(false);
       setMatchReport(JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB })));
       setLineupVersion(v => v + 1);
+      // ✨ Keep the in-memory lineup copy in sync so subsequent opens are fresh
+      setAllLineups(prev => {
+        const idx = prev.findIndex(l =>
+          normalizeDate(l.date) === normalizeDate(payload.date) &&
+          (l.location || "").trim() === (payload.location || "").trim() &&
+          (l.time || "").trim() === (payload.time || "").trim()
+        );
+        if (idx === -1) return [...prev, JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB }))];
+        const next = [...prev];
+        next[idx] = JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB }));
+        return next;
+      });
     } catch (err) {
       console.error("Save failed:", err);
       alert("❌ Failed to save match report");
     }
   };
+
+  const closeModal = () => setSelectedMatch(null);
+  const closeCompare = () => setCompareData(null);
+
+  useEffect(() => {
+    const handleClickOutside = () => setCompareMenu(null);
+    if (compareMenu) {
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }
+  }, [compareMenu]);
+
+  const getLayoutType = () => {
+    const isMobileWidth = window.innerWidth <= 850;
+    const isPortrait = window.innerHeight > window.innerWidth;
+    if (isMobileWidth && isPortrait) return "vertical";
+    return "horizontal";
+  };
+
+  const [layout, setLayout] = useState(getLayoutType());
+
+  useEffect(() => {
+    const handleResize = () => setLayout(getLayoutType());
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
 
   return (
     <div className="md-wrap">
@@ -332,7 +504,7 @@ function ModifyDashboard({ contributors, onSave }) {
         </div>
       </div>
 
-      {filteredContributors.map((contributor) => {
+      {displayContributors.map((contributor) => {
         const sortedMatches = [...contributor.matches].sort((a, b) => parseDate(b.date) - parseDate(a.date));
         return (
           <div key={contributor.name} className="md-contributor-section">
@@ -341,7 +513,7 @@ function ModifyDashboard({ contributors, onSave }) {
               <span className="md-match-count">{sortedMatches.length} Matches</span>
             </div>
 
-            {/* ===== DESKTOP/PORTRAIT: original table (hidden in landscape via CSS) ===== */}
+            {/* ===== DESKTOP/PORTRAIT: original table ===== */}
             <table className="md-table">
               <thead className="md-thead">
                 <tr>
@@ -358,7 +530,9 @@ function ModifyDashboard({ contributors, onSave }) {
                   return (
                     <tr key={idx} className="md-row" onClick={() => setChoiceMatch({ match: match, name: contributor.name })}>
                       <td className="md-td" data-label="Date & Location">
-                        <div className="md-date">{match.date}</div>
+                        <div className="md-date">
+                          {match.date}
+                        </div>
                         <div className="md-location">📍 {match.location || "Unknown"}</div>
                       </td>
                       <td className="md-td center" data-label="Match Result">
@@ -423,90 +597,85 @@ function ModifyDashboard({ contributors, onSave }) {
             </table>
 
             {/* ===== MOBILE (portrait + landscape): FotMob-style list ===== */}
-<div className="fm-list">
-  {sortedMatches.map((match, idx) => {
-    const goals = Math.max(0, (match.goalContribution || 0) - (match.assist || 0));
-    const assists = match.assist || 0;
-    const wlLetter = getWinLossLetter(match.winLoss);
-    const sameMatchPlayers = getSameMatchPlayers(match, contributor.name);
-    const isMotm = !!match.manOfTheMatch;
-    return (
-      <div
-        key={`fm-${idx}`}
-        className="fm-row"
-        onClick={() => setChoiceMatch({ match: match, name: contributor.name })}
-      >
-        {/* Sub-row 1: date top-left + location */}
-        <div className="fm-row-top">
-          <span className="fm-date">{match.date}</span>
-          <span className="fm-location">📍 {match.location || "Unknown"}</span>
-        </div>
-
-        {/* Sub-row 2: W/D/L + result (left) · G/A icons + actions + rating (right) */}
-        <div className="fm-row-main">
-          <div className="fm-left">
-            {wlLetter && (
-              <span className={`fm-wl fm-wl-${wlLetter.toLowerCase()}`}>{wlLetter}</span>
-            )}
-            <span className="fm-score">{match.matchResult || "—"}</span>
-          </div>
-          <div className="fm-right">
-            {/* ✨ Expanded goal/assist icons — one icon per goal/assist */}
-            {goals > 0 && (
-              <span className="fm-icons fm-goals" title={`${goals} goal(s)`}>
-                {[...Array(goals)].map((_, i) => (
-                  <span key={`g-${i}`} className="fm-icon">⚽</span>
-                ))}
-              </span>
-            )}
-            {assists > 0 && (
-              <span className="fm-icons fm-assists" title={`${assists} assist(s)`}>
-                {[...Array(assists)].map((_, i) => (
-                  <span key={`a-${i}`} className="fm-icon">👟</span>
-                ))}
-              </span>
-            )}
-            {goals === 0 && assists === 0 && <span className="fm-ga fm-none">—</span>}
-
-            {/* ✏️/⚔️ moved into this row */}
-            <div className="fm-actions" onClick={(e) => e.stopPropagation()}>
-              <button
-                className="fm-action-btn"
-                title="Edit"
-                onClick={(e) => { e.stopPropagation(); openModal(match, contributor.name); }}
-              >
-                ✏️
-              </button>
-              {sameMatchPlayers.length > 0 && (
-                <button
-                  className="fm-action-btn"
-                  title="Compare"
-                  onClick={(e) => handleCompareClick(e, match, contributor.name)}
-                >
-                  ⚔️
-                </button>
-              )}
-              {compareMenu && compareMenu.match === match && compareMenu.contributorName === contributor.name && (
-                <div className="md-compare-dropdown fm-compare-dropdown" onClick={(e) => e.stopPropagation()}>
-                  {compareMenu.players.map((p, pIdx) => (
-                    <div key={pIdx} className="md-compare-option" onClick={(e) => { e.stopPropagation(); selectCompareTarget(p); }}>
-                      vs {p.name}
+            <div className="fm-list">
+              {sortedMatches.map((match, idx) => {
+                const goals = Math.max(0, (match.goalContribution || 0) - (match.assist || 0));
+                const assists = match.assist || 0;
+                const wlLetter = getWinLossLetter(match.winLoss);
+                const sameMatchPlayers = getSameMatchPlayers(match, contributor.name);
+                const isMotm = !!match.manOfTheMatch;
+                return (
+                  <div
+                    key={`fm-${idx}`}
+                    className="fm-row"
+                    onClick={() => setChoiceMatch({ match: match, name: contributor.name })}
+                  >
+                    <div className="fm-row-top">
+                      <span className="fm-date">{match.date}</span>
+                      <span className="fm-location">📍 {match.location || "Unknown"}</span>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
 
-            {/* ✨ Rating in a rounded rectangle box */}
-            <span className={`fm-rating-box ${getFmRatingClass(match.rating, isMotm)}`}>
-              {match.rating || "—"}
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  })}
-</div>
+                    <div className="fm-row-main">
+                      <div className="fm-left">
+                        {wlLetter && (
+                          <span className={`fm-wl fm-wl-${wlLetter.toLowerCase()}`}>{wlLetter}</span>
+                        )}
+                        <span className="fm-score">{match.matchResult || "—"}</span>
+                      </div>
+                      <div className="fm-right">
+                        {goals > 0 && (
+                          <span className="fm-icons fm-goals" title={`${goals} goal(s)`}>
+                            {[...Array(goals)].map((_, i) => (
+                              <span key={`g-${i}`} className="fm-icon">⚽</span>
+                            ))}
+                          </span>
+                        )}
+                        {assists > 0 && (
+                          <span className="fm-icons fm-assists" title={`${assists} assist(s)`}>
+                            {[...Array(assists)].map((_, i) => (
+                              <span key={`a-${i}`} className="fm-icon">👟</span>
+                            ))}
+                          </span>
+                        )}
+                        {goals === 0 && assists === 0 && <span className="fm-ga fm-none">—</span>}
+
+                        <div className="fm-actions" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            className="fm-action-btn"
+                            title="Edit"
+                            onClick={(e) => { e.stopPropagation(); openModal(match, contributor.name); }}
+                          >
+                            ✏️
+                          </button>
+                          {sameMatchPlayers.length > 0 && (
+                            <button
+                              className="fm-action-btn"
+                              title="Compare"
+                              onClick={(e) => handleCompareClick(e, match, contributor.name)}
+                            >
+                              ⚔️
+                            </button>
+                          )}
+                          {compareMenu && compareMenu.match === match && compareMenu.contributorName === contributor.name && (
+                            <div className="md-compare-dropdown fm-compare-dropdown" onClick={(e) => e.stopPropagation()}>
+                              {compareMenu.players.map((p, pIdx) => (
+                                <div key={pIdx} className="md-compare-option" onClick={(e) => { e.stopPropagation(); selectCompareTarget(p); }}>
+                                  vs {p.name}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <span className={`fm-rating-box ${getFmRatingClass(match.rating, isMotm)}`}>
+                          {match.rating || "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         );
       })}
@@ -537,7 +706,7 @@ function ModifyDashboard({ contributors, onSave }) {
         </div>
       )}
 
-      {/* VIEW MATCH REPORT OVERLAY (Read-only) */}
+      {/* VIEW MATCH REPORT OVERLAY (Read-only / Edit) */}
       {matchReport && (
         <div className="report-overlay" onClick={() => { setMatchReport(null); }}>
           <div className="report-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '1000px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: '25px' }}>

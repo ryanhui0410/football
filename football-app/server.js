@@ -569,7 +569,35 @@ app.get("/match-lineups", (req, res) => {
 });
 
 // ===================== POST /add-stats =====================
+// ===================== POST /add-stats-batch =====================
 
+app.post("/add-stats-batch", async (req, res) => {
+  const arr = req.body?.stats;
+
+  if (!Array.isArray(arr) || arr.length === 0) {
+    return res.status(400).json({ message: "❌ No stats provided" });
+  }
+
+  const data = readStats();
+  const formatted = arr
+    .filter(s => s && s.Contributor)
+    .map(formatStat);
+
+  if (formatted.length === 0) {
+    return res.status(400).json({ message: "❌ No valid stats" });
+  }
+
+  data.push(...formatted);
+  writeStats(data);
+
+  await syncFileToGitHub(STATS_PATH, "football-app/src/football_stats_2025_2026.json",
+    `Batch add stats for ${formatted.length} players (${formatted[0].Date})`);
+
+  res.json({
+    message: `✅ ${formatted.length} stat records added`,
+    totalRecords: data.length,
+  }); 
+});
 app.post("/add-stats", async (req, res) => {
   const raw = req.body;
 
