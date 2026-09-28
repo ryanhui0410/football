@@ -2895,5 +2895,27 @@
     "Assist to": "Darren",
     "Assist to count": 1,
     "Man of the Match": false
+  },
+  {
+    "Date": "12/3/2026",
+    "Contributor": "Darren",
+    "Symbol": "👟",
+    "Goal": 0,
+    "Assist": 1,
+    "Rating": 6.8,
+    "Location": "雲景道",
+    "Time": "11:30 AM",
+    "Goal Contribution": 1,
+    "source": "Tactical Dashboard",
+    "Left Foot": 0,
+    "Right Foot": 0,
+    "Head": 0,
+    "Other body parts": 0,
+    "Season": "2026-2027",
+    "Match result": "5-6",
+    "Win/Loss?": "Loss",
+    "Assist to": "Ryan",
+    "Assist to count": 1,
+    "Man of the Match": false
   }
 ]
