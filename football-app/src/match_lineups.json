@@ -1674,5 +1674,50 @@
         null
       ]
     }
+  },
+  {
+    "date": "11/5/2026",
+    "location": "摩士",
+    "time": "9:30 AM",
+    "teamA": {
+      "formation": "4-4-2",
+      "players": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "subs": [
+        null,
+        null
+      ]
+    },
+    "teamB": {
+      "formation": "4-4-2",
+      "players": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "subs": [
+        null,
+        null
+      ]
+    }
   }
 ]
