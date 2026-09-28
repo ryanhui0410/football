@@ -2873,5 +2873,27 @@
     "Assist to": "",
     "Assist to count": 0,
     "Man of the Match": false
+  },
+  {
+    "Date": "10/22/2026",
+    "Contributor": "Ryan",
+    "Symbol": "👟👟👟",
+    "Goal": 0,
+    "Assist": 3,
+    "Rating": 7.9,
+    "Location": "摩士",
+    "Time": "8:00 PM",
+    "Goal Contribution": 3,
+    "source": "Tactical Dashboard",
+    "Left Foot": 0,
+    "Right Foot": 0,
+    "Head": 0,
+    "Other body parts": 0,
+    "Season": "2026-2027",
+    "Match result": "",
+    "Win/Loss?": "",
+    "Assist to": "Darren",
+    "Assist to count": 1,
+    "Man of the Match": false
   }
 ]
