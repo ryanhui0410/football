@@ -5,45 +5,9 @@ import MatchStatsModal from "./MatchStatsModal";
 import "./ModifyDashboard.css";
 import MatchLineup from "./MatchLineup";
 
-function ModifyDashboard({ contributors, onSave }) {
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [compareData, setCompareData] = useState(null);
-  const [compareMenu, setCompareMenu] = useState(null);
-  const [statsModalOpen, setStatsModalOpen] = useState(false);
-  const [selectedStats, setSelectedStats] = useState(null);
-  const [choiceMatch, setChoiceMatch] = useState(null);
-  const [matchReport, setMatchReport] = useState(null);
-  const [matchStatsData, setMatchStatsData] = useState([]);
-  const [allLineups, setAllLineups] = useState([]);
-  const [activeFilter, setActiveFilter] = useState("All");
-  const [isEditingReport, setIsEditingReport] = useState(false);
-  const [availablePlayers, setAvailablePlayers] = useState([]);
-  const [slotToEdit, setSlotToEdit] = useState(null);
-  const [editedLineup, setEditedLineup] = useState(null);
-  const [lineupVersion, setLineupVersion] = useState(0);
-  const [reportPerspective, setReportPerspective] = useState("");
-  const [editedResult, setEditedResult] = useState("");
-  const [slotStats, setSlotStats] = useState(null);
-  const contributorNames = ["All", ...contributors.map(c => c.name)];
-  const filteredContributors = activeFilter === "All" ? contributors : contributors.filter(c => c.name === activeFilter);
+// ═══════════════ TOP-LEVEL COMPONENTS ═══════════════
 
-  const openModal = (match, contributorName) => setSelectedMatch({ ...match, contributorName });
-
-  // ═══════════════ DATA FETCH (both sources, on mount) ═══════════════
-  useEffect(() => {
-    Promise.all([
-      fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`).then(r => r.json()),
-      fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`).then(r => r.json()),
-    ])
-      .then(([lineups, stats]) => {
-        setAllLineups(Array.isArray(lineups) ? lineups : []);
-        setMatchStatsData(Array.isArray(stats) ? stats : []);
-      })
-      .catch(err => console.error("Failed to fetch lineups/stats:", err));
-  }, []);
-
-  // ═══════════════ HELPERS ═══════════════
-  // ✅ Us–Them scoreline stepper: {no}-{no}
+// ✅ Us–Them scoreline stepper: {no}-{no}
 function ScorelineInput({ value, onChange }) {
   const parts = (value || "").split("-");
   const us = parts[0] ?? "";
@@ -97,6 +61,58 @@ function StatStepper({ label, value, onChange, max = 99 }) {
     </div>
   );
 }
+
+// ✨ Derive outcome from score + team (Team A = first number)
+function deriveOutcome(matchResult, team) {
+  const parts = (matchResult || "").split("-").map(s => parseInt(s.trim()));
+  if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return "";
+  const [a, b] = parts;
+  if (team === "A") return a > b ? "Win" : a < b ? "Loss" : "Draw";
+  return b > a ? "Win" : b < a ? "Loss" : "Draw";
+}
+
+// ═══════════════ MAIN COMPONENT ═══════════════
+
+function ModifyDashboard({ contributors, onSave }) {
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [compareData, setCompareData] = useState(null);
+  const [compareMenu, setCompareMenu] = useState(null);
+  const [statsModalOpen, setStatsModalOpen] = useState(false);
+  const [selectedStats, setSelectedStats] = useState(null);
+  const [choiceMatch, setChoiceMatch] = useState(null);
+  const [matchReport, setMatchReport] = useState(null);
+  const [matchStatsData, setMatchStatsData] = useState([]);
+  const [allLineups, setAllLineups] = useState([]);
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [isEditingReport, setIsEditingReport] = useState(false);
+  const [availablePlayers, setAvailablePlayers] = useState([]);
+  const [slotToEdit, setSlotToEdit] = useState(null);
+  const [editedLineup, setEditedLineup] = useState(null);
+  const [lineupVersion, setLineupVersion] = useState(0);
+  const [reportPerspective, setReportPerspective] = useState("");
+  const [editedResult, setEditedResult] = useState("");
+  const [slotStats, setSlotStats] = useState(null);
+
+  const contributorNames = ["All", ...contributors.map(c => c.name)];
+  const filteredContributors = activeFilter === "All" ? contributors : contributors.filter(c => c.name === activeFilter);
+
+  const openModal = (match, contributorName) => setSelectedMatch({ ...match, contributorName });
+
+  // ═══════════════ DATA FETCH (both sources, on mount) ═══════════════
+  useEffect(() => {
+    Promise.all([
+      fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`).then(r => r.json()),
+      fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`).then(r => r.json()),
+    ])
+      .then(([lineups, stats]) => {
+        setAllLineups(Array.isArray(lineups) ? lineups : []);
+        setMatchStatsData(Array.isArray(stats) ? stats : []);
+      })
+      .catch(err => console.error("Failed to fetch lineups/stats:", err));
+  }, []);
+
+  // ═══════════════ HELPERS ═══════════════
+
   const normalizeDate = (dateStr) => {
     if (!dateStr) return "";
     if (dateStr.length === 10 && dateStr.includes("-")) return dateStr;
@@ -106,14 +122,7 @@ function StatStepper({ label, value, onChange, max = 99 }) {
     }
     return dateStr;
   };
-  // ✨ Derive outcome from score + team (Team A = first number)
-function deriveOutcome(matchResult, team) {
-  const parts = (matchResult || "").split("-").map(s => parseInt(s.trim()));
-  if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return "";
-  const [a, b] = parts;
-  if (team === "A") return a > b ? "Win" : a < b ? "Loss" : "Draw";
-  return b > a ? "Win" : b < a ? "Loss" : "Draw";
-}
+
   const parseDate = (dateStr) => {
     if (!dateStr) return new Date(0);
     const parts = dateStr.split('/');
@@ -139,7 +148,6 @@ function deriveOutcome(matchResult, team) {
     return '#ef4444';
   };
 
-  // ✨ FotMob-style row helpers
   const getWinLossLetter = (winLoss) => {
     const w = (winLoss || "").trim().toLowerCase();
     if (w === "win" || w === "w") return "W";
@@ -176,7 +184,7 @@ function deriveOutcome(matchResult, team) {
       (l.time || "").trim() === (match.time || "").trim()
     ) || null;
   };
-    // ✨ Returns the full player object from the lineup (for stats resolution)
+
   const findLineupPlayer = (lineup, contributorName) => {
     if (!lineup || !contributorName) return null;
     const teams = [lineup.teamA, lineup.teamB].filter(Boolean);
@@ -193,21 +201,22 @@ function deriveOutcome(matchResult, team) {
     }
     return null;
   };
+
   const findLineupPlayerTeam = (lineup, contributorName) => {
-  if (!lineup || !contributorName) return null;
-  for (const [teamKey, team] of [["A", lineup.teamA], ["B", lineup.teamB]]) {
-    if (!team) continue;
-    const players = [
-      ...(Array.isArray(team.players) ? team.players : Object.values(team.players || {})),
-      ...(Array.isArray(team.subs) ? team.subs : []),
-    ];
-    if (players.some(p => p && p.Contributor &&
-      p.Contributor.trim().toLowerCase() === contributorName.trim().toLowerCase())) {
-      return teamKey;
+    if (!lineup || !contributorName) return null;
+    for (const [teamKey, team] of [["A", lineup.teamA], ["B", lineup.teamB]]) {
+      if (!team) continue;
+      const players = [
+        ...(Array.isArray(team.players) ? team.players : Object.values(team.players || {})),
+        ...(Array.isArray(team.subs) ? team.subs : []),
+      ];
+      if (players.some(p => p && p.Contributor &&
+        p.Contributor.trim().toLowerCase() === contributorName.trim().toLowerCase())) {
+        return teamKey;
+      }
     }
-  }
-  return null;
-};
+    return null;
+  };
 
   const getPlayerMatchStats = (playerName, matchDate, matchLocation, matchTime) => {
     if (!playerName || !matchStatsData.length) return null;
@@ -221,104 +230,93 @@ function deriveOutcome(matchResult, team) {
   };
 
   // ✨ THE MERGE: match_lineups.json is PRIMARY, football_stats JSON fills the gaps
-const buildResolvedMatch = (match, contributorName) => {
-  const lineup = findLineupMatch(match);
-  const lp = findLineupPlayer(lineup, contributorName);
-  const stat = getPlayerMatchStats(contributorName, match.date, match.location, match.time);
+  const buildResolvedMatch = (match, contributorName) => {
+    const lineup = findLineupMatch(match);
+    const lp = findLineupPlayer(lineup, contributorName);
+    const stat = getPlayerMatchStats(contributorName, match.date, match.location, match.time);
 
-  // ✨ Lineup stat fields (camelCase in match_lineups.json)
-  const lpGoal = parseInt(lp?.goal) || 0;
-  const lpAssist = parseInt(lp?.assist) || 0;
-  const lpLeft = parseInt(lp?.leftFoot) || 0;
-  const lpRight = parseInt(lp?.rightFoot) || 0;
-  const lpHead = parseInt(lp?.head) || 0;
-  const lpOther = parseInt(lp?.other) || 0;
-  const lpError = parseInt(lp?.error) || 0;
-  const lpMotm = lp?.manOfTheMatch === true;
+    const lpGoal = parseInt(lp?.goal) || 0;
+    const lpAssist = parseInt(lp?.assist) || 0;
+    const lpLeft = parseInt(lp?.leftFoot) || 0;
+    const lpRight = parseInt(lp?.rightFoot) || 0;
+    const lpHead = parseInt(lp?.head) || 0;
+    const lpOther = parseInt(lp?.other) || 0;
+    const lpError = parseInt(lp?.error) || 0;
+    const lpMotm = lp?.manOfTheMatch === true;
 
-  // Stats JSON fields (Title Case)
-  const stGoal = stat ? (parseFloat(stat.Goal) || 0) : 0;
-  const stAssist = stat ? (parseFloat(stat.Assist) || 0) : 0;
-  const stLeft = stat ? (parseFloat(stat["Left Foot"]) || 0) : 0;
-  const stRight = stat ? (parseFloat(stat["Right Foot"]) || 0) : 0;
-  const stHead = stat ? (parseFloat(stat.Head) || 0) : 0;
-  const stOther = stat ? (parseFloat(stat["Other body parts"]) || 0) : 0;
-  const stError = stat ? (parseInt(stat.Error) || 0) : 0;
-  const stMotm = stat?.["Man of the Match"] === true;
+    const stGoal = stat ? (parseFloat(stat.Goal) || 0) : 0;
+    const stAssist = stat ? (parseFloat(stat.Assist) || 0) : 0;
+    const stLeft = stat ? (parseFloat(stat["Left Foot"]) || 0) : 0;
+    const stRight = stat ? (parseFloat(stat["Right Foot"]) || 0) : 0;
+    const stHead = stat ? (parseFloat(stat.Head) || 0) : 0;
+    const stOther = stat ? (parseFloat(stat["Other body parts"]) || 0) : 0;
+    const stError = stat ? (parseInt(stat.Error) || 0) : 0;
+    const stMotm = stat?.["Man of the Match"] === true;
 
-  // ✨ Lineup wins when present; stats fill in for legacy matches
-  const hasLpStats = lp && (
-    lpGoal || lpAssist || lpLeft || lpRight || lpHead || lpOther || lpError || lpMotm
-  );
+    const hasLpStats = lp && (
+      lpGoal || lpAssist || lpLeft || lpRight || lpHead || lpOther || lpError || lpMotm
+    );
 
-  const goal = hasLpStats ? lpGoal : stGoal;
-  const assist = hasLpStats ? lpAssist : stAssist;
-  const leftFoot = hasLpStats ? lpLeft : stLeft;
-  const rightFoot = hasLpStats ? lpRight : stRight;
-  const head = hasLpStats ? lpHead : stHead;
-  const other = hasLpStats ? lpOther : stOther;
-  const error = hasLpStats ? lpError : stError;
-  const manOfTheMatch = hasLpStats ? lpMotm : stMotm;
+    const goal = hasLpStats ? lpGoal : stGoal;
+    const assist = hasLpStats ? lpAssist : stAssist;
+    const leftFoot = hasLpStats ? lpLeft : stLeft;
+    const rightFoot = hasLpStats ? lpRight : stRight;
+    const head = hasLpStats ? lpHead : stHead;
+    const other = hasLpStats ? lpOther : stOther;
+    const error = hasLpStats ? lpError : stError;
+    const manOfTheMatch = hasLpStats ? lpMotm : stMotm;
 
-  // ✨ Derive symbol + goal contribution from the resolved values
-  const goalContribution = goal + assist;
-  const symbol = "⚽".repeat(goal) + "👟".repeat(assist);
+    const goalContribution = goal + assist;
+    const symbol = "⚽".repeat(goal) + "👟".repeat(assist);
 
-  // ✨ Assist-to pair rule: Ryan ↔ Darren
-  // Ryan↔Darren pair only
-const cLower = (contributorName || "").trim().toLowerCase();
-const assistRecipient = cLower === "ryan" ? "Darren" : cLower === "darren" ? "Ryan" : "";
-const assistToCount = assistRecipient && assist > 0
-  ? (lp?.assistToCount ?? (stat ? (parseFloat(stat["Assist to count"]) || 0) : assist))
-  : 0;
-const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
+    // ✨ Assist-to pair rule: Ryan ↔ Darren only
+    const cLower = (contributorName || "").trim().toLowerCase();
+    const assistRecipient = cLower === "ryan" ? "Darren" : cLower === "darren" ? "Ryan" : "";
+    const assistToCount = assistRecipient && assist > 0
+      ? (lp?.assistToCount ?? (stat ? (parseFloat(stat["Assist to count"]) || 0) : assist))
+      : 0;
+    const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
 
-  return {
-    // identity
-    date: match.date,
-    location: match.location,
-    time: match.time,
-    contributorName,
+    return {
+      date: match.date,
+      location: match.location,
+      time: match.time,
+      contributorName,
 
-    // LINEUP FIRST — rating & participation
-    rating: lp?.rating ?? (stat ? parseFloat(stat.Rating) : ""),
-    picture: lp?.picture || "",
+      rating: lp?.rating ?? (stat ? parseFloat(stat.Rating) : ""),
+      picture: lp?.picture || "",
 
-    // ✨ RESOLVED stats (lineup first, stats fallback)
-    goalContribution,
-    assist,
-    goal,
-    symbol,
-    leftFoot,
-    rightFoot,
-    head,
-    other,
-    error,
-    manOfTheMatch,
-    matchResult: stat?.["Match result"] || "",   // result only exists in stats JSON
-    winLoss: stat?.["Win/Loss?"] || "",
-    season: stat?.Season || "",
-    source: stat?.source || (lineup ? "Lineup only" : ""),
-    assistTo,
-    assistToCount,
+      goalContribution,
+      assist,
+      goal,
+      symbol,
+      leftFoot,
+      rightFoot,
+      head,
+      other,
+      error,
+      manOfTheMatch,
+      matchResult: stat?.["Match result"] || "",
+      winLoss: stat?.["Win/Loss?"] || "",
+      season: stat?.Season || "",
+      source: stat?.source || (lineup ? "Lineup only" : ""),
+      assistTo,
+      assistToCount,
 
-    // flags
-    hasStats: !!stat,
-    hasLineup: !!lineup,
+      hasStats: !!stat,
+      hasLineup: !!lineup,
+    };
   };
-};
 
-  // ═══════════════ BUTTON HANDLERS (use pre-fetched data) ═══════════════
+  // ═══════════════ BUTTON HANDLERS ═══════════════
 
   const openStatsModal = (match, contributorName) => {
-    // ✨ Resolves from lineup first, stats as fallback
     const resolved = buildResolvedMatch(match, contributorName);
     setSelectedStats(resolved);
     setStatsModalOpen(true);
   };
 
   const fetchAndOpenReport = (isEditMode = false) => {
-    // ✨ Uses pre-fetched allLineups — no refetch needed
     const found = findLineupMatch(choiceMatch.match);
 
     if (!found) {
@@ -332,6 +330,22 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
     setReportPerspective(choiceMatch.name);
     setLineupVersion(v => v + 1);
 
+    // ✨ Seed the editable match result from any player's stats record
+    let seededResult = "";
+    const teamsSeed = [found.teamA, found.teamB].filter(Boolean);
+    outerSeed: for (const team of teamsSeed) {
+      const players = [
+        ...(Array.isArray(team.players) ? team.players : Object.values(team.players || {})),
+        ...(Array.isArray(team.subs) ? team.subs : []),
+      ];
+      for (const p of players) {
+        if (!p?.Contributor) continue;
+        const s = getPlayerMatchStats(p.Contributor, found.date, found.location, found.time);
+        if (s && s["Match result"]) { seededResult = s["Match result"]; break outerSeed; }
+      }
+    }
+    setEditedResult(seededResult);
+
     if (isEditMode) {
       fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`)
         .then(res => res.json())
@@ -340,7 +354,6 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
   };
 
   // ═══════════════ LINEUP-ONLY MATCH MERGE ═══════════════
-  // Matches created in Tactical Dashboard (no stats records yet) appear with a badge
 
   const displayContributors = useMemo(() => {
     return filteredContributors.map(contributor => {
@@ -352,11 +365,11 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
 
       const lineupOnlyMatches = [];
 
-            allLineups.forEach(lineup => {
+      allLineups.forEach(lineup => {
         const key = `${normalizeDate(lineup.date)}|${(lineup.location || "").trim()}|${(lineup.time || "").trim()}`;
         if (existingKeys.has(key)) return;
 
-                const me = findLineupPlayer(lineup, contributor.name);
+        const me = findLineupPlayer(lineup, contributor.name);
         if (me) {
           // ✨ Find match result from ANY player's stats record
           let matchResult = "", winLoss = "";
@@ -400,7 +413,7 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
     });
   }, [filteredContributors, allLineups]);
 
-  // ═══════════════ COMPARE / REPORT OVERLAY LOGIC ═══════════════
+  // ═══════════════ COMPARE LOGIC ═══════════════
 
   const getSameMatchPlayers = (currentMatch, currentContributorName) => {
     const players = [];
@@ -439,34 +452,33 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
   };
 
   const enrichLineupWithMotm = (lineup) => {
-  if (!lineup) return lineup;
-  const enriched = JSON.parse(JSON.stringify(lineup));
-  ['teamA', 'teamB'].forEach(team => {
-    ['players', 'subs'].forEach(key => {
-      if (Array.isArray(enriched[team]?.[key])) {
-        enriched[team][key] = enriched[team][key].map(player => {
-          if (!player) return null;
-          const stat = getPlayerMatchStats(player.Contributor, enriched.date, enriched.location, enriched.time);
-          return {
-            ...player,
-            // ✅ Lineup fields are PRIMARY (they always exist in new-format lineups);
-            //    stats records only fill in for legacy lineups without them
-            isMotm: player.manOfTheMatch != null
-              ? player.manOfTheMatch === true
-              : (stat ? stat["Man of the Match"] === true : false),
-            goals: player.goal != null
-              ? (parseInt(player.goal) || 0)
-              : (stat ? (parseInt(stat.Goal) || 0) : 0),
-            assists: player.assist != null
-              ? (parseInt(player.assist) || 0)
-              : (stat ? (parseInt(stat.Assist) || 0) : 0),
-          };
-        });
-      }
+    if (!lineup) return lineup;
+    const enriched = JSON.parse(JSON.stringify(lineup));
+    ['teamA', 'teamB'].forEach(team => {
+      ['players', 'subs'].forEach(key => {
+        if (Array.isArray(enriched[team]?.[key])) {
+          enriched[team][key] = enriched[team][key].map(player => {
+            if (!player) return null;
+            const stat = getPlayerMatchStats(player.Contributor, enriched.date, enriched.location, enriched.time);
+            return {
+              ...player,
+              // ✅ Lineup fields are PRIMARY; stats records fill in for legacy lineups
+              isMotm: player.manOfTheMatch != null
+                ? player.manOfTheMatch === true
+                : (stat ? stat["Man of the Match"] === true : false),
+              goals: player.goal != null
+                ? (parseInt(player.goal) || 0)
+                : (stat ? (parseInt(stat.Goal) || 0) : 0),
+              assists: player.assist != null
+                ? (parseInt(player.assist) || 0)
+                : (stat ? (parseInt(stat.Assist) || 0) : 0),
+            };
+          });
+        }
+      });
     });
-  });
-  return enriched;
-};
+    return enriched;
+  };
 
   const calcTeamAverage = (teamObj) => {
     if (!teamObj) return null;
@@ -484,6 +496,8 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
     if (ratings.length === 0) return null;
     return (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1);
   };
+
+  // ═══════════════ SAVE (lineup + stats batch sync) ═══════════════
 
   const handleSaveReportLineup = async () => {
     if (!editedLineup) return;
@@ -535,7 +549,6 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
       setIsEditingReport(false);
       setMatchReport(JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB })));
       setLineupVersion(v => v + 1);
-      // ✨ Keep the in-memory lineup copy in sync so subsequent opens are fresh
       setAllLineups(prev => {
         const idx = prev.findIndex(l =>
           normalizeDate(l.date) === normalizeDate(payload.date) &&
@@ -547,6 +560,82 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
         next[idx] = JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB }));
         return next;
       });
+
+      // ═══════════════ ✨ SYNC STATS TO football_stats JSON ═══════════════
+      const teamAOutcome = deriveOutcome(editedResult, "A");
+      const teamBOutcome = deriveOutcome(editedResult, "B");
+      const statRecords = [];
+      [["teamA", teamAOutcome], ["teamB", teamBOutcome]].forEach(([key, outcome]) => {
+        const team = editedLineup[key];
+        [...(team?.players || []), ...(team?.subs || [])].forEach(p => {
+          if (!p?.Contributor) return;
+          const existingStat = getPlayerMatchStats(p.Contributor, editedLineup.date, editedLineup.location, editedLineup.time);
+          statRecords.push({
+            Date: editedLineup.date,
+            Contributor: p.Contributor,
+            Rating: parseFloat(p.rating) || 0,
+            Location: editedLineup.location,
+            Time: editedLineup.time,
+            MatchResult: editedResult ?? "",
+            WinLoss: outcome,
+            Goal: parseInt(p.goal) || 0,
+            Assist: parseInt(p.assist) || 0,
+            // Foot breakdown: preserve existing values (not editable in this modal)
+            LeftFoot: existingStat ? (parseInt(existingStat["Left Foot"]) || 0) : 0,
+            RightFoot: existingStat ? (parseInt(existingStat["Right Foot"]) || 0) : 0,
+            Head: existingStat ? (parseInt(existingStat.Head) || 0) : 0,
+            OtherBodyParts: existingStat ? (parseInt(existingStat["Other body parts"]) || 0) : 0,
+            Error: parseInt(p.error) || 0,
+            ManOfTheMatch: p.manOfTheMatch === true,
+            source: "Match Report Edit",
+          });
+        });
+      });
+
+      try {
+        const statsRes = await fetch("https://football-stats-xbx6.onrender.com/add-stats-batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ stats: statRecords }),
+        });
+        if (!statsRes.ok) {
+          const err = await statsRes.json().catch(() => ({}));
+          alert(`⚠️ Lineup saved, but stats sync failed: ${err.message || statsRes.status}`);
+        } else {
+          // ✨ Keep in-memory stats fresh so rows/modal reflect the save immediately
+          setMatchStatsData(prev => {
+            const remaining = prev.filter(s =>
+              !statRecords.some(f =>
+                normalizeDate(s.Date) === normalizeDate(f.Date) &&
+                (s.Contributor || "").trim().toLowerCase() === f.Contributor.trim().toLowerCase() &&
+                (s.Location || "").trim() === f.Location.trim() &&
+                (s.Time || "").trim() === f.Time.trim()
+              )
+            );
+            return [...remaining, ...statRecords.map(f => ({
+              Date: f.Date,
+              Contributor: f.Contributor,
+              Goal: f.Goal,
+              Assist: f.Assist,
+              Rating: f.Rating,
+              "Match result": f.MatchResult,
+              "Win/Loss?": f.WinLoss,
+              "Left Foot": f.LeftFoot,
+              "Right Foot": f.RightFoot,
+              Head: f.Head,
+              "Other body parts": f.OtherBodyParts,
+              Error: f.Error,
+              "Man of the Match": f.ManOfTheMatch,
+              source: f.source,
+              Season: "",
+              Symbol: "⚽".repeat(f.Goal) + "👟".repeat(f.Assist),
+              "Goal Contribution": f.Goal + f.Assist,
+            }))];
+          });
+        }
+      } catch (err) {
+        alert(`⚠️ Lineup saved, but stats network error: ${err.message}`);
+      }
     } catch (err) {
       console.error("Save failed:", err);
       alert("❌ Failed to save match report");
@@ -833,12 +922,25 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
 
               return (
                 <>
-                  <div className="report-result-header" style={{ justifyContent: 'center', border: 'none', background: 'transparent', padding: '10px 0', marginBottom: '10px' }}>
-                    <div className="result-score-center">
-                      <span className="result-score">{matchResult || '—'}</span>
-                      {winLoss && <span className={`result-wl ${winLoss.toLowerCase()}`}>{winLoss}</span>}
+                  {/* ✨ Editable scoreline in edit mode; static header in read-only */}
+                  {isEditingReport ? (
+                    <div style={{ background: "#f8fafc", borderRadius: "12px", padding: "14px", marginBottom: "10px" }}>
+                      <div style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", textAlign: "center", marginBottom: "6px" }}>
+                        ⚽ Match Result (Team A – Team B)
+                      </div>
+                      <ScorelineInput
+                        value={editedResult}
+                        onChange={(val) => setEditedResult(val)}
+                      />
                     </div>
-                  </div>
+                  ) : (
+                    <div className="report-result-header" style={{ justifyContent: 'center', border: 'none', background: 'transparent', padding: '10px 0', marginBottom: '10px' }}>
+                      <div className="result-score-center">
+                        <span className="result-score">{matchResult || '—'}</span>
+                        {winLoss && <span className={`result-wl ${winLoss.toLowerCase()}`}>{winLoss}</span>}
+                      </div>
+                    </div>
+                  )}
 
                   <div style={{ marginTop: '10px' }}>
                     <h3 style={{ textAlign: 'center', marginBottom: '15px', color: '#444' }}>
@@ -861,6 +963,18 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
                         }}
                         onSlotClick={(team, idx, player) => {
                           setSlotToEdit({ team, idx, player });
+                          // ✨ Seed stat working copy for the modal
+                          if (player) {
+                            const stat = getPlayerMatchStats(player.Contributor, matchReport.date, matchReport.location, matchReport.time);
+                            setSlotStats({
+                              rating: player.rating ?? (stat ? parseFloat(stat.Rating) : ""),
+                              goal: player.goal ?? (stat ? (parseInt(stat.Goal) || 0) : 0),
+                              assist: player.assist ?? (stat ? (parseInt(stat.Assist) || 0) : 0),
+                              error: player.error ?? (stat ? (parseInt(stat.Error) || 0) : 0),
+                            });
+                          } else {
+                            setSlotStats(null);
+                          }
                         }}
                       />
                     </div>
@@ -889,7 +1003,7 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
               );
             })()}
 
-            {/* SLOT EDIT MODAL */}
+            {/* SLOT EDIT MODAL — rating + goal/assist/error */}
             {slotToEdit && (
               <div className="slot-edit-overlay" onClick={() => setSlotToEdit(null)}>
                 <div className="slot-edit-modal" onClick={e => e.stopPropagation()}>
@@ -905,6 +1019,7 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
                         const val = e.target.value;
                         if (!val) {
                           setSlotToEdit(prev => ({ ...prev, player: null }));
+                          setSlotStats(null);
                         } else {
                           const selected = availablePlayers.find(p => p.Contributor === val);
                           setSlotToEdit(prev => ({
@@ -915,6 +1030,13 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
                               rating: prev.player?.rating !== undefined ? prev.player.rating : ""
                             }
                           }));
+                          const stat = getPlayerMatchStats(selected.Contributor, matchReport.date, matchReport.location, matchReport.time);
+                          setSlotStats({
+                            rating: prevRatingOf(selected, stat),
+                            goal: parseInt(selected.goal) || (stat ? (parseInt(stat.Goal) || 0) : 0),
+                            assist: parseInt(selected.assist) || (stat ? (parseInt(stat.Assist) || 0) : 0),
+                            error: parseInt(selected.error) || (stat ? (parseInt(stat.Error) || 0) : 0),
+                          });
                         }
                       }}
                     >
@@ -925,27 +1047,44 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
                     </select>
                   </div>
 
-                  {slotToEdit.player && (
-                    <div style={{ marginBottom: '24px' }}>
-                      <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Match Rating (0-10.0):</label>
-                      <input
-                        type="number" min="0" max="10" step="0.1"
-                        value={slotToEdit.player.rating !== "" && slotToEdit.player.rating !== undefined ? slotToEdit.player.rating : ""}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setSlotToEdit(prev => ({
-                            ...prev,
-                            player: { ...prev.player, rating: val === "" ? "" : parseFloat(val) }
-                          }));
-                        }}
-                      />
-                    </div>
+                  {slotToEdit.player && slotStats && (
+                    <>
+                      <div style={{ marginBottom: '10px' }}>
+                        <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Match Rating (0-10.0):</label>
+                        <input
+                          type="number" min="0" max="10" step="0.1"
+                          value={slotStats.rating !== "" && slotStats.rating !== undefined ? slotStats.rating : ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setSlotStats(prev => ({ ...prev, rating: val === "" ? "" : parseFloat(val) }));
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ borderTop: "2px solid #e2e8f0", paddingTop: "10px", marginBottom: "16px" }}>
+                        <h4 style={{ margin: "0 0 6px", fontFamily: "'Oswald', sans-serif", color: "#1e3a8a", textTransform: "uppercase", fontSize: "12px", letterSpacing: "0.1em" }}>
+                          ⚽ Match Stats
+                        </h4>
+                        <StatStepper label="Goal" value={slotStats.goal} onChange={(v) => setSlotStats(s => ({ ...s, goal: v }))} />
+                        <StatStepper label="Assist" value={slotStats.assist} onChange={(v) => setSlotStats(s => ({ ...s, assist: v }))} />
+                        <StatStepper label="Error" value={slotStats.error} onChange={(v) => setSlotStats(s => ({ ...s, error: v }))} />
+                      </div>
+                    </>
                   )}
                   <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                     <button onClick={() => setSlotToEdit(null)} style={{ padding: '10px 16px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
                     <button onClick={() => {
                       const { team, idx, player } = slotToEdit;
                       const teamKey = team === 'A' ? 'teamA' : 'teamB';
+                      const mergedPlayer = player
+                        ? {
+                            ...player,
+                            rating: slotStats?.rating ?? player.rating,
+                            goal: slotStats?.goal ?? 0,
+                            assist: slotStats?.assist ?? 0,
+                            error: slotStats?.error ?? 0,
+                          }
+                        : null;
                       setEditedLineup(prev => {
                         const newLineup = JSON.parse(JSON.stringify(prev));
 
@@ -954,12 +1093,12 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
                           if (!Array.isArray(newLineup[teamKey].subs)) {
                             newLineup[teamKey].subs = [null, null];
                           }
-                          newLineup[teamKey].subs[subIdx] = player;
+                          newLineup[teamKey].subs[subIdx] = mergedPlayer;
                         } else {
                           if (!Array.isArray(newLineup[teamKey].players)) {
                             newLineup[teamKey].players = Array(11).fill(null);
                           }
-                          newLineup[teamKey].players[idx] = player;
+                          newLineup[teamKey].players[idx] = mergedPlayer;
                         }
                         return newLineup;
                       });
@@ -977,6 +1116,12 @@ const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
       )}
     </div>
   );
+}
+
+// small helper used in the slot modal select onChange
+function prevRatingOf(player, stat) {
+  if (player && player.rating !== undefined && player.rating !== null && player.rating !== "") return player.rating;
+  return stat ? (parseFloat(stat.Rating) || "") : "";
 }
 
 export default ModifyDashboard;
