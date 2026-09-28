@@ -152,6 +152,7 @@ function MatchLineup({
     goals: parseInt(player.goals ?? player.goal) || 0,
     assists: parseInt(player.assists ?? player.assist) || 0,
     isMotm: player.isMotm === true || player.manOfTheMatch === true,
+    errors: parseInt(player.errors ?? player.error) || 0,
   });
 
   const getSlotPosition = (pos, team) => {
@@ -201,6 +202,14 @@ function MatchLineup({
                 </div>
 
                 <div className="player-icon-wrapper">
+                  {/* ✨ NEW: Errors badge — top-left, one ❌ icon per error */}
+                    {errors > 0 && (
+                      <div className="stat-badge errors">
+                        {[...Array(errors)].map((_, i) => (
+                          <span key={`sub-error-${i}`} className="icon">❌</span>
+                        ))}
+                      </div>
+                    )}
                   <img 
                     src={
                       pictureMap?.[player.Contributor?.toLowerCase()]
@@ -278,6 +287,14 @@ function MatchLineup({
 
                   {/* 2. Icon Wrapper (Holds Image + Stats) */}
                   <div className="player-icon-wrapper">
+                    {/* ✨ NEW: Errors badge — top-left, one ❌ icon per error */}
+                    {errors > 0 && (
+                      <div className="stat-badge errors">
+                        {[...Array(errors)].map((_, i) => (
+                          <span key={`pitch-error-${i}`} className="icon">❌</span>
+                        ))}
+                      </div>
+                    )}
                     <img 
                       src={
                         pictureMap?.[player.Contributor?.toLowerCase()]
