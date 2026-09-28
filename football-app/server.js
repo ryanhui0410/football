@@ -573,30 +573,35 @@ app.get("/match-lineups", (req, res) => {
 
 app.post("/add-stats-batch", async (req, res) => {
   const arr = req.body?.stats;
-
   if (!Array.isArray(arr) || arr.length === 0) {
     return res.status(400).json({ message: "❌ No stats provided" });
   }
 
   const data = readStats();
-  const formatted = arr
-    .filter(s => s && s.Contributor)
-    .map(formatStat);
-
+  const formatted = arr.filter(s => s && s.Contributor).map(formatStat);
   if (formatted.length === 0) {
     return res.status(400).json({ message: "❌ No valid stats" });
   }
 
-  data.push(...formatted);
-  writeStats(data);
+  // ✨ Replace-or-append: remove existing records for the same match identity first
+  const first = formatted[0];
+  const normDate = (d) => (d || "").trim();
+  const remaining = data.filter(d =>
+    !formatted.some(f =>
+      normDate(d.Date) === normDate(f.Date) &&
+      (d.Contributor || "").trim().toLowerCase() === (f.Contributor || "").trim().toLowerCase() &&
+      (d.Location || "").trim() === (f.Location || "").trim() &&
+      (d.Time || "").trim() === (f.Time || "").trim()
+    )
+  );
+
+  remaining.push(...formatted);
+  writeStats(remaining);
 
   await syncFileToGitHub(STATS_PATH, "football-app/src/football_stats_2025_2026.json",
-    `Batch add stats for ${formatted.length} players (${formatted[0].Date})`);
+    `Batch upsert stats for ${formatted.length} players (${first.Date})`);
 
-  res.json({
-    message: `✅ ${formatted.length} stat records added`,
-    totalRecords: data.length,
-  }); 
+  res.json({ message: `✅ ${formatted.length} stat records saved (replaces existing)`, totalRecords: remaining.length });
 });
 app.post("/add-stats", async (req, res) => {
   const raw = req.body;

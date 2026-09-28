@@ -22,7 +22,8 @@ function ModifyDashboard({ contributors, onSave }) {
   const [editedLineup, setEditedLineup] = useState(null);
   const [lineupVersion, setLineupVersion] = useState(0);
   const [reportPerspective, setReportPerspective] = useState("");
-
+  const [editedResult, setEditedResult] = useState("");
+  const [slotStats, setSlotStats] = useState(null);
   const contributorNames = ["All", ...contributors.map(c => c.name)];
   const filteredContributors = activeFilter === "All" ? contributors : contributors.filter(c => c.name === activeFilter);
 
@@ -42,7 +43,60 @@ function ModifyDashboard({ contributors, onSave }) {
   }, []);
 
   // ═══════════════ HELPERS ═══════════════
+  // ✅ Us–Them scoreline stepper: {no}-{no}
+function ScorelineInput({ value, onChange }) {
+  const parts = (value || "").split("-");
+  const us = parts[0] ?? "";
+  const them = parts[1] ?? "";
+  const setSide = (side, raw) => {
+    const clean = raw.replace(/\D/g, "");
+    onChange(`${side === "us" ? clean : us}-${side === "them" ? clean : them}`);
+  };
+  const bump = (side, dir) => {
+    const cur = parseInt(side === "us" ? us : them) || 0;
+    setSide(side, String(Math.max(0, Math.min(99, cur + dir))));
+  };
+  const Side = ({ side, tag, val }) => (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+      <span style={{ fontSize: "11px", fontWeight: 700, color: "#475569" }}>{tag}</span>
+      <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+        <button type="button" onClick={() => bump(side, -1)}
+          style={{ width: "30px", height: "30px", border: "1px solid #cbd5e1", borderRadius: "6px", background: "#f8fafc", fontSize: "16px", cursor: "pointer" }}>−</button>
+        <input type="text" inputMode="numeric" value={val}
+          onChange={(e) => setSide(side, e.target.value)}
+          style={{ width: "44px", height: "34px", textAlign: "center", border: "1px solid #cbd5e1", borderRadius: "6px", fontWeight: 700, fontSize: "16px", boxSizing: "border-box" }} />
+        <button type="button" onClick={() => bump(side, 1)}
+          style={{ width: "30px", height: "30px", border: "1px solid #cbd5e1", borderRadius: "6px", background: "#f8fafc", fontSize: "16px", cursor: "pointer" }}>+</button>
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
+      <Side side="us" tag="TEAM A" val={us} />
+      <span style={{ fontSize: "22px", fontWeight: 700, color: "#334155" }}>–</span>
+      <Side side="them" tag="TEAM B" val={them} />
+    </div>
+  );
+}
 
+// ✅ Stat stepper (same as Tactical Dashboard)
+function StatStepper({ label, value, onChange, max = 99 }) {
+  const num = parseInt(value) || 0;
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0" }}>
+      <span style={{ fontSize: "13px", fontWeight: 600, color: "#475569" }}>{label}</span>
+      <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+        <button type="button" onClick={() => onChange(Math.max(0, num - 1))}
+          style={{ width: "32px", height: "32px", border: "1px solid #cbd5e1", borderRadius: "6px", background: "#f8fafc", fontSize: "16px", cursor: "pointer" }}>−</button>
+        <input type="text" inputMode="numeric" value={value ?? 0}
+          onChange={(e) => onChange(Math.min(max, parseInt(e.target.value.replace(/\D/g, "")) || 0))}
+          style={{ width: "48px", height: "32px", textAlign: "center", border: "1px solid #cbd5e1", borderRadius: "6px", boxSizing: "border-box" }} />
+        <button type="button" onClick={() => onChange(Math.min(max, num + 1))}
+          style={{ width: "32px", height: "32px", border: "1px solid #cbd5e1", borderRadius: "6px", background: "#f8fafc", fontSize: "16px", cursor: "pointer" }}>+</button>
+      </div>
+    </div>
+  );
+}
   const normalizeDate = (dateStr) => {
     if (!dateStr) return "";
     if (dateStr.length === 10 && dateStr.includes("-")) return dateStr;
@@ -52,7 +106,14 @@ function ModifyDashboard({ contributors, onSave }) {
     }
     return dateStr;
   };
-
+  // ✨ Derive outcome from score + team (Team A = first number)
+function deriveOutcome(matchResult, team) {
+  const parts = (matchResult || "").split("-").map(s => parseInt(s.trim()));
+  if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return "";
+  const [a, b] = parts;
+  if (team === "A") return a > b ? "Win" : a < b ? "Loss" : "Draw";
+  return b > a ? "Win" : b < a ? "Loss" : "Draw";
+}
   const parseDate = (dateStr) => {
     if (!dateStr) return new Date(0);
     const parts = dateStr.split('/');
@@ -115,7 +176,7 @@ function ModifyDashboard({ contributors, onSave }) {
       (l.time || "").trim() === (match.time || "").trim()
     ) || null;
   };
-
+    // ✨ Returns the full player object from the lineup (for stats resolution)
   const findLineupPlayer = (lineup, contributorName) => {
     if (!lineup || !contributorName) return null;
     const teams = [lineup.teamA, lineup.teamB].filter(Boolean);
@@ -132,6 +193,21 @@ function ModifyDashboard({ contributors, onSave }) {
     }
     return null;
   };
+  const findLineupPlayerTeam = (lineup, contributorName) => {
+  if (!lineup || !contributorName) return null;
+  for (const [teamKey, team] of [["A", lineup.teamA], ["B", lineup.teamB]]) {
+    if (!team) continue;
+    const players = [
+      ...(Array.isArray(team.players) ? team.players : Object.values(team.players || {})),
+      ...(Array.isArray(team.subs) ? team.subs : []),
+    ];
+    if (players.some(p => p && p.Contributor &&
+      p.Contributor.trim().toLowerCase() === contributorName.trim().toLowerCase())) {
+      return teamKey;
+    }
+  }
+  return null;
+};
 
   const getPlayerMatchStats = (playerName, matchDate, matchLocation, matchTime) => {
     if (!playerName || !matchStatsData.length) return null;
@@ -189,19 +265,13 @@ const buildResolvedMatch = (match, contributorName) => {
   const symbol = "⚽".repeat(goal) + "👟".repeat(assist);
 
   // ✨ Assist-to pair rule: Ryan ↔ Darren
-  const cLower = (contributorName || "").trim().toLowerCase();
-  const assistRecipient =
-    cLower === "ryan" ? "Darren" :
-    cLower === "darren" ? "Ryan" : "";
-  // If lineup carries an explicit assistTo use it; otherwise for the pair, all assists go to the partner
-  const assistTo =
-    assist > 0 && assistRecipient
-      ? (lp?.assistTo || stat?.["Assist to"] || assistRecipient)
-      : "";
-  const assistToCount =
-    assist > 0 && assistTo
-      ? (lp?.assistToCount ?? (stat ? (parseFloat(stat["Assist to count"]) || 0) : (assistRecipient === assistTo ? assist : 0)))
-      : 0;
+  // Ryan↔Darren pair only
+const cLower = (contributorName || "").trim().toLowerCase();
+const assistRecipient = cLower === "ryan" ? "Darren" : cLower === "darren" ? "Ryan" : "";
+const assistToCount = assistRecipient && assist > 0
+  ? (lp?.assistToCount ?? (stat ? (parseFloat(stat["Assist to count"]) || 0) : assist))
+  : 0;
+const assistTo = assistRecipient && assistToCount > 0 ? assistRecipient : "";
 
   return {
     // identity
@@ -282,19 +352,40 @@ const buildResolvedMatch = (match, contributorName) => {
 
       const lineupOnlyMatches = [];
 
-      allLineups.forEach(lineup => {
+            allLineups.forEach(lineup => {
         const key = `${normalizeDate(lineup.date)}|${(lineup.location || "").trim()}|${(lineup.time || "").trim()}`;
-        if (existingKeys.has(key)) return; // stats record exists — already shown
+        if (existingKeys.has(key)) return;
 
-        const me = findLineupPlayer(lineup, contributor.name);
+                const me = findLineupPlayer(lineup, contributor.name);
         if (me) {
+          // ✨ Find match result from ANY player's stats record
+          let matchResult = "", winLoss = "";
+          const teams = [lineup.teamA, lineup.teamB].filter(Boolean);
+          outer: for (const team of teams) {
+            const players = [
+              ...(Array.isArray(team.players) ? team.players : Object.values(team.players || {})),
+              ...(Array.isArray(team.subs) ? team.subs : []),
+            ];
+            for (const p of players) {
+              if (!p?.Contributor) continue;
+              const anyStat = getPlayerMatchStats(p.Contributor, lineup.date, lineup.location, lineup.time);
+              if (anyStat && anyStat["Match result"]) {
+                matchResult = anyStat["Match result"];
+                break outer;
+              }
+            }
+          }
+          // ✨ Derive THIS player's outcome from score + their own team
+          const myTeam = findLineupPlayerTeam(lineup, contributor.name);
+          winLoss = deriveOutcome(matchResult, myTeam);
+
           lineupOnlyMatches.push({
             date: lineup.date,
             location: lineup.location,
             time: lineup.time,
             rating: me.rating ?? "",
-            matchResult: "",
-            winLoss: "",
+            matchResult,
+            winLoss,
             goalContribution: (parseInt(me.goal) || 0) + (parseInt(me.assist) || 0),
             assist: parseInt(me.assist) || 0,
             symbol: "⚽".repeat(parseInt(me.goal) || 0) + "👟".repeat(parseInt(me.assist) || 0),
@@ -358,16 +449,17 @@ const buildResolvedMatch = (match, contributorName) => {
           const stat = getPlayerMatchStats(player.Contributor, enriched.date, enriched.location, enriched.time);
           return {
             ...player,
-            // ✅ Stats record wins when present; otherwise fall back to the lineup's own fields
-            isMotm: stat
-              ? stat["Man of the Match"] === true
-              : player.manOfTheMatch === true || player.isMotm === true,
-            goals: stat
-              ? (parseInt(stat.Goal) || 0)
-              : (parseInt(player.goal) || 0),
-            assists: stat
-              ? (parseInt(stat.Assist) || 0)
-              : (parseInt(player.assist) || 0),
+            // ✅ Lineup fields are PRIMARY (they always exist in new-format lineups);
+            //    stats records only fill in for legacy lineups without them
+            isMotm: player.manOfTheMatch != null
+              ? player.manOfTheMatch === true
+              : (stat ? stat["Man of the Match"] === true : false),
+            goals: player.goal != null
+              ? (parseInt(player.goal) || 0)
+              : (stat ? (parseInt(stat.Goal) || 0) : 0),
+            assists: player.assist != null
+              ? (parseInt(player.assist) || 0)
+              : (stat ? (parseInt(stat.Assist) || 0) : 0),
           };
         });
       }

@@ -20,9 +20,170 @@ function StatStepper({ label, value, onChange, max = 99 }) {
     </div>
   );
 }
+// ✅ Us–Them scoreline stepper: {no}-{no}   ← MUST BE HERE (top level)
+function ScorelineInput({ value, onChange }) {
+  const parts = (value || "").split("-");
+  const us = parts[0] ?? "";
+  const them = parts[1] ?? "";
+  const setSide = (side, raw) => {
+    const clean = raw.replace(/\D/g, "");
+    onChange(`${side === "us" ? clean : us}-${side === "them" ? clean : them}`);
+  };
+  const bump = (side, dir) => {
+    const cur = parseInt(side === "us" ? us : them) || 0;
+    setSide(side, String(Math.max(0, Math.min(99, cur + dir))));
+  };
+  const Side = ({ side, tag, val }) => (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+      <span style={{ fontSize: "11px", fontWeight: 700, color: "#475569" }}>{tag}</span>
+      <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+        <button type="button" onClick={() => bump(side, -1)}
+          style={{ width: "30px", height: "30px", border: "1px solid #cbd5e1", borderRadius: "6px", background: "#f8fafc", fontSize: "16px", cursor: "pointer" }}>−</button>
+        <input type="text" inputMode="numeric" value={val}
+          onChange={(e) => setSide(side, e.target.value)}
+          style={{ width: "44px", height: "34px", textAlign: "center", border: "1px solid #cbd5e1", borderRadius: "6px", fontWeight: 700, fontSize: "16px", boxSizing: "border-box" }} />
+        <button type="button" onClick={() => bump(side, 1)}
+          style={{ width: "30px", height: "30px", border: "1px solid #cbd5e1", borderRadius: "6px", background: "#f8fafc", fontSize: "16px", cursor: "pointer" }}>+</button>
+      </div>
+    </div>
+  );
+  return (
+    <div className="td-field">
+      <label>⚽ Match Result (Team A – Team B)</label>
+      <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
+        <Side side="us" tag="TEAM A" val={us} />
+        <span style={{ fontSize: "22px", fontWeight: 700, color: "#334155" }}>–</span>
+        <Side side="them" tag="TEAM B" val={them} />
+      </div>
+    </div>
+  );
+}
+// ✅ Inline calendar picker — outputs M/D/YYYY (e.g. 8/13/2026)
+function CalendarPicker({ value, onChange }) {
+  const parts = (value || "").split("/").map(Number);
+  const [open, setOpen] = useState(false);
+  const [viewYear, setViewYear] = useState(parts[2] && !isNaN(parts[2]) ? parts[2] : new Date().getFullYear());
+  const [viewMonth, setViewMonth] = useState(
+    parts[0] && !isNaN(parts[0]) ? parts[0] - 1 : new Date().getMonth() // 0-based
+  );
+
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const firstWeekday = new Date(viewYear, viewMonth, 1).getDay(); // 0 = Sunday
+
+  const prevMonth = () => {
+    if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
+    else setViewMonth(m => m - 1);
+  };
+  const nextMonth = () => {
+    if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
+    else setViewMonth(m => m + 1);
+  };
+
+  const selectDay = (day) => {
+    onChange(`${viewMonth + 1}/${day}/${viewYear}`); // M/D/YYYY, no leading zeros
+    setOpen(false);
+  };
+
+  // Which day is currently selected (to highlight)
+  const selParts = (value || "").split("/").map(Number);
+  const selMatch = (day) =>
+    selParts[0] === viewMonth + 1 && selParts[1] === day && selParts[2] === viewYear;
+
+  const blanks = Array(firstWeekday).fill(null);
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  return (
+    <div className="td-field" style={{ position: "relative" }}>
+      <label>📅 Match Date</label>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: "100%", padding: "12px 14px", borderRadius: "8px", border: "1px solid #cbd5e1",
+          background: "#f8fafc", fontSize: "15px", fontFamily: "'Barlow', sans-serif",
+          color: value ? "#0f172a" : "#94a3b8", textAlign: "left", cursor: "pointer", boxSizing: "border-box"
+        }}
+      >
+        {value || "Tap to pick a date"}
+      </button>
+
+      {open && (
+        <div style={{
+          position: "absolute", top: "100%", left: 0, zIndex: 5000,
+          background: "#fff", border: "1px solid #e2e8f0", borderRadius: "12px",
+          boxShadow: "0 12px 32px rgba(0,0,0,0.18)", padding: "12px",
+          width: "280px", marginTop: "6px"
+        }}>
+          {/* Month navigation */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+            <button type="button" onClick={prevMonth}
+              style={{ border: "none", background: "none", fontSize: "18px", cursor: "pointer", color: "#475569", padding: "4px 8px" }}>◀</button>
+            <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 600, fontSize: "14px", color: "#1e293b" }}>
+              {monthNames[viewMonth]} {viewYear}
+            </span>
+            <button type="button" onClick={nextMonth}
+              style={{ border: "none", background: "none", fontSize: "18px", cursor: "pointer", color: "#475569", padding: "4px 8px" }}>▶</button>
+          </div>
+
+          {/* Weekday header */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", marginBottom: "4px" }}>
+            {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => (
+              <div key={d} style={{ textAlign: "center", fontSize: "10px", fontWeight: 700, color: "#94a3b8", padding: "4px 0" }}>
+                {d}
+              </div>
+            ))}
+          </div>
+
+          {/* Day grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px" }}>
+            {blanks.map((_, i) => <div key={`b-${i}`} />)}
+            {days.map(day => {
+              const selected = selMatch(day);
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => selectDay(day)}
+                  style={{
+                    height: "34px", border: selected ? "none" : "1px solid transparent",
+                    borderRadius: "8px", fontSize: "13px", fontWeight: selected ? 700 : 500,
+                    cursor: "pointer",
+                    background: selected ? "#2563eb" : "#f8fafc",
+                    color: selected ? "#fff" : "#334155",
+                  }}
+                  onMouseEnter={(e) => { if (!selected) e.currentTarget.style.background = "#dbeafe"; }}
+                  onMouseLeave={(e) => { if (!selected) e.currentTarget.style.background = "#f8fafc"; }}
+                >
+                  {day}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Close row */}
+          <div style={{ textAlign: "center", marginTop: "8px" }}>
+            <button type="button" onClick={() => setOpen(false)}
+              style={{ border: "none", background: "#f1f5f9", borderRadius: "6px", padding: "6px 16px", fontSize: "12px", fontWeight: 600, color: "#475569", cursor: "pointer" }}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ✨ Derive outcome from score + team (Team A = first number, Team B = second)
+function deriveOutcome(matchResult, team) {
+  const parts = (matchResult || "").split("-").map(s => parseInt(s.trim()));
+  if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return "";
+  const [a, b] = parts;
+  if (team === "A") return a > b ? "Win" : a < b ? "Loss" : "Draw";
+  return b > a ? "Win" : b < a ? "Loss" : "Draw";
+}
 
 function TacticalDashboard() {
-  const [matchDetails, setMatchDetails] = useState({ Date: "", Location: "", Time: "" });
   const GITHUB_OWNER = "ryanhui0410";
   const GITHUB_REPO = "football";
   const IMAGES_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/football-app/public/images`;
@@ -30,13 +191,12 @@ function TacticalDashboard() {
   const [history, setHistory] = useState({ contributors: [], locations: [], times: [], sources: [] });
   const [allLineups, setAllLineups] = useState([]);
   const [availablePlayers, setAvailablePlayers] = useState([]);
-
+  const [matchDetails, setMatchDetails] = useState({ Date: "", Location: "", Time: "", MatchResult: "" });
   const [lineupData, setLineupData] = useState(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [slotToEdit, setSlotToEdit] = useState(null);
   const [pictureMap, setPictureMap] = useState({});
-
   // ✅ Per-player match stats, keyed by Contributor name
   const [playerStats, setPlayerStats] = useState({});
   // Working copy while the slot modal is open
@@ -45,6 +205,14 @@ function TacticalDashboard() {
   // Helper: GitHub raw URL for a player, or null if not uploaded yet
   const getPicture = (name) =>
     name ? pictureMap[name.trim().toLowerCase()] || null : null;
+
+  // ✨ Ryan↔Darren partner helper
+  const getPartner = (name) => {
+    const n = (name || "").trim().toLowerCase();
+    if (n === "ryan") return "Darren";
+    if (n === "darren") return "Ryan";
+    return null;
+  };
 
   // ✅ Three-way layout detection
   const getLayoutType = () => {
@@ -86,7 +254,6 @@ function TacticalDashboard() {
         setAllLineups(Array.isArray(lineups) ? lineups : []);
         setAvailablePlayers(Array.isArray(players) ? players : []);
 
-        // Build: lowercase player name → raw GitHub URL
         if (Array.isArray(imageFiles)) {
           const map = {};
           imageFiles
@@ -113,7 +280,6 @@ function TacticalDashboard() {
     );
 
     setLineupData(prev => {
-      // ✅ Already showing this exact match? Keep the current object (no reset)
       if (
         prev &&
         prev.date === matchDetails.Date &&
@@ -146,36 +312,41 @@ function TacticalDashboard() {
     setSaving(true);
 
     const sanitizeTeam = (teamObj) => {
-  if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] };
+      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] };
 
-  const cleanPlayer = (p) => {
-    if (!p) return null;
-    const s = playerStats[p.Contributor] || {};
-    return {
-      Contributor: p.Contributor,
-      rating: parseFloat(p.rating) || 0,
-      picture: getPicture(p.Contributor) || p.picture || `/${p.Contributor}.jpeg`,
-      // ✅ Persist match stats into match_lineups.json
-      goal: s.Goal ?? 0,
-      assist: s.Assist ?? 0,
-      leftFoot: s.LeftFoot ?? 0,
-      rightFoot: s.RightFoot ?? 0,
-      head: s.Head ?? 0,
-      other: s.OtherBodyParts ?? 0,
-      error: s.Error ?? 0,
-      manOfTheMatch: !!s.ManOfTheMatch,
+      const cleanPlayer = (p) => {
+        if (!p) return null;
+        const s = playerStats[p.Contributor] || {};
+        const partner = getPartner(p.Contributor);
+        const assistToCount = partner ? (parseInt(s.AssistTo) || 0) : 0;
+        return {
+          Contributor: p.Contributor,
+          rating: parseFloat(p.rating) || 0,
+          picture: getPicture(p.Contributor) || p.picture || `/${p.Contributor}.jpeg`,
+          // ✅ Persist match stats into match_lineups.json (all players)
+          goal: s.Goal ?? 0,
+          assist: s.Assist ?? 0,
+          leftFoot: s.LeftFoot ?? 0,
+          rightFoot: s.RightFoot ?? 0,
+          head: s.Head ?? 0,
+          other: s.OtherBodyParts ?? 0,
+          error: s.Error ?? 0,
+          manOfTheMatch: !!s.ManOfTheMatch,
+          // ✅ Ryan↔Darren assist-to detail
+          assistTo: partner && assistToCount > 0 ? partner : "",
+          assistToCount,
+        };
+      };
+
+      const cleanPlayers = (teamObj.players || []).map(cleanPlayer);
+      const cleanSubs = (teamObj.subs || []).map(cleanPlayer);
+
+      return {
+        formation: teamObj.formation || "4-4-2",
+        players: cleanPlayers.slice(0, 11),
+        subs: cleanSubs.slice(0, 2)
+      };
     };
-  };
-
-  const cleanPlayers = (teamObj.players || []).map(cleanPlayer);
-  const cleanSubs = (teamObj.subs || []).map(cleanPlayer);
-
-  return {
-    formation: teamObj.formation || "4-4-2",
-    players: cleanPlayers.slice(0, 11),
-    subs: cleanSubs.slice(0, 2)
-  };
-};
 
     const payload = {
       date: matchDetails.Date,
@@ -205,6 +376,8 @@ function TacticalDashboard() {
       const statRecords = [];
       ["teamA", "teamB"].forEach(teamKey => {
         const team = lineupData[teamKey];
+        const teamLetter = teamKey === "teamA" ? "A" : "B";
+        const teamOutcome = deriveOutcome(matchDetails.MatchResult, teamLetter);
         [...(team?.players || []), ...(team?.subs || [])].forEach(p => {
           if (!p?.Contributor) return;
           const s = playerStats[p.Contributor] || {};
@@ -214,6 +387,8 @@ function TacticalDashboard() {
             Rating: p.rating ?? 0,
             Location: matchDetails.Location,
             Time: matchDetails.Time,
+            MatchResult: matchDetails.MatchResult ?? "",
+            WinLoss: teamOutcome,
             Goal: s.Goal ?? 0,
             Assist: s.Assist ?? 0,
             LeftFoot: s.LeftFoot ?? 0,
@@ -222,6 +397,8 @@ function TacticalDashboard() {
             OtherBodyParts: s.OtherBodyParts ?? 0,
             Error: s.Error ?? 0,
             ManOfTheMatch: !!s.ManOfTheMatch,
+            // ✅ Ryan↔Darren assist-to count (formatStat pairs it automatically)
+            AssistTo: getPartner(p.Contributor) && s.Assist > 0 ? (parseInt(s.AssistTo) || 0) : 0,
             source: "Tactical Dashboard",
           });
         });
@@ -296,7 +473,6 @@ function TacticalDashboard() {
       setTimeout(() => setMessage(""), 3000);
     }
 
-    // ✅ Persist this player's stats into the per-match map
     if (player && slotStats) {
       setPlayerStats(prev => ({
         ...prev,
@@ -312,10 +488,10 @@ function TacticalDashboard() {
     <div className="td-details-card">
       <h3>Match Details</h3>
       <div className="td-inputs">
-        <div className="td-field">
-          <label>📅 Match Date</label>
-          <input type="text" name="Date" value={matchDetails.Date} onChange={handleChange} placeholder="e.g. 8/9/2026" />
-        </div>
+        <CalendarPicker
+          value={matchDetails.Date}
+          onChange={(val) => setMatchDetails(d => ({ ...d, Date: val }))}
+        />
         <div className="td-field">
           <label>📍 Location</label>
           <input type="text" name="Location" value={matchDetails.Location} onChange={handleChange}
@@ -331,6 +507,10 @@ function TacticalDashboard() {
             {(history.times || []).map((time, idx) => <option key={idx} value={time} />)}
           </datalist>
         </div>
+        <ScorelineInput
+          value={matchDetails.MatchResult}
+          onChange={(val) => setMatchDetails(d => ({ ...d, MatchResult: val }))}
+        />
       </div>
     </div>
   );
@@ -341,7 +521,6 @@ function TacticalDashboard() {
 
       {message && <div className={`td-toast ${message.includes("✅") ? 'success' : 'warning'}`}>{message}</div>}
 
-      {/* ✅ ALWAYS rendered — the details card never unmounts while typing */}
       <div className="td-pitch-container">
         {renderDetailsCard()}
 
@@ -364,9 +543,8 @@ function TacticalDashboard() {
               onSlotClick={(team, idx, player) => {
                 setSlotToEdit({ team, idx, player });
                 if (player) {
-                  // Load any previously entered stats for this player, or blank
                   setSlotStats(playerStats[player.Contributor] || {
-                    Goal: 0, Assist: 0, LeftFoot: 0, RightFoot: 0, Head: 0, OtherBodyParts: 0, Error: 0, ManOfTheMatch: false
+                    Goal: 0, Assist: 0, LeftFoot: 0, RightFoot: 0, Head: 0, OtherBodyParts: 0, Error: 0, ManOfTheMatch: false, AssistTo: 0
                   });
                 } else {
                   setSlotStats(null);
@@ -401,7 +579,6 @@ function TacticalDashboard() {
                   const val = e.target.value;
                   if (!val) {
                     setSlotToEdit(prev => ({ ...prev, player: null }));
-                    // ✅ Clear stale stats when a player is removed
                     if (slotToEdit.player?.Contributor) {
                       setPlayerStats(prev => {
                         const next = { ...prev };
@@ -420,9 +597,8 @@ function TacticalDashboard() {
                         rating: prev.player?.rating !== undefined ? prev.player.rating : ""
                       }
                     }));
-                    // ✅ Load existing stats for the newly selected player
                     setSlotStats(playerStats[selected.Contributor] || {
-                      Goal: 0, Assist: 0, LeftFoot: 0, RightFoot: 0, Head: 0, OtherBodyParts: 0, Error: 0, ManOfTheMatch: false
+                      Goal: 0, Assist: 0, LeftFoot: 0, RightFoot: 0, Head: 0, OtherBodyParts: 0, Error: 0, ManOfTheMatch: false, AssistTo: 0
                     });
                   }
                 }}
@@ -463,6 +639,17 @@ function TacticalDashboard() {
 
                 <StatStepper label="Goal" value={slotStats.Goal} onChange={(v) => setSlotStats(s => ({ ...s, Goal: v }))} />
                 <StatStepper label="Assist" value={slotStats.Assist} onChange={(v) => setSlotStats(s => ({ ...s, Assist: v }))} />
+
+                {/* ✅ Ryan↔Darren assist-to detail — how many assists went to the partner */}
+                {getPartner(slotToEdit.player.Contributor) && slotStats.Assist > 0 && (
+                  <StatStepper
+                    label={`No. of assist to ${getPartner(slotToEdit.player.Contributor)}`}
+                    value={slotStats.AssistTo ?? 0}
+                    max={slotStats.Assist}
+                    onChange={(v) => setSlotStats(s => ({ ...s, AssistTo: v }))}
+                  />
+                )}
+
                 <StatStepper label="Left Foot" value={slotStats.LeftFoot} onChange={(v) => setSlotStats(s => ({ ...s, LeftFoot: v }))} />
                 <StatStepper label="Right Foot" value={slotStats.RightFoot} onChange={(v) => setSlotStats(s => ({ ...s, RightFoot: v }))} />
                 <StatStepper label="Head" value={slotStats.Head} onChange={(v) => setSlotStats(s => ({ ...s, Head: v }))} />
