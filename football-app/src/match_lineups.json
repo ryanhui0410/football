@@ -897,7 +897,15 @@
         {
           "Contributor": "局長",
           "rating": 8.3,
-          "picture": "/局長.jpeg"
+          "picture": "/局長.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 2,
+          "assist": 1,
+          "error": 1,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Chris",
@@ -952,7 +960,15 @@
         {
           "Contributor": "Ken",
           "rating": 5.2,
-          "picture": "/images/Ken.jpeg"
+          "picture": "/images/Ken.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 0,
+          "error": 1,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Jacob",
