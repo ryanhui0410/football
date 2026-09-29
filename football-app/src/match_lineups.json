@@ -752,7 +752,16 @@
         {
           "Contributor": "Nick",
           "rating": 5,
-          "picture": "/Nick.jpeg"
+          "picture": "/Nick.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 1,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Tiga",
