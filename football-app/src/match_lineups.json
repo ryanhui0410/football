@@ -1151,7 +1151,15 @@
         {
           "Contributor": "Darren",
           "rating": 10,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Darren.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Darren.jpeg",
+          "isMotm": true,
+          "goals": 5,
+          "assists": 1,
+          "goal": 5,
+          "assist": 1,
+          "error": 1,
+          "assistTo": "",
+          "assistToCount": 0
         }
       ],
       "subs": [
