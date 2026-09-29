@@ -22,7 +22,15 @@
         {
           "Contributor": "Howard",
           "rating": 6.2,
-          "picture": "/images/Howard.jpeg"
+          "picture": "/images/Howard.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 0,
+          "error": 1,
+          "assistTo": "",
+          "assistToCount": 0
         },
         null,
         null,
