@@ -336,7 +336,15 @@
         {
           "Contributor": "Jackson",
           "rating": 5.5,
-          "picture": "/Jackson.jpeg"
+          "picture": "/Jackson.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 0,
+          "error": 1,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "QC1",
@@ -371,7 +379,15 @@
         {
           "Contributor": "Derek",
           "rating": 8.2,
-          "picture": "/images/Derek.jpeg"
+          "picture": "/images/Derek.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 1,
+          "assist": 1,
+          "error": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Barry",
@@ -414,7 +430,15 @@
         {
           "Contributor": "Nick",
           "rating": 5.5,
-          "picture": "/Nick.jpeg"
+          "picture": "/Nick.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 0,
+          "error": 1,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "阿榮",
@@ -429,7 +453,15 @@
         {
           "Contributor": "大嚿",
           "rating": 7.3,
-          "picture": "/大嚿.jpeg"
+          "picture": "/大嚿.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 1,
+          "assist": 0,
+          "error": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "hong",
