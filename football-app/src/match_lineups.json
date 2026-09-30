@@ -1420,7 +1420,20 @@
         {
           "Contributor": "Derek",
           "rating": 7.2,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Derek.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Derek.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 1,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Ryan",
