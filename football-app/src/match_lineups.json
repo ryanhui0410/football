@@ -1452,8 +1452,21 @@
         },
         {
           "Contributor": "Jackson",
-          "rating": 6.8,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Jackson.jpeg"
+          "rating": 7.3,
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Jackson.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 1,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Lu",
@@ -1496,7 +1509,20 @@
         {
           "Contributor": "hong",
           "rating": 7.9,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/hong.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/hong.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 1,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Hong1",
@@ -1506,7 +1532,20 @@
         {
           "Contributor": "局長",
           "rating": 8.8,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/局長.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/局長.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 1,
+          "assist": 1,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Jacob",
