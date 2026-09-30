@@ -1393,5 +1393,74 @@
         null
       ]
     }
+  },
+  {
+    "date": "9/27/2026",
+    "location": "雲景道",
+    "time": "4:00 PM",
+    "teamA": {
+      "formation": "4-4-2",
+      "players": [
+        null,
+        null,
+        null,
+        {
+          "Contributor": "阿兜",
+          "rating": 5.7,
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/阿兜.jpeg"
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "Contributor": "Ryan",
+          "rating": 8.8,
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ryan.jpeg"
+        },
+        {
+          "Contributor": "Darren",
+          "rating": 9.8,
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Darren.jpeg"
+        }
+      ],
+      "subs": [
+        null,
+        null
+      ]
+    },
+    "teamB": {
+      "formation": "4-4-2",
+      "players": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "Contributor": "Jeffrey",
+          "rating": 8.3,
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Jeffrey.jpeg"
+        },
+        {
+          "Contributor": "Jason",
+          "rating": 8.4,
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Jason.jpeg"
+        },
+        {
+          "Contributor": "良哥",
+          "rating": 6.3,
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/良哥.jpeg"
+        },
+        null,
+        null
+      ],
+      "subs": [
+        null,
+        null
+      ]
+    }
   }
 ]
