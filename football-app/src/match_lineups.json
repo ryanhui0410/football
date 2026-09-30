@@ -699,7 +699,16 @@
         {
           "Contributor": "Chris",
           "rating": 8.7,
-          "picture": "/Chris.jpeg"
+          "picture": "/Chris.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 1,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Chun",
@@ -709,7 +718,16 @@
         {
           "Contributor": "子睿",
           "rating": 7.8,
-          "picture": "/子睿.jpeg"
+          "picture": "/子睿.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 1,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Raymond",
