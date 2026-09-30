@@ -7,37 +7,7 @@
   font-family: 'Barlow', sans-serif;
   color: #eef4ee;
 }
-/* ✨ Error icon: letter E wrapped in a red circle */
-.stat-badge .icon-error {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #dc2626;
-  border: 1.5px solid #fff;
-  color: #ffffff;
-  font-family: 'Oswald', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6));
-}
 
-/* Errors: Anchor near top-left, stretch further LEFT */
-.stat-badge.errors {
-  top: -6px;
-  bottom: auto;
-  left: calc(0% - 10px);
-  flex-direction: row-reverse;
-}
-
-/* Overlap: pull subsequent circles rightward */
-.stat-badge.errors > * + * {
-  margin-right: -8px;
-  margin-left: 0;
-}
 .fm-lineup-only-badge {
   font-size: 9px;
   font-weight: 700;

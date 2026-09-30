@@ -51,7 +51,97 @@ async function uploadImageToGitHub(imageBuffer, githubFilePath, commitMessage) {
   const errText = await putRes.text();
   return { success: false, error: `GitHub rejected image push (${putRes.status}): ${errText}` };
 }
+// ===================== Normalize picture paths (run on demand) =====================
+app.post("/normalize-picture-paths", async (req, res) => {
+  try {
+    const data = readAttributes();
+    const token = process.env.GITHUB_TOKEN;
+    const owner = process.env.GITHUB_OWNER;
+    const repo = process.env.GITHUB_REPO;
 
+    // List all files in football-app/public/images on GitHub
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/football-app/public/images`;
+    const listRes = await fetch(apiUrl, {
+      headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" }
+    });
+    if (!listRes.ok) {
+      return res.status(500).json({ error: `Failed to list images dir (${listRes.status})` });
+    }
+
+    const imageFiles = (await listRes.json())
+      .map(f => f.name)
+      .filter(n => /\.(jpe?g|png)$/i.test(n));
+
+    const rawBase = `https://raw.githubusercontent.com/${owner}/${repo}/main/football-app/public/images`;
+    const details = [];
+    let updated = 0;
+
+    for (const player of data) {
+      if (!player?.Contributor) continue;
+      const name = player.Contributor.trim();
+
+      // Case-insensitive match for {name}.jpeg / {name}.jpg
+      const match = imageFiles.find(img =>
+        img.replace(/\.(jpe?g|png)$/i, "").toLowerCase() === name.toLowerCase()
+      );
+
+      const isBase64 = player.picture && player.picture.startsWith("data:");
+      const isHttp = player.picture && player.picture.startsWith("http");
+      const needsFix = !player.picture || isBase64 || !isHttp;
+
+      if (!needsFix) continue; // already a raw GitHub URL
+
+      if (match) {
+        // ✅ File exists on GitHub → point to the raw URL
+        details.push(`${name}: ${isBase64 ? "base64" : (player.picture || "empty")} → raw URL`);
+        player.picture = `${rawBase}/${match}`;
+        updated++;
+      } else if (isBase64) {
+        // ✅ No file on GitHub yet, but we hold the base64 → upload it as {name}.jpeg
+        try {
+          const base64Data = player.picture.replace(/^data:image\/\w+;base64,/, "");
+          const imageBuffer = Buffer.from(base64Data, "base64");
+          const processedBuffer = await sharp(imageBuffer)
+            .rotate()
+            .resize({ width: 500, height: 500, fit: "cover", withoutEnlargement: true })
+            .jpeg({ quality: 80, mozjpeg: true })
+            .toBuffer();
+          const uploadRes = await uploadImageToGitHub(
+            processedBuffer,
+            `football-app/public/images/${name}.jpeg`,
+            `Auto-upload profile picture during normalization: ${name}`
+          );
+          if (uploadRes.success) {
+            details.push(`${name}: base64 → uploaded to GitHub → raw URL`);
+            player.picture = `${rawBase}/${name}.jpeg`;
+            updated++;
+          } else {
+            details.push(`${name}: upload FAILED — ${uploadRes.error}`);
+          }
+        } catch (err) {
+          details.push(`${name}: base64 decode failed — ${err.message}`);
+        }
+      } else {
+        details.push(`${name}: no image on GitHub and no base64 — left as is`);
+      }
+    }
+
+    if (updated > 0) {
+      writeAttributes(data);
+      const syncResult = await syncFileToGitHub(
+        ATTR_PATH, "football-app/src/player_attributes.json",
+        `Normalize picture paths (${updated} players)`
+      );
+      if (!syncResult.success) {
+        return res.status(500).json({ error: "Updated locally but GitHub sync failed", githubError: syncResult.error });
+      }
+    }
+
+    res.json({ message: `✅ Normalized ${updated} picture path(s)`, details });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // ===================== Backfill picture paths =====================
 app.post("/backfill-picture-paths", async (req, res) => {
   try {
@@ -447,6 +537,28 @@ app.post("/player-attributes", async (req, res) => {
   console.log(`\n📥 [PLAYER-ATTRIBUTES] Request received! Contributor: ${req.body?.Contributor}`);
   try {
     const card = req.body;
+        // ✨ Auto-upload base64 pictures to GitHub — keeps the JSON free of blobs
+    if (card.picture && card.picture.startsWith("data:")) {
+      try {
+        const base64Data = card.picture.replace(/^data:image\/\w+;base64,/, "");
+        const imageBuffer = Buffer.from(base64Data, "base64");
+        const processedBuffer = await sharp(imageBuffer)
+          .rotate()
+          .resize({ width: 500, height: 500, fit: "cover", withoutEnlargement: true })
+          .jpeg({ quality: 80, mozjpeg: true })
+          .toBuffer();
+        const uploadRes = await uploadImageToGitHub(
+          processedBuffer,
+          `football-app/public/images/${card.Contributor.trim()}.jpeg`,
+          `Auto-upload profile picture: ${card.Contributor.trim()}`
+        );
+        if (uploadRes.success) {
+          card.picture = `https://raw.githubusercontent.com/${process.env.GITHUB_OWNER}/${process.env.GITHUB_REPO}/main/football-app/public/images/${card.Contributor.trim()}.jpeg`;
+        }
+      } catch (imgErr) {
+        console.error("⚠️ Base64 picture auto-upload failed:", imgErr.message);
+      }
+    }
     if (!card || !card.Contributor) {
       return res.status(400).json({ error: "Missing Contributor" });
     }
@@ -712,7 +824,7 @@ async function startupSync() {
   await pullLatestFromGitHub("football-app/src/contributor_profiles.json", PROFILES_PATH);
   await pullLatestFromGitHub("football-app/src/player_attributes.json", ATTR_PATH);
   await pullLatestFromGitHub("football-app/src/match_lineups.json", LINEUPS_PATH);
-  
+
   console.log("✅ Data synced! Server is ready.");
   
   const PORT = process.env.PORT || 5000;
