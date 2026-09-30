@@ -330,6 +330,7 @@ function formatStat(raw) {
     "Right Foot":      parseFloat(rightFoot) || 0,
     Head:              parseFloat(head) || 0,
     "Other body parts": parseFloat(other) || 0,
+    "Own Goal":        parseFloat(raw.OwnGoal ?? raw["Own Goal"] ?? 0) || 0,  
     Season:            computeSeason(raw.Date),
     "Match result":    raw["Match result"] ?? raw.MatchResult ?? "",
     "Win/Loss?":       raw["Win/Loss?"]    ?? raw.WinLoss    ?? "",

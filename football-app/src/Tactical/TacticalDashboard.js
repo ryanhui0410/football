@@ -330,6 +330,7 @@ function TacticalDashboard() {
           rightFoot: s.RightFoot ?? 0,
           head: s.Head ?? 0,
           other: s.OtherBodyParts ?? 0,
+          ownGoal: s.OwnGoal ?? 0, 
           error: s.Error ?? 0,
           manOfTheMatch: !!s.ManOfTheMatch,
           // ✅ Ryan↔Darren assist-to detail
@@ -395,6 +396,7 @@ function TacticalDashboard() {
             RightFoot: s.RightFoot ?? 0,
             Head: s.Head ?? 0,
             OtherBodyParts: s.OtherBodyParts ?? 0,
+            OwnGoal: s.OwnGoal ?? 0,   
             Error: s.Error ?? 0,
             ManOfTheMatch: !!s.ManOfTheMatch,
             // ✅ Ryan↔Darren assist-to count (formatStat pairs it automatically)
@@ -544,7 +546,7 @@ function TacticalDashboard() {
                 setSlotToEdit({ team, idx, player });
                 if (player) {
                   setSlotStats(playerStats[player.Contributor] || {
-                    Goal: 0, Assist: 0, LeftFoot: 0, RightFoot: 0, Head: 0, OtherBodyParts: 0, Error: 0, ManOfTheMatch: false, AssistTo: 0
+                    Goal: 0, Assist: 0, LeftFoot: 0, RightFoot: 0, Head: 0, OtherBodyParts: 0, Error: 0, ManOfTheMatch: false, AssistTo: 0, OwnGoal: 0
                   });
                 } else {
                   setSlotStats(null);
@@ -654,6 +656,7 @@ function TacticalDashboard() {
                 <StatStepper label="Right Foot" value={slotStats.RightFoot} onChange={(v) => setSlotStats(s => ({ ...s, RightFoot: v }))} />
                 <StatStepper label="Head" value={slotStats.Head} onChange={(v) => setSlotStats(s => ({ ...s, Head: v }))} />
                 <StatStepper label="Other Body Parts" value={slotStats.OtherBodyParts} onChange={(v) => setSlotStats(s => ({ ...s, OtherBodyParts: v }))} />
+                <StatStepper label="Own Goal" value={slotStats.OwnGoal} onChange={(v) => setSlotStats(s => ({ ...s, OwnGoal: v }))} />
                 <StatStepper label="Error" value={slotStats.Error} onChange={(v) => setSlotStats(s => ({ ...s, Error: v }))} />
 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0" }}>

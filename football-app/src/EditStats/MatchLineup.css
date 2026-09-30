@@ -276,7 +276,18 @@
   /* ========================================== */
   /* ===== VERTICAL LAYOUT (MANAGER MODE) ===== */
   /* ========================================== */
-
+  .og-badge {
+  display: inline-block;
+  margin-top: 1px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: rgba(220, 38, 38, 0.85);
+  color: #fff;
+  font-size: 7px;
+  font-weight: 700;
+  font-family: 'Oswald', sans-serif;
+  line-height: 1.4;
+}
   .match-lineup-container.layout-vertical .lineup-content {
     display: grid;
     grid-template-columns: 220px 1fr;
@@ -364,18 +375,59 @@
   bottom: 4% !important; top: auto !important;   /* ← the critical reset */
   left: 25% !important; right: auto !important;
 }
-/* Errors: Anchor near top-left, stretch further LEFT */
-.stat-badge.errors {
-  top: -6px;
-  bottom: auto;
-  left: calc(0% - 10px);
-  flex-direction: row-reverse;
-  color: #dc2626;
+/* ✨ Goals + Errors + Own Goals: one strip anchored at the icon's RIGHT edge */
+.stat-badge.stat-strip-right {
+  left: calc(100% - 10px);
+  right: auto;
+  bottom: -6px;
+  flex-direction: row;
+  color: #ca8a04;
 }
 
-/* Overlap logic for Errors (pull subsequent icons rightward) */
+.stat-badge.stat-strip-right > * + * {
+  margin-left: -16px;
+  margin-right: 0;
+}
+
+/* ✨ Error icon: letter E wrapped in a red circle */
+.stat-badge .icon-error {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #dc2626;
+  border: 1.5px solid #fff;
+  color: #ffffff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6));
+}
+
+/* ✨ Own Goal pill: red rounded rect with "OG" */
+.stat-badge .icon-og {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 16px;
+  border-radius: 4px;
+  background: #dc2626;
+  border: 1.5px solid #fff;
+  color: #ffffff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6));
+}
+
+/* Overlap: pull subsequent circles rightward */
 .stat-badge.errors > * + * {
-  margin-right: -16px;
+  margin-right: -8px;
   margin-left: 0;
 }
 /* ✅ Keep the center line clean in vertical too */
@@ -954,19 +1006,45 @@
     PORTRAIT MOBILE SPECIFIC (Stacked / Vertical Pitch)
     ========================================================= */
   @media (max-width: 850px) and (orientation: portrait) {
+    .stat-badge.stat-strip-right {
+  left: calc(100% - 6px);
+  bottom: -4px;
+}
+
+.stat-badge .icon-error {
+  width: 14px;
+  height: 14px;
+  font-size: 8px;
+  border-width: 1px;
+}
+
+.stat-badge .icon-og {
+  width: 16px;
+  height: 12px;
+  font-size: 7px;
+  border-width: 1px;
+}
+
+.stat-badge.stat-strip-right > * + * {
+  margin-left: -6px;
+  margin-right: 0;
+}
     .stat-badge.errors {
-      top: -4px;
-      left: calc(0% - 6px);
-    }
+  top: -4px;
+  left: calc(0% - 6px);
+}
 
-    .stat-badge.errors .icon {
-      font-size: 11.5px;
-    }
+.stat-badge .icon-error {
+  width: 14px;
+  height: 14px;
+  font-size: 9px;
+  border-width: 1px;
+}
 
-    .stat-badge.errors > * + * {
-      margin-right: -6px;
-      margin-left: 0;
-    }
+.stat-badge.errors > * + * {
+  margin-right: -4px;
+  margin-left: 0;
+}
     /* Force vertical layout grid */
     .match-lineup-container.layout-vertical .lineup-content {
       grid-template-columns: 1fr;

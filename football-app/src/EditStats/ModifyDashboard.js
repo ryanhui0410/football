@@ -97,7 +97,13 @@ function ModifyDashboard({ contributors, onSave }) {
   const filteredContributors = activeFilter === "All" ? contributors : contributors.filter(c => c.name === activeFilter);
 
   const openModal = (match, contributorName) => setSelectedMatch({ ...match, contributorName });
-
+    // ✨ Ryan↔Darren partner helper
+  const getPartner = (name) => {
+    const n = (name || "").trim().toLowerCase();
+    if (n === "ryan") return "Darren";
+    if (n === "darren") return "Ryan";
+    return null;
+  };
   // ═══════════════ DATA FETCH (both sources, on mount) ═══════════════
   useEffect(() => {
     Promise.all([
@@ -499,7 +505,7 @@ function ModifyDashboard({ contributors, onSave }) {
 
   // ═══════════════ SAVE (lineup + stats batch sync) ═══════════════
 
-  const handleSaveReportLineup = async () => {
+    const handleSaveReportLineup = async () => {
     if (!editedLineup) return;
 
     const sanitizeTeam = (teamObj) => {
@@ -507,7 +513,7 @@ function ModifyDashboard({ contributors, onSave }) {
       const cleanPlayer = (p) => {
         if (!p) return null;
         return {
-          ...p,                                  // ✅ preserves goal/assist/leftFoot/... etc.
+          ...p,                                  // ✅ preserves goal/assist/error/leftFoot/... etc.
           rating: parseFloat(p.rating) || 0,
           picture: p.picture || `/${p.Contributor}.jpeg`
         };
@@ -549,6 +555,7 @@ function ModifyDashboard({ contributors, onSave }) {
       setIsEditingReport(false);
       setMatchReport(JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB })));
       setLineupVersion(v => v + 1);
+      // ✨ Keep the in-memory lineup copy in sync so subsequent opens are fresh
       setAllLineups(prev => {
         const idx = prev.findIndex(l =>
           normalizeDate(l.date) === normalizeDate(payload.date) &&
@@ -560,88 +567,11 @@ function ModifyDashboard({ contributors, onSave }) {
         next[idx] = JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB }));
         return next;
       });
-
-      // ═══════════════ ✨ SYNC STATS TO football_stats JSON ═══════════════
-      const teamAOutcome = deriveOutcome(editedResult, "A");
-      const teamBOutcome = deriveOutcome(editedResult, "B");
-      const statRecords = [];
-      [["teamA", teamAOutcome], ["teamB", teamBOutcome]].forEach(([key, outcome]) => {
-        const team = editedLineup[key];
-        [...(team?.players || []), ...(team?.subs || [])].forEach(p => {
-          if (!p?.Contributor) return;
-          const existingStat = getPlayerMatchStats(p.Contributor, editedLineup.date, editedLineup.location, editedLineup.time);
-          statRecords.push({
-            Date: editedLineup.date,
-            Contributor: p.Contributor,
-            Rating: parseFloat(p.rating) || 0,
-            Location: editedLineup.location,
-            Time: editedLineup.time,
-            MatchResult: editedResult ?? "",
-            WinLoss: outcome,
-            Goal: parseInt(p.goal) || 0,
-            Assist: parseInt(p.assist) || 0,
-            // Foot breakdown: preserve existing values (not editable in this modal)
-            LeftFoot: existingStat ? (parseInt(existingStat["Left Foot"]) || 0) : 0,
-            RightFoot: existingStat ? (parseInt(existingStat["Right Foot"]) || 0) : 0,
-            Head: existingStat ? (parseInt(existingStat.Head) || 0) : 0,
-            OtherBodyParts: existingStat ? (parseInt(existingStat["Other body parts"]) || 0) : 0,
-            Error: parseInt(p.error) || 0,
-            ManOfTheMatch: p.manOfTheMatch === true,
-            source: "Match Report Edit",
-          });
-        });
-      });
-
-      try {
-        const statsRes = await fetch("https://football-stats-xbx6.onrender.com/add-stats-batch", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ stats: statRecords }),
-        });
-        if (!statsRes.ok) {
-          const err = await statsRes.json().catch(() => ({}));
-          alert(`⚠️ Lineup saved, but stats sync failed: ${err.message || statsRes.status}`);
-        } else {
-          // ✨ Keep in-memory stats fresh so rows/modal reflect the save immediately
-          setMatchStatsData(prev => {
-            const remaining = prev.filter(s =>
-              !statRecords.some(f =>
-                normalizeDate(s.Date) === normalizeDate(f.Date) &&
-                (s.Contributor || "").trim().toLowerCase() === f.Contributor.trim().toLowerCase() &&
-                (s.Location || "").trim() === f.Location.trim() &&
-                (s.Time || "").trim() === f.Time.trim()
-              )
-            );
-            return [...remaining, ...statRecords.map(f => ({
-              Date: f.Date,
-              Contributor: f.Contributor,
-              Goal: f.Goal,
-              Assist: f.Assist,
-              Rating: f.Rating,
-              "Match result": f.MatchResult,
-              "Win/Loss?": f.WinLoss,
-              "Left Foot": f.LeftFoot,
-              "Right Foot": f.RightFoot,
-              Head: f.Head,
-              "Other body parts": f.OtherBodyParts,
-              Error: f.Error,
-              "Man of the Match": f.ManOfTheMatch,
-              source: f.source,
-              Season: "",
-              Symbol: "⚽".repeat(f.Goal) + "👟".repeat(f.Assist),
-              "Goal Contribution": f.Goal + f.Assist,
-            }))];
-          });
-        }
-      } catch (err) {
-        alert(`⚠️ Lineup saved, but stats network error: ${err.message}`);
-      }
     } catch (err) {
       console.error("Save failed:", err);
       alert("❌ Failed to save match report");
     }
   };
-
   const closeModal = () => setSelectedMatch(null);
   const closeCompare = () => setCompareData(null);
 
@@ -961,9 +891,8 @@ function ModifyDashboard({ contributors, onSave }) {
                         onLineupChange={(newLineup) => {
                           setEditedLineup(prev => ({ ...prev, ...newLineup }));
                         }}
-                        onSlotClick={(team, idx, player) => {
+                                                onSlotClick={(team, idx, player) => {
                           setSlotToEdit({ team, idx, player });
-                          // ✨ Seed stat working copy for the modal
                           if (player) {
                             const stat = getPlayerMatchStats(player.Contributor, matchReport.date, matchReport.location, matchReport.time);
                             setSlotStats({
@@ -971,6 +900,13 @@ function ModifyDashboard({ contributors, onSave }) {
                               goal: player.goal ?? (stat ? (parseInt(stat.Goal) || 0) : 0),
                               assist: player.assist ?? (stat ? (parseInt(stat.Assist) || 0) : 0),
                               error: player.error ?? (stat ? (parseInt(stat.Error) || 0) : 0),
+                              ownGoal: player.ownGoal ?? (stat ? (parseInt(stat["Own Goal"]) || 0) : 0),
+                              // ✨ seed assist-to (lineup field first, then stats record)
+                              assistTo: player.assistTo ?? (stat?.["Assist to"] || ""),
+                              leftFoot: player.leftFoot ?? (stat ? (parseInt(stat["Left Foot"]) || 0) : 0),
+                              rightFoot: player.rightFoot ?? (stat ? (parseInt(stat["Right Foot"]) || 0) : 0),
+                              head: player.head ?? (stat ? (parseInt(stat.Head) || 0) : 0),
+                              other: player.other ?? (stat ? (parseInt(stat["Other body parts"]) || 0) : 0),
                             });
                           } else {
                             setSlotStats(null);
@@ -1036,6 +972,12 @@ function ModifyDashboard({ contributors, onSave }) {
                             goal: parseInt(selected.goal) || (stat ? (parseInt(stat.Goal) || 0) : 0),
                             assist: parseInt(selected.assist) || (stat ? (parseInt(stat.Assist) || 0) : 0),
                             error: parseInt(selected.error) || (stat ? (parseInt(stat.Error) || 0) : 0),
+                            ownGoal: parseInt(selected.ownGoal) || (stat ? (parseInt(stat["Own Goal"]) || 0) : 0),
+                            assistToCount: selected.assistToCount ?? (stat ? (parseInt(stat["Assist to count"]) || 0) : 0),
+                            leftFoot: parseInt(selected.leftFoot) || (stat ? (parseInt(stat["Left Foot"]) || 0) : 0),
+                            rightFoot: parseInt(selected.rightFoot) || (stat ? (parseInt(stat["Right Foot"]) || 0) : 0),
+                            head: parseInt(selected.head) || (stat ? (parseInt(stat.Head) || 0) : 0),
+                            other: parseInt(selected.other) || (stat ? (parseInt(stat["Other body parts"]) || 0) : 0),
                           });
                         }
                       }}
@@ -1066,23 +1008,90 @@ function ModifyDashboard({ contributors, onSave }) {
                           ⚽ Match Stats
                         </h4>
                         <StatStepper label="Goal" value={slotStats.goal} onChange={(v) => setSlotStats(s => ({ ...s, goal: v }))} />
+
+                        {/* ✨ Goal breakdown — Ryan↔Darren only, with live tally check */}
+                        {getPartner(slotToEdit.player.Contributor) && (
+                          <>
+                            <StatStepper label="Left Foot" value={slotStats.leftFoot} max={slotStats.goal}
+                              onChange={(v) => setSlotStats(s => ({ ...s, leftFoot: v }))} />
+                            <StatStepper label="Right Foot" value={slotStats.rightFoot} max={slotStats.goal}
+                              onChange={(v) => setSlotStats(s => ({ ...s, rightFoot: v }))} />
+                            <StatStepper label="Head" value={slotStats.head} max={slotStats.goal}
+                              onChange={(v) => setSlotStats(s => ({ ...s, head: v }))} />
+                            <StatStepper label="Other Body Parts" value={slotStats.other} max={slotStats.goal}
+                              onChange={(v) => setSlotStats(s => ({ ...s, other: v }))} />
+
+                            {(() => {
+                              const bodyTotal = (slotStats.leftFoot || 0) + (slotStats.rightFoot || 0) + (slotStats.head || 0) + (slotStats.other || 0);
+                              const tallyOk = (slotStats.goal || 0) === bodyTotal;
+                              return tallyOk ? (
+                                <div style={{
+                                  display: "flex", alignItems: "center", gap: "8px",
+                                  background: "#dcfce7", border: "1px solid #86efac", color: "#166534",
+                                  borderRadius: "8px", padding: "8px 10px", fontSize: "12px", fontWeight: 600, marginTop: "6px"
+                                }}>
+                                  ✓ Goal ({slotStats.goal || 0}) = LF ({slotStats.leftFoot || 0}) + RF ({slotStats.rightFoot || 0}) + Head ({slotStats.head || 0}) + Other ({slotStats.other || 0})
+                                </div>
+                              ) : (
+                                <div style={{
+                                  display: "flex", alignItems: "center", gap: "8px",
+                                  background: "#fef2f2", border: "1px solid #fca5a5", color: "#b91c1c",
+                                  borderRadius: "8px", padding: "8px 10px", fontSize: "12px", fontWeight: 600, marginTop: "6px"
+                                }}>
+                                  ⚠ Mismatch: Goal ({slotStats.goal || 0}) ≠ breakdown total ({bodyTotal}) — off by {Math.abs((slotStats.goal || 0) - bodyTotal)}
+                                </div>
+                              );
+                            })()}
+                          </>
+                        )}
+
+                        <StatStepper label="Own Goal" value={slotStats.ownGoal} onChange={(v) => setSlotStats(s => ({ ...s, ownGoal: v }))} />
                         <StatStepper label="Assist" value={slotStats.assist} onChange={(v) => setSlotStats(s => ({ ...s, assist: v }))} />
                         <StatStepper label="Error" value={slotStats.error} onChange={(v) => setSlotStats(s => ({ ...s, error: v }))} />
+
+                        {/* ✨ Assist-to detail — Ryan↔Darren only, capped at total assists */}
+                        {getPartner(slotToEdit.player.Contributor) && slotStats.assist > 0 && (
+                          <StatStepper
+                            label={`No. of assist to ${getPartner(slotToEdit.player.Contributor)}`}
+                            value={slotStats.assistToCount ?? 0}
+                            max={slotStats.assist}
+                            onChange={(v) => setSlotStats(s => ({ ...s, assistToCount: v }))}
+                          />
+                        )}
                       </div>
                     </>
                   )}
                   <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                     <button onClick={() => setSlotToEdit(null)} style={{ padding: '10px 16px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
-                    <button onClick={() => {
+                    <button  onClick={() => {
                       const { team, idx, player } = slotToEdit;
+
+                      // ✨ Tally check for Ryan/Darren — goal must equal the breakdown
+                      if (player && getPartner(player.Contributor)) {
+                        const bodyTotal = (slotStats?.leftFoot || 0) + (slotStats?.rightFoot || 0) + (slotStats?.head || 0) + (slotStats?.other || 0);
+                        if ((slotStats?.goal || 0) !== bodyTotal) {
+                          alert(`⚠️ Goal (${slotStats?.goal || 0}) must equal Left Foot + Right Foot + Head + Other (${bodyTotal}). Fix the breakdown first.`);
+                          return;
+                        }
+                      }
                       const teamKey = team === 'A' ? 'teamA' : 'teamB';
-                      const mergedPlayer = player
+                                            const mergedPlayer = player
                         ? {
                             ...player,
                             rating: slotStats?.rating ?? player.rating,
                             goal: slotStats?.goal ?? 0,
                             assist: slotStats?.assist ?? 0,
                             error: slotStats?.error ?? 0,
+                            ownGoal: slotStats?.ownGoal ?? 0, 
+                             leftFoot: getPartner(player.Contributor) ? (slotStats?.leftFoot ?? 0) : (player.leftFoot ?? 0),
+                            rightFoot: getPartner(player.Contributor) ? (slotStats?.rightFoot ?? 0) : (player.rightFoot ?? 0),
+                            head: getPartner(player.Contributor) ? (slotStats?.head ?? 0) : (player.head ?? 0),
+                            other: getPartner(player.Contributor) ? (slotStats?.other ?? 0) : (player.other ?? 0),
+                            // ✨ Assist-to detail (Ryan↔Darren only)
+                            assistTo: getPartner(player.Contributor) && (slotStats?.assistToCount ?? 0) > 0
+                              ? getPartner(player.Contributor)
+                              : "",
+                            assistToCount: getPartner(player.Contributor) ? (slotStats?.assistToCount ?? 0) : 0,
                           }
                         : null;
                       setEditedLineup(prev => {

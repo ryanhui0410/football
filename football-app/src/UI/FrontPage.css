@@ -1,140 +1,138 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap');
 
+/* ================= Root container ================= */
 .fp-container {
   position: relative;
   width: 100%;
   min-height: 100vh;
-  min-height: 100dvh; /* Crucial for Android to account for URL/Nav bars */
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: auto; /* Allows scrolling if content exceeds viewport */
-  -webkit-overflow-scrolling: touch;
-  background-color: #083a29; 
+  overflow-x: clip;
+  background-color: #04140e;
   font-family: 'Barlow', sans-serif;
 }
 
-/* --- Background Images (Fixed to viewport to prevent scrolling issues) --- */
-.fp-bg-image {
+/* ============ Layer 1: Blurred fill backdrop ============ */
+/* Scaled up + blurred so ANY aspect ratio fills the screen with no gaps */
+.fp-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;
+  filter: blur(28px) brightness(0.35) saturate(1.2);
+  transform: scale(1.3);            /* hides blur edge bleed */
   opacity: 0;
-  transition: opacity 1.5s ease-in-out;
-  animation: kenburns 20s infinite alternate ease-in-out;
+  transition: opacity 1.2s ease-in-out;
   z-index: 0;
+  pointer-events: none;
 }
+.fp-backdrop.fp-active { opacity: 1; }
 
-.fp-bg-image.fp-active {
-  opacity: 1;
-}
-
-@keyframes kenburns {
-  0% { transform: scale(1) translate(0, 0); }
-  100% { transform: scale(1.1) translate(-1%, -1%); }
-}
-
-/* --- Dark Gradient Overlay --- */
+/* ============ Gradient overlay ============ */
 .fp-overlay {
   position: fixed;
   inset: 0;
   background: linear-gradient(
-    105deg, 
-    rgba(4, 20, 14, 0.95) 0%, 
-    rgba(4, 20, 14, 0.7) 40%, 
-    rgba(4, 20, 14, 0.2) 100%
+    100deg,
+    rgba(4, 20, 14, 0.92) 0%,
+    rgba(4, 20, 14, 0.55) 45%,
+    rgba(4, 20, 14, 0.35) 100%
   );
   z-index: 1;
+  pointer-events: none;
 }
 
-/* --- Hero Content --- */
-.fp-content {
+/* ============ Main layout: content | poster ============ */
+.fp-layout {
   position: relative;
   z-index: 10;
   flex: 1;
   display: flex;
+  align-items: center;
+  gap: 40px;
+  padding: 60px 6%;
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* ============ Hero content (glass panel) ============ */
+.fp-content {
+  flex: 1;
+  max-width: 520px;
+  display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 80px 8%;
-  max-width: 800px;
-  width: 100%;
-  box-sizing: border-box;
-  /* margin: auto 0 is the secret sauce: 
-     It centers vertically when there is space, 
-     but pushes to the top and allows scrolling when content overflows */
-  margin: auto 0; 
-  animation: slideUp 1s ease-out forwards;
+  animation: slideUp 0.9s ease-out both;
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .fp-kicker {
   font-family: 'Oswald', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.4em;
-  color: #f2c14e; 
+  color: #f2c14e;
   text-transform: uppercase;
   margin-bottom: 16px;
   display: flex;
   align-items: center;
   gap: 12px;
 }
-
 .fp-kicker::before {
   content: "";
   display: block;
   width: 40px;
   height: 2px;
   background-color: #f2c14e;
+  flex-shrink: 0;
 }
 
 .fp-title {
   font-family: 'Oswald', sans-serif;
-  font-size: clamp(2.25rem, 5.5vw, 4.5rem); 
+  font-size: clamp(2rem, 4.5vw, 3.6rem);
   font-weight: 700;
-  line-height: 1.05; 
+  line-height: 1.08;
   text-transform: uppercase;
   color: #ffffff;
-  margin: 0 0 24px 0;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  margin: 0 0 20px 0;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
 }
-
 .fp-title span {
+  display: block;          /* "NAH." on its own line */
   color: #f2c14e;
 }
 
 .fp-subtitle {
-  font-size: 1.2rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.8);
-  max-width: 550px;
-  margin: 0 0 40px 0;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0 0 32px 0;
   font-weight: 400;
 }
 
-/* --- Action Buttons --- */
+/* ============ Buttons ============ */
 .fp-actions {
   display: flex;
-  gap: 20px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
 .fp-btn {
-  padding: 16px 36px;
+  padding: 15px 32px;
   font-family: 'Oswald', sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   border: 2px solid transparent;
@@ -146,51 +144,112 @@
   border-color: #f2c14e;
   box-shadow: 0 8px 24px rgba(242, 193, 78, 0.3);
 }
-
 .fp-btn-primary:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   box-shadow: 0 12px 32px rgba(242, 193, 78, 0.5);
   background-color: #ffd166;
 }
 
 .fp-btn-secondary {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.07);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.35);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-
 .fp-btn-secondary:hover {
-  transform: translateY(-4px);
-  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-3px);
+  background-color: rgba(255, 255, 255, 0.16);
   border-color: #ffffff;
 }
 
-/* --- Carousel Indicator Dots (Fixed to viewport) --- */
-.fp-dots {
+/* ============ Layer 2: Floating poster ============ */
+/* object-fit: contain → the FULL photo is always visible, never cropped */
+.fp-poster-zone {
+  flex: 1.2;
+  position: relative;
+  height: 72vh;
+  max-height: 720px;
+}
+
+.fp-poster-frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(16px) scale(0.97);
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+  pointer-events: none;
+}
+.fp-poster-frame.fp-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.fp-poster {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;         /* ← the key: complete photo, zero cropping */
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.55),
+    0 10px 30px rgba(0, 0, 0, 0.4);
+  animation: posterDrift 14s infinite alternate ease-in-out;
+}
+
+@keyframes posterDrift {
+  0%   { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-8px) scale(1.02); }
+}
+
+/* ============ Thumbnail selector ============ */
+.fp-thumbs {
   position: fixed;
-  bottom: 30px;
-  left: 8%;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 20;
   display: flex;
-  gap: 12px;
+  gap: 10px;
+  padding: 8px;
+  background: rgba(4, 20, 14, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.fp-dot {
-  width: 12px;
-  height: 4px;
-  background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  transition: all 0.4s ease;
+.fp-thumb {
+  width: 56px;
+  height: 40px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
   cursor: pointer;
+  opacity: 0.45;
+  transition: all 0.3s ease;
+  background: #04140e;
+}
+.fp-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.fp-thumb:hover { opacity: 0.85; }
+
+.fp-thumb.fp-thumb-active {
+  border-color: #f2c14e;
+  opacity: 1;
+  transform: scale(1.06);
 }
 
-.fp-dot.fp-dot-active {
-  width: 36px;
-  background-color: #f2c14e;
-}
-
-/* --- Error Fallback State --- */
+/* ============ Error fallback ============ */
 .fp-error-state {
   width: 100%;
   min-height: 100vh;
@@ -206,18 +265,15 @@
   padding: 20px;
   box-sizing: border-box;
 }
-
 .fp-error-icon {
   font-size: 5rem;
   margin-bottom: 20px;
   animation: pulse 2s infinite;
 }
-
 @keyframes pulse {
   0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.1); opacity: 1; }
+  50%      { transform: scale(1.1); opacity: 1; }
 }
-
 .fp-error-text {
   font-family: 'Oswald', sans-serif;
   font-size: 1.5rem;
@@ -226,107 +282,78 @@
 }
 
 /* =========================================
-   RESPONSIVE: MOBILE PORTRAIT
+   MOBILE PORTRAIT — poster stacked above content
    ========================================= */
 @media (max-width: 768px) and (orientation: portrait) {
-  .fp-content {
-    padding: 0 6% 14vh 6%; /* Extra bottom padding to clear Android Nav Bar */
-    justify-content: flex-end;
-    margin: 0; /* Overrides auto margin to force content to bottom */
-  }
-  
-  .fp-title {
-    font-size: clamp(2rem, 8vw, 3rem);
+  .fp-layout {
+    flex-direction: column-reverse;   /* poster on top, content below */
+    gap: 20px;
+    padding: 24px 5% 100px;           /* bottom clearance for thumbs + nav bar */
+    align-items: stretch;
   }
 
-  .fp-subtitle {
-    font-size: 1rem;
-    margin-bottom: 24px;
-  }
-
-  .fp-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .fp-btn {
-    padding: 14px 24px;
-    font-size: 14px;
-    width: 100%;
-    text-align: center;
+  .fp-poster-zone {
+    height: 34vh;
     flex: none;
   }
-
-  .fp-dots {
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 20px;
+  .fp-poster {
+    max-width: 92%;
+    border-radius: 14px;
   }
+
+  .fp-content {
+    max-width: 100%;
+  }
+  .fp-title {
+    font-size: clamp(1.7rem, 7.5vw, 2.4rem);
+  }
+  .fp-title span { display: inline; }  /* inline on mobile — tighter */
+  .fp-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 22px;
+  }
+  .fp-actions { flex-direction: column; }
+  .fp-btn { width: 100%; text-align: center; padding: 14px 24px; font-size: 14px; }
+
+  .fp-thumbs {
+    bottom: 18px;
+    padding: 6px;
+  }
+  .fp-thumb { width: 48px; height: 34px; }
 }
 
 /* =========================================
-   RESPONSIVE: MOBILE LANDSCAPE (Android/iOS)
+   MOBILE LANDSCAPE — side-by-side, compact
    ========================================= */
 @media (orientation: landscape) and (max-height: 600px) {
-  .fp-overlay {
-    /* Darker, directional overlay to guarantee text readability over cropped images */
-    background: linear-gradient(
-      90deg, 
-      rgba(4, 20, 14, 0.95) 0%, 
-      rgba(4, 20, 14, 0.85) 50%, 
-      rgba(4, 20, 14, 0.5) 100%
-    );
+  .fp-layout {
+    gap: 24px;
+    padding: 16px 5%;
   }
 
-  .fp-bg-image {
-    /* Shift focal point slightly up to prevent faces/subjects from being cropped out */
-    object-position: center 30%; 
-  }
+  .fp-poster-zone { height: 78vh; max-height: none; }
+  .fp-poster { border-radius: 12px; }
 
-  .fp-content {
-    padding: 20px 5%;
-    max-width: 650px;
-    margin: auto 0;
-  }
-
-  .fp-kicker {
-    font-size: clamp(10px, 1.5vh, 14px);
-    margin-bottom: 8px;
-  }
-  
-  .fp-kicker::before {
-    width: 24px;
-  }
-
-  /* Use vh (viewport height) instead of vw for landscape to prevent massive text */
+  .fp-content { max-width: 460px; }
+  .fp-kicker { font-size: 11px; margin-bottom: 8px; }
+  .fp-kicker::before { width: 24px; }
   .fp-title {
-    font-size: clamp(1.4rem, 5vh, 2.5rem);
-    margin-bottom: 12px;
-    line-height: 1.1;
+    font-size: clamp(1.3rem, 4.5vh, 2rem);
+    margin-bottom: 10px;
   }
-
+  .fp-title span { display: inline; }
   .fp-subtitle {
-    font-size: clamp(0.8rem, 2vh, 1rem);
-    margin-bottom: 20px;
-    line-height: 1.4;
-    max-width: 500px;
+    font-size: clamp(0.75rem, 1.9vh, 0.9rem);
+    margin-bottom: 16px;
   }
-
-  .fp-actions {
-    gap: 12px;
-    flex-wrap: nowrap;
-  }
-
+  .fp-actions { gap: 10px; flex-wrap: nowrap; }
   .fp-btn {
-    padding: 10px 20px;
-    font-size: clamp(11px, 1.8vh, 14px);
-    width: auto;
+    padding: 9px 18px;
+    font-size: clamp(10px, 1.7vh, 13px);
     flex: 1;
-    max-width: 200px;
+    max-width: 190px;
   }
-  
-  .fp-dots {
-    bottom: 15px;
-    left: 5%;
-  }
+
+  .fp-thumbs { bottom: 12px; padding: 5px; gap: 6px; }
+  .fp-thumb { width: 44px; height: 30px; }
 }

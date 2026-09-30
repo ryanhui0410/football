@@ -153,7 +153,14 @@ function MatchLineup({
     assists: parseInt(player.assists ?? player.assist) || 0,
     isMotm: player.isMotm === true || player.manOfTheMatch === true,
     errors: parseInt(player.errors ?? player.error) || 0,
+    ownGoals: parseInt(player.ownGoals ?? player.ownGoal) || 0,
   });
+
+  // ✨ Resolve the picture: GitHub map → player's own saved path → hide
+  const resolvePicture = (player) =>
+    pictureMap?.[player.Contributor?.toLowerCase()]
+    || player.picture
+    || "";
 
   const getSlotPosition = (pos, team) => {
     if (!isVertical) {
@@ -175,6 +182,25 @@ function MatchLineup({
     }
   };
 
+  // ✨ Unified right-side strip: Goals → Errors → Own Goals (adjacent, in that order)
+  const renderRightStrip = (stats, keyPrefix) => {
+    const { goals, errors, ownGoals } = stats;
+    if (goals === 0 && errors === 0 && ownGoals === 0) return null;
+    return (
+      <div className="stat-badge stat-strip-right">
+        {[...Array(goals)].map((_, i) => (
+          <span key={`${keyPrefix}-goal-${i}`} className="icon">⚽</span>
+        ))}
+        {[...Array(errors)].map((_, i) => (
+          <span key={`${keyPrefix}-error-${i}`} className="icon icon-error">E</span>
+        ))}
+        {[...Array(ownGoals)].map((_, i) => (
+          <span key={`${keyPrefix}-og-${i}`} className="icon icon-og">OG</span>
+        ))}
+      </div>
+    );
+  };
+
   // Render Substitute Slots
   const renderSubSlot = (team, subIdx) => {
     const subsArr = team === "A" ? teamASubs : teamBSubs;
@@ -188,7 +214,9 @@ function MatchLineup({
       >
         {player ? (
           (() => {
-            const { goals, assists, isMotm } = resolveStats(player);
+            const stats = resolveStats(player);
+            const { assists, isMotm } = stats;
+            const pic = resolvePicture(player);
             return (
               <div className={`slot-card ${isMotm ? 'motm' : ''}`}>
 
@@ -202,24 +230,13 @@ function MatchLineup({
                 </div>
 
                 <div className="player-icon-wrapper">
-                  {/* ✨ NEW: Errors badge — top-left, one ❌ icon per error */}
-                    {errors > 0 && (
-                      <div className="stat-badge errors">
-                        {[...Array(errors)].map((_, i) => (
-                          <span key={`sub-error-${i}`} className="icon">❌</span>
-                        ))}
-                      </div>
-                    )}
                   <img 
-                    src={
-                      pictureMap?.[player.Contributor?.toLowerCase()]
-                      || ""   // nothing found — hide instead of guessing a path
-                    } 
+                    src={pic} 
                     alt={player.Contributor}
-                    style={{ visibility: pictureMap?.[player.Contributor?.toLowerCase()] ? "visible" : "hidden" }}
+                    style={{ visibility: pic ? "visible" : "hidden" }}
                   />
                   
-                  {/* Assists Icons */}
+                  {/* Assists Icons — bottom-left */}
                   {assists > 0 && (
                     <div className="stat-badge assists">
                       {[...Array(assists)].map((_, i) => (
@@ -228,14 +245,8 @@ function MatchLineup({
                     </div>
                   )}
                   
-                  {/* Goals Icons */}
-                  {goals > 0 && (
-                    <div className="stat-badge goals">
-                      {[...Array(goals)].map((_, i) => (
-                        <span key={`sub-goal-${i}`} className="icon">⚽</span>
-                      ))}
-                    </div>
-                  )}
+                  {/* ✨ Goals + Errors + Own Goals — strip to the right of the icon */}
+                  {renderRightStrip(stats, "sub")}
                 </div>
 
                 <div className="slot-info">
@@ -271,7 +282,9 @@ function MatchLineup({
         >
           {player ? (
             (() => {
-              const { goals, assists, isMotm } = resolveStats(player);
+              const stats = resolveStats(player);
+              const { assists, isMotm } = stats;
+              const pic = resolvePicture(player);
               return (
                 <div className={`slot-card ${isMotm ? 'motm' : ''}`}>
 
@@ -287,21 +300,10 @@ function MatchLineup({
 
                   {/* 2. Icon Wrapper (Holds Image + Stats) */}
                   <div className="player-icon-wrapper">
-                    {/* ✨ NEW: Errors badge — top-left, one ❌ icon per error */}
-                    {errors > 0 && (
-                      <div className="stat-badge errors">
-                        {[...Array(errors)].map((_, i) => (
-                          <span key={`pitch-error-${i}`} className="icon">❌</span>
-                        ))}
-                      </div>
-                    )}
                     <img 
-                      src={
-                        pictureMap?.[player.Contributor?.toLowerCase()]
-                        || ""   // nothing found — hide instead of guessing a path
-                      } 
+                      src={pic} 
                       alt={player.Contributor}
-                      style={{ visibility: pictureMap?.[player.Contributor?.toLowerCase()] ? "visible" : "hidden" }}
+                      style={{ visibility: pic ? "visible" : "hidden" }}
                     />
                     
                     {/* Bottom-Left: Assists Icons */}
@@ -313,14 +315,8 @@ function MatchLineup({
                       </div>
                     )}
                     
-                    {/* Bottom-Right: Goals Icons */}
-                    {goals > 0 && (
-                      <div className="stat-badge goals">
-                        {[...Array(goals)].map((_, i) => (
-                          <span key={`pitch-goal-${i}`} className="icon">⚽</span>
-                        ))}
-                      </div>
-                    )}
+                    {/* ✨ Goals + Errors + Own Goals — strip to the right of the icon */}
+                    {renderRightStrip(stats, "pitch")}
                   </div>
 
                   <div className="slot-info">
