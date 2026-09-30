@@ -1390,7 +1390,20 @@
         {
           "Contributor": "大嚿",
           "rating": 5.7,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/大嚿.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/大嚿.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 0,
+          "error": 1,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Barry",
