@@ -327,7 +327,20 @@
         {
           "Contributor": "Eugene",
           "rating": 5.6,
-          "picture": "/Eugene.jpeg"
+          "picture": "/Eugene.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 0,
+          "error": 1,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Nick",
