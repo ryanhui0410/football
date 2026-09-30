@@ -1317,15 +1317,7 @@
         {
           "Contributor": "Darren",
           "rating": 9.8,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Darren.jpeg",
-          "isMotm": false,
-          "goals": 0,
-          "assists": 0,
-          "goal": 1,
-          "assist": 3,
-          "error": 0,
-          "assistTo": "Ryan",
-          "assistToCount": 2
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Darren.jpeg"
         }
       ],
       "subs": [
@@ -1342,7 +1334,7 @@
       "players": [
         {
           "Contributor": "Steve",
-          "rating": 6.2,
+          "rating": 6.6,
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Steve.jpeg"
         },
         {
@@ -1363,13 +1355,7 @@
         {
           "Contributor": "大嚿",
           "rating": 5.7,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/大嚿.jpeg",
-          "isMotm": false,
-          "goals": 0,
-          "assists": 0,
-          "goal": 0,
-          "assist": 0,
-          "error": 1
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/大嚿.jpeg"
         },
         {
           "Contributor": "Barry",
