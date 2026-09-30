@@ -723,7 +723,20 @@
         {
           "Contributor": "Hong1",
           "rating": 9.1,
-          "picture": "/Hong1.jpeg"
+          "picture": "/Hong1.jpeg",
+          "isMotm": false,
+          "goals": 2,
+          "assists": 0,
+          "goal": 1,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "子睿",
@@ -763,7 +776,20 @@
         {
           "Contributor": "Derek",
           "rating": 9.1,
-          "picture": "/images/Derek.jpeg"
+          "picture": "/images/Derek.jpeg",
+          "isMotm": false,
+          "goals": 1,
+          "assists": 1,
+          "goal": 0,
+          "assist": 2,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         null
       ]
