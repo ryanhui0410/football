@@ -237,7 +237,16 @@
         {
           "Contributor": "Raymond",
           "rating": 4.8,
-          "picture": "/images/Raymond.jpeg"
+          "picture": "/images/Raymond.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 0,
+          "error": 1,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "KK",
@@ -279,6 +288,10 @@
           "rating": 7.5,
           "picture": "/Jacob.jpeg"
         }
+      ],
+      "subs": [
+        null,
+        null
       ]
     },
     "teamB": {
@@ -331,6 +344,10 @@
           "rating": 7.7,
           "picture": "/局長.jpeg"
         }
+      ],
+      "subs": [
+        null,
+        null
       ]
     }
   },
