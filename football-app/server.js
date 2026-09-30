@@ -11,6 +11,7 @@ app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(cors());
 // Frontend Helper: Compress & Fix Smartphone Images
 const sharp = require('sharp');
+
 // ===================== Player Picture Upload (GitHub) =====================
 
 async function uploadImageToGitHub(imageBuffer, githubFilePath, commitMessage) {
@@ -50,6 +51,7 @@ async function uploadImageToGitHub(imageBuffer, githubFilePath, commitMessage) {
   const errText = await putRes.text();
   return { success: false, error: `GitHub rejected image push (${putRes.status}): ${errText}` };
 }
+
 // ===================== Backfill picture paths =====================
 app.post("/backfill-picture-paths", async (req, res) => {
   try {
@@ -99,6 +101,7 @@ app.post("/backfill-picture-paths", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.post("/upload-player-picture", async (req, res) => {
   try {
     const { name, image } = req.body;
@@ -130,6 +133,7 @@ app.post("/upload-player-picture", async (req, res) => {
     res.status(500).json({ error: "Failed to process picture", details: err.message });
   }
 });
+
 app.post("/process-image", async (req, res) => {
   try {
     // Assuming frontend sends the raw base64 string
@@ -152,6 +156,7 @@ app.post("/process-image", async (req, res) => {
     res.status(500).json({ error: "Failed to decode/process smartphone image" });
   }
 });
+
 async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
   try {
     const token = process.env.GITHUB_TOKEN;
@@ -182,9 +187,23 @@ async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
     }
 
     const contentBuffer = Buffer.from(contentString, 'utf8');
-    if (contentBuffer.length > 950000) return { success: false, error: `File too large: ${contentBuffer.length} bytes` };
-    
-    const contentBase64 = contentBuffer.toString("base64");
+
+    // ✨ Over threshold? Minify (drop pretty-print whitespace) — typically saves 30-50%
+    let finalString = contentString;
+    if (contentBuffer.length > 950000 && localFilePath.endsWith('.json')) {
+      try {
+        finalString = JSON.stringify(JSON.parse(contentString));   // no indent
+        console.log(`🗜️ File over 950KB — minified: ${contentBuffer.length} → ${Buffer.byteLength(finalString, 'utf8')} bytes`);
+      } catch (e) {
+        console.error('❌ Minify failed:', e.message);  // keep original, guard below still applies
+      }
+    }
+
+    const outBuffer = Buffer.from(finalString, 'utf8');
+    // ✨ Raised guard — GitHub contents API handles multi-MB PUTs fine
+    if (outBuffer.length > 25000000) return { success: false, error: `File too large even after minify: ${outBuffer.length} bytes` };
+
+    const contentBase64 = outBuffer.toString("base64");
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${githubFilePath}`;
 
     let sha = "";
@@ -239,23 +258,29 @@ async function pullLatestFromGitHub(githubFilePath, localFilePath) {
 
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${githubFilePath}`;
     
-    // Fetch the standard JSON response from GitHub
     const res = await fetch(apiUrl, {
       headers: { 
         Authorization: `token ${token}`, 
-        Accept: "application/vnd.github.v3+json" 
+        // ✨ Raw media type — works for files up to 100MB (base64 JSON breaks past 1MB)
+        Accept: "application/vnd.github.raw"
       }
     });
 
     if (res.ok) {
-      const data = await res.json();
-      
-      // GitHub returns the file content as a base64 encoded string. 
-      // We must decode it back to normal text.
-      const fileContent = Buffer.from(data.content, 'base64').toString('utf8');
+      // ✨ Raw response is the file content directly — no base64 decoding
+      const fileContent = await res.text();
       
       const dir = path.dirname(localFilePath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      
+      // ✨ Validate it's parseable before overwriting the local copy
+      if (localFilePath.endsWith('.json')) {
+        try { JSON.parse(fileContent); }
+        catch (e) {
+          console.error(`❌ ${githubFilePath} is not valid JSON — skipping local overwrite`);
+          return;
+        }
+      }
       
       fs.writeFileSync(localFilePath, fileContent);
       console.log(`✅ Downloaded fresh data: ${githubFilePath}`);
@@ -604,6 +629,7 @@ app.post("/add-stats-batch", async (req, res) => {
 
   res.json({ message: `✅ ${formatted.length} stat records saved (replaces existing)`, totalRecords: remaining.length });
 });
+
 app.post("/add-stats", async (req, res) => {
   const raw = req.body;
 

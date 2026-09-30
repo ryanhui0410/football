@@ -4,7 +4,6 @@ import "./BottomNav.css";
 function BottomNav({ activeView, onNavigate }) {
   const items = [
     { key: "home", label: "Home", icon: "🏠", onClick: onNavigate.home },
-    { key: "add", label: "Add Stats", icon: "➕", onClick: onNavigate.add },
     { key: "modify", label: "Matches", icon: "✏️", onClick: onNavigate.modify },
     { key: "summary", label: "Summary", icon: "📊", onClick: onNavigate.summary },
     { key: "calendar", label: "Calendar", icon: "📅", onClick: onNavigate.calendar },
