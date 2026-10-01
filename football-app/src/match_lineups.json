@@ -1726,7 +1726,7 @@
         {
           "Contributor": "Wilson",
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Wilson.jpeg",
-          "rating": 7.1,
+          "rating": 7,
           "goal": 0,
           "assist": 0,
           "error": 0,
@@ -1736,7 +1736,10 @@
           "head": 0,
           "other": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
         },
         null,
         {
