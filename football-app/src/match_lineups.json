@@ -2284,7 +2284,7 @@
         null,
         {
           "Contributor": "Po",
-          "rating": 6.4,
+          "rating": 6.3,
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Po.jpeg",
           "goal": 0,
           "assist": 0,
@@ -2296,9 +2296,22 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
+        },
+        {
+          "Contributor": "Man",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Man.jpeg",
+          "rating": 6.1,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
           "assistToCount": 0
         },
-        null,
         {
           "Contributor": "大嚿",
           "rating": 6.1,
@@ -2317,7 +2330,7 @@
         },
         {
           "Contributor": "Barry",
-          "rating": 6.2,
+          "rating": 6.1,
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Barry.jpeg",
           "goal": 0,
           "assist": 0,
@@ -2329,7 +2342,10 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
         },
         {
           "Contributor": "QC1",
@@ -2349,10 +2365,10 @@
         },
         {
           "Contributor": "hong",
-          "rating": 7.8,
+          "rating": 8.1,
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/hong.jpeg",
           "goal": 0,
-          "assist": 1,
+          "assist": 2,
           "leftFoot": 0,
           "rightFoot": 0,
           "head": 0,
@@ -2361,7 +2377,10 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 1
         },
         {
           "Contributor": "Hong1",
