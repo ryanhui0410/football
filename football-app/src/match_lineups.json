@@ -1797,7 +1797,7 @@
         {
           "Contributor": "Miles",
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Miles.jpeg",
-          "rating": 7.8,
+          "rating": 7.5,
           "goal": 1,
           "assist": 0,
           "error": 0,
@@ -1809,7 +1809,7 @@
           "assistTo": "",
           "assistToCount": 0,
           "isMotm": false,
-          "goals": 0,
+          "goals": 1,
           "assists": 0
         },
         {
