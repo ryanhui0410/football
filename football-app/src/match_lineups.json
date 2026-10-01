@@ -93,7 +93,21 @@
           "assistTo": "",
           "assistToCount": 0
         },
-        null,
+        {
+          "Contributor": "Cat",
+          "picture": "/Cat.jpeg",
+          "rating": 6.5,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         {
           "Contributor": "Tony",
           "rating": 6,
