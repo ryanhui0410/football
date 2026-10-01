@@ -1762,7 +1762,7 @@
         },
         {
           "Contributor": "阿兜",
-          "rating": 5.7,
+          "rating": 5.5,
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/阿兜.jpeg",
           "isMotm": false,
           "goals": 0,
@@ -1850,8 +1850,21 @@
         },
         {
           "Contributor": "Ryan",
-          "rating": 8.8,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ryan.jpeg"
+          "rating": 8.7,
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ryan.jpeg",
+          "isMotm": false,
+          "goals": 2,
+          "assists": 0,
+          "goal": 2,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 2,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Darren",
