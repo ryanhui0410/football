@@ -1013,7 +1013,20 @@
         {
           "Contributor": "Raymond",
           "rating": 7.5,
-          "picture": "/images/Raymond.jpeg"
+          "picture": "/images/Raymond.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 1,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Ryan",
