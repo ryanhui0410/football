@@ -327,7 +327,7 @@ function ModifyDashboard({ contributors, onSave }) {
       other,
       error,
       manOfTheMatch,
-      matchResult: stat?.["Match result"] || "",
+      matchResult: findLineupMatch(match)?.matchResult || stat?.["Match result"] || "",
       winLoss: stat?.["Win/Loss?"] || "",
       season: stat?.Season || "",
       source: stat?.source || (lineup ? "Lineup only" : ""),
@@ -384,12 +384,26 @@ function ModifyDashboard({ contributors, onSave }) {
     }
   };
 
-  // ═══════════════ LINEUP-ONLY MATCH MERGE ═══════════════
-
+    // ═══════════════ LINEUP-ONLY MATCH MERGE ═══════════════
   const displayContributors = useMemo(() => {
     return filteredContributors.map(contributor => {
+
+      // ✨ Enrich existing matches: if the lineup carries a (newer) result, use it
+      const enrichedMatches = contributor.matches.map(match => {
+        const lineupMatch = findLineupMatch(match);
+        if (lineupMatch?.matchResult && lineupMatch.matchResult !== match.matchResult) {
+          const myTeam = findLineupPlayerTeam(lineupMatch, contributor.name);
+          return {
+            ...match,
+            matchResult: lineupMatch.matchResult,
+            winLoss: deriveOutcome(lineupMatch.matchResult, myTeam),
+          };
+        }
+        return match;
+      });
+
       const existingKeys = new Set(
-        contributor.matches.map(m =>
+        enrichedMatches.map(m =>
           `${normalizeDate(m.date)}|${(m.location || "").trim()}|${(m.time || "").trim()}`
         )
       );
@@ -402,26 +416,28 @@ function ModifyDashboard({ contributors, onSave }) {
 
         const me = findLineupPlayer(lineup, contributor.name);
         if (me) {
-          // ✨ Find match result from ANY player's stats record
-          let matchResult = "", winLoss = "";
-          const teams = [lineup.teamA, lineup.teamB].filter(Boolean);
-          outer: for (const team of teams) {
-            const players = [
-              ...(Array.isArray(team.players) ? team.players : Object.values(team.players || {})),
-              ...(Array.isArray(team.subs) ? team.subs : []),
-            ];
-            for (const p of players) {
-              if (!p?.Contributor) continue;
-              const anyStat = getPlayerMatchStats(p.Contributor, lineup.date, lineup.location, lineup.time);
-              if (anyStat && anyStat["Match result"]) {
-                matchResult = anyStat["Match result"];
-                break outer;
+          // ✨ Match result: lineup's own field first, then any player's stats record
+          let matchResult = lineup.matchResult || "";
+          if (!matchResult) {
+            const teams = [lineup.teamA, lineup.teamB].filter(Boolean);
+            outer: for (const team of teams) {
+              const players = [
+                ...(Array.isArray(team.players) ? team.players : Object.values(team.players || {})),
+                ...(Array.isArray(team.subs) ? team.subs : []),
+              ];
+              for (const p of players) {
+                if (!p?.Contributor) continue;
+                const anyStat = getPlayerMatchStats(p.Contributor, lineup.date, lineup.location, lineup.time);
+                if (anyStat && anyStat["Match result"]) {
+                  matchResult = anyStat["Match result"];
+                  break outer;
+                }
               }
             }
           }
           // ✨ Derive THIS player's outcome from score + their own team
           const myTeam = findLineupPlayerTeam(lineup, contributor.name);
-          winLoss = deriveOutcome(matchResult, myTeam);
+          const winLoss = deriveOutcome(matchResult, myTeam);
 
           lineupOnlyMatches.push({
             date: lineup.date,
@@ -439,10 +455,13 @@ function ModifyDashboard({ contributors, onSave }) {
         }
       });
 
-      if (lineupOnlyMatches.length === 0) return contributor;
-      return { ...contributor, matches: [...contributor.matches, ...lineupOnlyMatches] };
+      if (lineupOnlyMatches.length === 0) {
+        if (enrichedMatches === contributor.matches) return contributor;
+        return { ...contributor, matches: enrichedMatches };
+      }
+      return { ...contributor, matches: [...enrichedMatches, ...lineupOnlyMatches] };
     });
-  }, [filteredContributors, allLineups]);
+  }, [filteredContributors, allLineups, matchStatsData]);   // ← matchStatsData added
 
   // ═══════════════ COMPARE LOGIC ═══════════════
 
@@ -558,6 +577,7 @@ function ModifyDashboard({ contributors, onSave }) {
       date: editedLineup.date,
       location: editedLineup.location,
       time: editedLineup.time,
+      matchResult: editedResult ?? "", 
       teamA: sanitizeTeam(editedLineup.teamA),
       teamB: sanitizeTeam(editedLineup.teamB),
     };
@@ -853,13 +873,12 @@ function ModifyDashboard({ contributors, onSave }) {
               const avgA = calcTeamAverage(matchReport.teamA);
               const avgB = calcTeamAverage(matchReport.teamB);
 
-              let matchResult = '', winLoss = '';
+              // ✨ Lineup result is PRIMARY (it reflects your latest edit)
+              let matchResult = matchReport.matchResult || '';
+              let winLoss = '';
 
-              const perspectiveStat = getPlayerMatchStats(reportPerspective, matchReport.date, matchReport.location, matchReport.time);
-              if (perspectiveStat && perspectiveStat["Match result"]) {
-                matchResult = perspectiveStat["Match result"];
-                winLoss = perspectiveStat["Win/Loss?"] || '';
-              } else {
+              // Fall back to stats records for legacy lineups without matchResult
+              if (!matchResult) {
                 const playersA = Array.isArray(matchReport.teamA?.players) ? matchReport.teamA.players : Object.values(matchReport.teamA?.players || {});
                 const playersB = Array.isArray(matchReport.teamB?.players) ? matchReport.teamB.players : Object.values(matchReport.teamB?.players || {});
                 const allPlayers = [...playersA, ...playersB].filter(p => p != null);
@@ -868,11 +887,17 @@ function ModifyDashboard({ contributors, onSave }) {
                   const stat = getPlayerMatchStats(p.Contributor, matchReport.date, matchReport.location, matchReport.time);
                   if (stat && stat["Match result"]) {
                     matchResult = stat["Match result"];
-                    winLoss = stat["Win/Loss?"] || '';
                     break;
                   }
                 }
               }
+
+              // ✨ Outcome derived from score + THIS viewer's team (consistent with rows)
+              if (matchResult) {
+                const myTeam = findLineupPlayerTeam(matchReport, reportPerspective);
+                winLoss = deriveOutcome(matchResult, myTeam);
+              }
+
 
               return (
                 <>

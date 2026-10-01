@@ -667,10 +667,11 @@ app.post("/match-lineups", async (req, res) => {
       (l.time || "").trim() === normTime
     );
 
-    const normalizedLineup = {
+        const normalizedLineup = {
       date: normDate,
       location: normLoc,
       time: normTime,
+      matchResult: (lineup.matchResult ?? "").trim(),   // ✅ NEW — persist the scoreline on the lineup
       teamA: {
         formation: lineup.teamA?.formation || "4-4-2",
         players: lineup.teamA?.players || Array(11).fill(null),

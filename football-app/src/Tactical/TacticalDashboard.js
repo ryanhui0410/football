@@ -352,6 +352,7 @@ function TacticalDashboard() {
       date: matchDetails.Date,
       location: matchDetails.Location,
       time: matchDetails.Time,
+      matchResult: matchDetails.MatchResult ?? "",  
       teamA: sanitizeTeam(lineupData.teamA),
       teamB: sanitizeTeam(lineupData.teamB),
     };
