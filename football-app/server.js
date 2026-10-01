@@ -532,7 +532,21 @@ function writeAttributes(data) {
 app.get("/player-attributes", (req, res) => {
   res.json(readAttributes());
 });
-
+app.get("/github-images", async (req, res) => {
+  try {
+    const apiUrl = `https://api.github.com/repos/${process.env.GITHUB_OWNER}/${process.env.GITHUB_REPO}/contents/football-app/public/images`;
+    const listRes = await fetch(apiUrl, {
+      headers: { Authorization: `token ${process.env.GITHUB_TOKEN}`, Accept: "application/vnd.github.v3+json" }
+    });
+    if (!listRes.ok) return res.status(listRes.status).json({ error: `GitHub list failed (${listRes.status})` });
+    const files = (await listRes.json())
+      .filter(f => /\.(jpe?g|png)$/i.test(f.name))
+      .map(f => ({ name: f.name.replace(/\.(jpe?g|png)$/i, ""), url: f.download_url }));
+    res.json(files);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 app.post("/player-attributes", async (req, res) => {
   console.log(`\n📥 [PLAYER-ATTRIBUTES] Request received! Contributor: ${req.body?.Contributor}`);
   try {

@@ -322,7 +322,6 @@ function TacticalDashboard() {
         return {
           Contributor: p.Contributor,
           rating: parseFloat(p.rating) || 0,
-          picture: getPicture(p.Contributor) || p.picture || `/${p.Contributor}.jpeg`,
           // ✅ Persist match stats into match_lineups.json (all players)
           goal: s.Goal ?? 0,
           assist: s.Assist ?? 0,

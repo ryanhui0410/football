@@ -111,21 +111,12 @@ const probeImage = (url) =>
     img.src = url;
   });
 
-const openPicModal = async () => {
-  setPicModalMsg("🔍 Checking which players are missing pictures...");
+const openPicModal = () => {
   setShowPicModal(true);
   setUploadedNames([]);
 
-  const missing = [];
-  for (const name of names) {
-    const profile = getProfile(name);
-    if (profile.picture) continue; // JSON has a saved path — skip
-    const exists =
-      (await probeImage(`/images/${encodeURIComponent(name)}.jpeg`)) ||
-      (await probeImage(`/images/${encodeURIComponent(name)}.jpg`)) ||
-      (await probeImage(`/${name}.jpeg`)); // legacy root path
-    if (!exists) missing.push(name);
-  }
+  // ✨ GitHub-only: missing = no file at public/images/{name}.jpeg/.jpg in the listing
+  const missing = names.filter(name => !pictureMap[name.toLowerCase()]);
 
   setMissingPictures(missing);
   setPicModalMsg(missing.length === 0 ? "✅ All players have pictures!" : "");
@@ -133,7 +124,7 @@ const openPicModal = async () => {
 
 const handlePicUpload = (name, file) => {
   if (!file) return;
-  
+
   const reader = new FileReader();
   reader.onloadend = async () => {
     setUploadingName(name);
@@ -148,18 +139,10 @@ const handlePicUpload = (name, file) => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.githubError || result.error || "Upload failed");
 
-            // STEP 2: also save the path into player_attributes.json so it's primary
-      const attrRes = await fetch("https://football-stats-xbx6.onrender.com/player-attributes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ Contributor: name, picture: `/images/${name}.jpeg` }),
-      });
-      if (!attrRes.ok) {
-        const errData = await attrRes.json().catch(() => ({}));
-        throw new Error(
-          `Picture uploaded, but card link failed: ${errData.githubError || errData.error || attrRes.status}`
-        );
-      }
+      // ✨ STEP 2 (NEW): update the in-memory map — card shows instantly
+      const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/football-app/public/images/${encodeURIComponent(name)}.jpeg`;
+      setPictureMap(prev => ({ ...prev, [name.toLowerCase()]: rawUrl }));
+
       setUploadedNames((prev) => [...prev, name]);
     } catch (err) {
       setPicModalMsg(`❌ ${name}: ${err.message}`);
@@ -175,7 +158,7 @@ const closePicModal = () => {
   setMissingPictures([]);
   setUploadedNames([]);
   setPicModalMsg("");
-  fetchData(); // refresh profiles so new picture paths show up
+  fetchData(); // refresh profiles/stats in the background
 };
   const getForm = (name) => {
     if (name !== 'Ryan' && name !== 'Darren') return null;

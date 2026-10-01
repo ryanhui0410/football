@@ -92,7 +92,11 @@ function ModifyDashboard({ contributors, onSave }) {
   const [reportPerspective, setReportPerspective] = useState("");
   const [editedResult, setEditedResult] = useState("");
   const [slotStats, setSlotStats] = useState(null);
+    const GITHUB_OWNER = "ryanhui0410";
+  const GITHUB_REPO = "football";
+  const IMAGES_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/football-app/public/images`;
 
+  const [pictureMap, setPictureMap] = useState({});
   const contributorNames = ["All", ...contributors.map(c => c.name)];
   const filteredContributors = activeFilter === "All" ? contributors : contributors.filter(c => c.name === activeFilter);
 
@@ -104,21 +108,43 @@ function ModifyDashboard({ contributors, onSave }) {
     if (n === "darren") return "Ryan";
     return null;
   };
-  // ═══════════════ DATA FETCH (both sources, on mount) ═══════════════
-  useEffect(() => {
+    useEffect(() => {
     Promise.all([
       fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`).then(r => r.json()),
       fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`).then(r => r.json()),
+      fetch(`${IMAGES_API_URL}?t=${Date.now()}`).then(r => r.ok ? r.json() : []),
     ])
-      .then(([lineups, stats]) => {
+      .then(([lineups, stats, imageFiles]) => {
         setAllLineups(Array.isArray(lineups) ? lineups : []);
         setMatchStatsData(Array.isArray(stats) ? stats : []);
+
+        // ✨ Build: lowercase name → raw GitHub URL (from the actual files on GitHub)
+        if (Array.isArray(imageFiles)) {
+          const map = {};
+          imageFiles
+            .filter(f => /\.(jpe?g|png)$/i.test(f.name))
+            .forEach(f => {
+              map[f.name.replace(/\.(jpe?g|png)$/i, "").toLowerCase()] = f.download_url;
+            });
+          setPictureMap(map);
+        }
       })
       .catch(err => console.error("Failed to fetch lineups/stats:", err));
   }, []);
 
+  // ✨ Picture = convention lookup on GitHub, NOT from any JSON field
+  const getPicture = (name) =>
+    pictureMap[(name || "").trim().toLowerCase()] || null;
   // ═══════════════ HELPERS ═══════════════
-
+    // ✨ Slot modal: read chosen picture as base64 preview + pending upload
+  const handleSlotPicture = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => setSlotStats(prev => ({ ...prev, picture: reader.result }));
+    reader.readAsDataURL(file);
+    e.target.value = ""; // allow re-picking the same file
+  };
   const normalizeDate = (dateStr) => {
     if (!dateStr) return "";
     if (dateStr.length === 10 && dateStr.includes("-")) return dateStr;
@@ -290,8 +316,7 @@ function ModifyDashboard({ contributors, onSave }) {
       contributorName,
 
       rating: lp?.rating ?? (stat ? parseFloat(stat.Rating) : ""),
-      picture: lp?.picture || "",
-
+      picture: getPicture(contributorName) || "",
       goalContribution,
       assist,
       goal,
@@ -515,7 +540,6 @@ function ModifyDashboard({ contributors, onSave }) {
         return {
           ...p,                                  // ✅ preserves goal/assist/error/leftFoot/... etc.
           rating: parseFloat(p.rating) || 0,
-          picture: p.picture || `/${p.Contributor}.jpeg`
         };
       };
 
@@ -883,6 +907,7 @@ function ModifyDashboard({ contributors, onSave }) {
                         matchData={{ Date: matchReport.date, Location: matchReport.location, Time: matchReport.time }}
                         initialLineup={enrichLineupWithMotm(isEditingReport ? editedLineup : matchReport)}
                         readOnly={!isEditingReport}
+                        pictureMap={pictureMap}
                         editMode={isEditingReport}
                         layout={layout}
                         availablePlayers={availablePlayers}
@@ -988,7 +1013,32 @@ function ModifyDashboard({ contributors, onSave }) {
                       ))}
                     </select>
                   </div>
-
+                                    {slotToEdit.player && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Profile Picture</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        {slotStats?.picture && (
+                          <img
+                            src={slotStats.picture}
+                            alt="Preview"
+                            style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #cbd5e1' }}
+                          />
+                        )}
+                        <label style={{
+                          padding: '8px 16px', background: '#eff6ff', color: '#1d4ed8',
+                          borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '13px'
+                        }}>
+                          📷 Choose New Photo
+                          <input
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={handleSlotPicture}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  )}
                   {slotToEdit.player && slotStats && (
                     <>
                       <div style={{ marginBottom: '10px' }}>
@@ -1063,30 +1113,46 @@ function ModifyDashboard({ contributors, onSave }) {
                   )}
                   <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                     <button onClick={() => setSlotToEdit(null)} style={{ padding: '10px 16px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
-                    <button  onClick={() => {
+                    <button                      onClick={async () => {
                       const { team, idx, player } = slotToEdit;
+                      let picture = player?.picture ?? "";
 
-                      // ✨ Tally check for Ryan/Darren — goal must equal the breakdown
-                      if (player && getPartner(player.Contributor)) {
-                        const bodyTotal = (slotStats?.leftFoot || 0) + (slotStats?.rightFoot || 0) + (slotStats?.head || 0) + (slotStats?.other || 0);
-                        if ((slotStats?.goal || 0) !== bodyTotal) {
-                          alert(`⚠️ Goal (${slotStats?.goal || 0}) must equal Left Foot + Right Foot + Head + Other (${bodyTotal}). Fix the breakdown first.`);
+                      // ✨ Upload new picture if one was picked (base64 → public/images/{name}.jpeg on GitHub)
+                      if (slotStats?.picture && slotStats.picture.startsWith("data:")) {
+                        try {
+                          const upRes = await fetch("https://football-stats-xbx6.onrender.com/upload-player-picture", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ name: player.Contributor, image: slotStats.picture }),
+                          });
+                          const upResult = await upRes.json();
+                          if (!upRes.ok) {
+                            alert(`⚠️ Picture upload failed: ${upResult.githubError || upResult.error || upRes.status}`);
+                            return;
+                          }
+                          picture = upResult.picture; // ✅ raw GitHub URL
+
+                          // ✨ Update the in-memory map — new photo shows instantly
+                          setPictureMap(prev => ({
+                            ...prev,
+                            [player.Contributor.trim().toLowerCase()]: picture,
+                          }));
+                        } catch (err) {
+                          alert(`⚠️ Picture upload network error: ${err.message}`);
                           return;
                         }
                       }
+
                       const teamKey = team === 'A' ? 'teamA' : 'teamB';
-                                            const mergedPlayer = player
+                      const mergedPlayer = player
                         ? {
                             ...player,
+                            picture,                                   // ✅ new raw URL (or existing)
                             rating: slotStats?.rating ?? player.rating,
                             goal: slotStats?.goal ?? 0,
                             assist: slotStats?.assist ?? 0,
                             error: slotStats?.error ?? 0,
-                            ownGoal: slotStats?.ownGoal ?? 0, 
-                             leftFoot: getPartner(player.Contributor) ? (slotStats?.leftFoot ?? 0) : (player.leftFoot ?? 0),
-                            rightFoot: getPartner(player.Contributor) ? (slotStats?.rightFoot ?? 0) : (player.rightFoot ?? 0),
-                            head: getPartner(player.Contributor) ? (slotStats?.head ?? 0) : (player.head ?? 0),
-                            other: getPartner(player.Contributor) ? (slotStats?.other ?? 0) : (player.other ?? 0),
+                            ownGoal: slotStats?.ownGoal ?? 0,
                             // ✨ Assist-to detail (Ryan↔Darren only)
                             assistTo: getPartner(player.Contributor) && (slotStats?.assistToCount ?? 0) > 0
                               ? getPartner(player.Contributor)
@@ -1094,6 +1160,7 @@ function ModifyDashboard({ contributors, onSave }) {
                             assistToCount: getPartner(player.Contributor) ? (slotStats?.assistToCount ?? 0) : 0,
                           }
                         : null;
+
                       setEditedLineup(prev => {
                         const newLineup = JSON.parse(JSON.stringify(prev));
 
