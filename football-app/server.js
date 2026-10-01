@@ -278,9 +278,10 @@ async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
 
     const contentBuffer = Buffer.from(contentString, 'utf8');
 
-    // ✨ Over threshold? Minify (drop pretty-print whitespace) — typically saves 30-50%
+       // ✨ Minify ONLY the big stats file — match_lineups.json & player_attributes.json stay readable
+    const MINIFY_FILE = "football_stats_2025_2026.json";
     let finalString = contentString;
-    if (contentBuffer.length > 950000 && localFilePath.endsWith('.json')) {
+    if (contentBuffer.length > 950000 && localFilePath.endsWith(MINIFY_FILE)) {
       try {
         finalString = JSON.stringify(JSON.parse(contentString));   // no indent
         console.log(`🗜️ File over 950KB — minified: ${contentBuffer.length} → ${Buffer.byteLength(finalString, 'utf8')} bytes`);
