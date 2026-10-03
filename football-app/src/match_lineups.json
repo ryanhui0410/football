@@ -949,6 +949,7 @@
     "date": "9/6/2026",
     "location": "傑志",
     "time": "10:30 AM",
+    "matchResult": "7-2",
     "teamA": {
       "formation": "4-4-2",
       "players": [
@@ -965,7 +966,16 @@
         {
           "Contributor": "Po",
           "rating": 7.4,
-          "picture": "/images/Po.jpeg"
+          "picture": "/images/Po.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 1,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "普巴",
