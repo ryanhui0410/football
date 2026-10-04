@@ -2458,9 +2458,9 @@
           "assist": 2,
           "error": 0,
           "ownGoal": 0,
-          "assistTo": "",
-          "assistToCount": 0,
-          "isMotm": false,
+          "assistTo": "Ryan",
+          "assistToCount": 1,
+          "isMotm": true,
           "goals": 2,
           "assists": 2,
           "manOfTheMatch": true
