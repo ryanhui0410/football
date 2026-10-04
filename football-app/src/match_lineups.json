@@ -2435,7 +2435,21 @@
         null,
         null,
         null,
-        null,
+        {
+          "Contributor": "Ryan",
+          "rating": 9.6,
+          "goal": 2,
+          "assist": 1,
+          "leftFoot": 0,
+          "rightFoot": 2,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         null
       ],
       "subs": [
