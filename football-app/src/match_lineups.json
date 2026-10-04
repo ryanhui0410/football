@@ -2463,7 +2463,11 @@
           "isMotm": true,
           "goals": 2,
           "assists": 2,
-          "manOfTheMatch": true
+          "manOfTheMatch": true,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 1,
+          "other": 0
         }
       ],
       "subs": [
