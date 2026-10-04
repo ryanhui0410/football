@@ -2462,7 +2462,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 2,
-          "assists": 2
+          "assists": 2,
+          "manOfTheMatch": true
         }
       ],
       "subs": [
