@@ -2625,7 +2625,7 @@
         {
           "Contributor": "Ken4",
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ken4.jpeg",
-          "rating": 5.8,
+          "rating": 5.5,
           "goal": 0,
           "assist": 0,
           "error": 0,
@@ -2650,7 +2650,7 @@
         {
           "Contributor": "大嚿",
           "picture": "/大嚿.jpeg",
-          "rating": 5.2,
+          "rating": 5,
           "goal": 0,
           "assist": 0,
           "error": 0,
@@ -2700,13 +2700,16 @@
         {
           "Contributor": "S Joe",
           "picture": "/images/S_Joe.jpeg",
-          "rating": 5.8,
+          "rating": 5.7,
           "goal": 0,
           "assist": 0,
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
         },
         {
           "Contributor": "Jacob",
