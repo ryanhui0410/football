@@ -2438,7 +2438,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ken",
@@ -2452,7 +2453,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "普巴",
@@ -2466,7 +2468,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "QC",
@@ -2480,7 +2483,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ken1",
@@ -2494,7 +2498,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ken3",
@@ -2508,7 +2513,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 1
+          "assists": 1,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Sam",
@@ -2522,7 +2528,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Derek",
@@ -2536,7 +2543,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 1
+          "assists": 1,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Phil",
@@ -2550,7 +2558,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ryan",
@@ -2567,25 +2576,7 @@
           "assistTo": "",
           "assistToCount": 0
         },
-        {
-          "Contributor": "Darren",
-          "picture": "/Darren.jpeg",
-          "rating": 9.8,
-          "goal": 2,
-          "assist": 2,
-          "error": 0,
-          "ownGoal": 0,
-          "assistTo": "Ryan",
-          "assistToCount": 1,
-          "isMotm": true,
-          "goals": 2,
-          "assists": 2,
-          "manOfTheMatch": true,
-          "leftFoot": 0,
-          "rightFoot": 1,
-          "head": 1,
-          "other": 0
-        }
+        null
       ],
       "subs": [
         {
@@ -2597,7 +2588,8 @@
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Dave",
@@ -2611,7 +2603,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         }
       ]
     },
@@ -2627,7 +2620,8 @@
           "error": 1,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Jackson",
@@ -2638,7 +2632,8 @@
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ken4",
@@ -2652,7 +2647,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Nick",
@@ -2663,7 +2659,8 @@
           "error": 1,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "大嚿",
@@ -2677,7 +2674,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Lu",
@@ -2691,7 +2689,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "hong",
@@ -2702,7 +2701,8 @@
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Raymond",
@@ -2713,7 +2713,8 @@
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "S Joe",
@@ -2727,7 +2728,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Jacob",
@@ -2738,7 +2740,8 @@
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Daniel",
@@ -2749,7 +2752,8 @@
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         }
       ],
       "subs": [
@@ -2762,7 +2766,8 @@
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Alex",
@@ -2773,7 +2778,8 @@
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         }
       ]
     }
