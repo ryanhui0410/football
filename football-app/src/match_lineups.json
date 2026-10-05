@@ -2429,7 +2429,7 @@
         {
           "Contributor": "Ken2",
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ken2.jpeg",
-          "rating": 7.3,
+          "rating": 7.4,
           "goal": 0,
           "assist": 0,
           "error": 0,
@@ -2443,40 +2443,49 @@
         {
           "Contributor": "Ken",
           "picture": "/images/Ken.jpeg",
-          "rating": 7.4,
+          "rating": 7.6,
           "goal": 0,
           "assist": 0,
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
         },
         {
           "Contributor": "普巴",
           "picture": "/普巴.jpeg",
-          "rating": 7,
+          "rating": 7.2,
           "goal": 0,
           "assist": 0,
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
         },
         {
           "Contributor": "QC",
           "picture": "/images/QC.jpeg",
-          "rating": 6.9,
+          "rating": 7.2,
           "goal": 0,
           "assist": 0,
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
         },
         {
           "Contributor": "Ken1",
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ken1.jpeg",
-          "rating": 7,
+          "rating": 7.1,
           "goal": 0,
           "assist": 0,
           "error": 0,
@@ -2490,18 +2499,21 @@
         {
           "Contributor": "Ken3",
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ken3.jpeg",
-          "rating": 7.6,
+          "rating": 7.8,
           "goal": 0,
           "assist": 1,
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 1
         },
         {
           "Contributor": "Sam",
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Sam.jpeg",
-          "rating": 6.5,
+          "rating": 6.6,
           "goal": 0,
           "assist": 0,
           "error": 0,
@@ -2515,18 +2527,21 @@
         {
           "Contributor": "Derek",
           "picture": "/images/Derek.jpeg",
-          "rating": 7.3,
+          "rating": 7.4,
           "goal": 0,
           "assist": 1,
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 1
         },
         {
           "Contributor": "Phil",
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Phil.jpeg",
-          "rating": 7.5,
+          "rating": 7.7,
           "goal": 0,
           "assist": 0,
           "error": 0,
@@ -2587,13 +2602,16 @@
         {
           "Contributor": "Dave",
           "picture": "/images/Dave.jpeg",
-          "rating": 7.9,
+          "rating": 8.1,
           "goal": 0,
           "assist": 0,
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
         }
       ]
     },
