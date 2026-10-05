@@ -2426,15 +2426,117 @@
     "teamA": {
       "formation": "4-4-2",
       "players": [
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
+        {
+          "Contributor": "Ken2",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ken2.jpeg",
+          "rating": 7.3,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
+        },
+        {
+          "Contributor": "Ken",
+          "picture": "/images/Ken.jpeg",
+          "rating": 7.4,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "普巴",
+          "picture": "/普巴.jpeg",
+          "rating": 7,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "QC",
+          "picture": "/images/QC.jpeg",
+          "rating": 6.9,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Ken1",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ken1.jpeg",
+          "rating": 7,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
+        },
+        {
+          "Contributor": "Ken3",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ken3.jpeg",
+          "rating": 7.6,
+          "goal": 0,
+          "assist": 1,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Sam",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Sam.jpeg",
+          "rating": 6.5,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
+        },
+        {
+          "Contributor": "Derek",
+          "picture": "/images/Derek.jpeg",
+          "rating": 7.3,
+          "goal": 0,
+          "assist": 1,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Phil",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Phil.jpeg",
+          "rating": 7.5,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
+        },
         {
           "Contributor": "Ryan",
           "rating": 9.6,
@@ -2471,28 +2573,187 @@
         }
       ],
       "subs": [
-        null,
-        null
+        {
+          "Contributor": "Eugene",
+          "picture": "/Eugene.jpeg",
+          "rating": 6.1,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Dave",
+          "picture": "/images/Dave.jpeg",
+          "rating": 7.9,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        }
       ]
     },
     "teamB": {
       "formation": "4-4-2",
       "players": [
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        {
+          "Contributor": "Pierre",
+          "picture": "/Pierre.jpeg",
+          "rating": 3.7,
+          "goal": 0,
+          "assist": 0,
+          "error": 1,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Jackson",
+          "picture": "./Jackson.jpeg",
+          "rating": 6.3,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Ken4",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ken4.jpeg",
+          "rating": 5.8,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
+        },
+        {
+          "Contributor": "Nick",
+          "picture": "/Nick.jpeg",
+          "rating": 4.8,
+          "goal": 0,
+          "assist": 0,
+          "error": 1,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "大嚿",
+          "picture": "/大嚿.jpeg",
+          "rating": 5.2,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
+        },
+        {
+          "Contributor": "Lu",
+          "picture": "/Lu.jpeg",
+          "rating": 6.8,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
+        },
+        {
+          "Contributor": "hong",
+          "picture": "/hong.jpeg",
+          "rating": 7,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Raymond",
+          "picture": "/images/Raymond.jpeg",
+          "rating": 5.6,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "S Joe",
+          "picture": "/images/S_Joe.jpeg",
+          "rating": 5.8,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Jacob",
+          "picture": "/Jacob.jpeg",
+          "rating": 5.8,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Daniel",
+          "picture": "/Daniel.jpeg",
+          "rating": 6.6,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        }
       ],
       "subs": [
-        null,
-        null
+        {
+          "Contributor": "局長",
+          "picture": "/局長.jpeg",
+          "rating": 6.3,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Alex",
+          "picture": "/Alex.jpeg",
+          "rating": 6.2,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "assistTo": "",
+          "assistToCount": 0
+        }
       ]
     }
   }
