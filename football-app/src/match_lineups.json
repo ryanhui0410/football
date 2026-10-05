@@ -2576,7 +2576,22 @@
           "assistTo": "",
           "assistToCount": 0
         },
-        null
+        {
+          "Contributor": "Darren",
+          "picture": "/Darren.jpeg",
+          "rating": 9.8,
+          "goal": 2,
+          "assist": 2,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 1,
+          "other": 0,
+          "manOfTheMatch": true,
+          "assistTo": "",
+          "assistToCount": 0
+        }
       ],
       "subs": [
         {
