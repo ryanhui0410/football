@@ -3131,5 +3131,28 @@
     "Assist to": "",
     "Assist to count": 0,
     "Man of the Match": false
+  },
+  {
+    "Date": "10/4/2026",
+    "Contributor": "Ryan",
+    "Symbol": "⚽⚽👟",
+    "Goal": 2,
+    "Assist": 1,
+    "Rating": 9.6,
+    "Location": "跑馬地",
+    "Time": "11:30 AM",
+    "Goal Contribution": 3,
+    "source": "Tactical Dashboard",
+    "Left Foot": 0,
+    "Right Foot": 2,
+    "Head": 0,
+    "Other body parts": 0,
+    "Own Goal": 0,
+    "Season": "2026-2027",
+    "Match result": "8-0",
+    "Win/Loss?": "Win",
+    "Assist to": "",
+    "Assist to count": 0,
+    "Man of the Match": false
   }
 ]
