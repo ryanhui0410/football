@@ -1,13 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
-import EditMatchModal from "./EditMatchModal";
-import HeadToHeadCompare from "./HeadToHeadCompare";
 import MatchStatsModal from "./MatchStatsModal";
 import "./ModifyDashboard.css";
 import MatchLineup from "./MatchLineup";
 
 // ═══════════════ TOP-LEVEL COMPONENTS ═══════════════
 
-// ✅ Us–Them scoreline stepper: {no}-{no}
 function ScorelineInput({ value, onChange }) {
   const parts = (value || "").split("-");
   const us = parts[0] ?? "";
@@ -43,7 +40,6 @@ function ScorelineInput({ value, onChange }) {
   );
 }
 
-// ✅ Stat stepper (same as Tactical Dashboard)
 function StatStepper({ label, value, onChange, max = 99 }) {
   const num = parseInt(value) || 0;
   return (
@@ -62,7 +58,6 @@ function StatStepper({ label, value, onChange, max = 99 }) {
   );
 }
 
-// ✨ Derive outcome from score + team (Team A = first number)
 function deriveOutcome(matchResult, team) {
   const parts = (matchResult || "").split("-").map(s => parseInt(s.trim()));
   if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return "";
@@ -74,16 +69,13 @@ function deriveOutcome(matchResult, team) {
 // ═══════════════ MAIN COMPONENT ═══════════════
 
 function ModifyDashboard({ contributors, onSave }) {
-  const [selectedMatch, setSelectedMatch] = useState(null);
   const [compareData, setCompareData] = useState(null);
-  const [compareMenu, setCompareMenu] = useState(null);
   const [statsModalOpen, setStatsModalOpen] = useState(false);
   const [selectedStats, setSelectedStats] = useState(null);
   const [choiceMatch, setChoiceMatch] = useState(null);
   const [matchReport, setMatchReport] = useState(null);
   const [matchStatsData, setMatchStatsData] = useState([]);
   const [allLineups, setAllLineups] = useState([]);
-  const [activeFilter, setActiveFilter] = useState("All");
   const [isEditingReport, setIsEditingReport] = useState(false);
   const [availablePlayers, setAvailablePlayers] = useState([]);
   const [slotToEdit, setSlotToEdit] = useState(null);
@@ -92,33 +84,34 @@ function ModifyDashboard({ contributors, onSave }) {
   const [reportPerspective, setReportPerspective] = useState("");
   const [editedResult, setEditedResult] = useState("");
   const [slotStats, setSlotStats] = useState(null);
-    const GITHUB_OWNER = "ryanhui0410";
+  const [selectedOtherPlayer, setSelectedOtherPlayer] = useState(null);
+  const GITHUB_OWNER = "ryanhui0410";
   const GITHUB_REPO = "football";
   const IMAGES_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/football-app/public/images`;
 
   const [pictureMap, setPictureMap] = useState({});
-  const contributorNames = ["All", ...contributors.map(c => c.name)];
-  const filteredContributors = activeFilter === "All" ? contributors : contributors.filter(c => c.name === activeFilter);
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [othersExpanded, setOthersExpanded] = useState(false);
 
-  const openModal = (match, contributorName) => setSelectedMatch({ ...match, contributorName });
-    // ✨ Ryan↔Darren partner helper
   const getPartner = (name) => {
     const n = (name || "").trim().toLowerCase();
     if (n === "ryan") return "Darren";
     if (n === "darren") return "Ryan";
     return null;
   };
-    useEffect(() => {
+
+  useEffect(() => {
     Promise.all([
       fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`).then(r => r.json()),
       fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`).then(r => r.json()),
+      fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`).then(r => r.json()),
       fetch(`${IMAGES_API_URL}?t=${Date.now()}`).then(r => r.ok ? r.json() : []),
     ])
-      .then(([lineups, stats, imageFiles]) => {
+      .then(([lineups, stats, players, imageFiles]) => {
         setAllLineups(Array.isArray(lineups) ? lineups : []);
         setMatchStatsData(Array.isArray(stats) ? stats : []);
+        setAvailablePlayers(Array.isArray(players) ? players : []);
 
-        // ✨ Build: lowercase name → raw GitHub URL (from the actual files on GitHub)
         if (Array.isArray(imageFiles)) {
           const map = {};
           imageFiles
@@ -132,19 +125,20 @@ function ModifyDashboard({ contributors, onSave }) {
       .catch(err => console.error("Failed to fetch lineups/stats:", err));
   }, []);
 
-  // ✨ Picture = convention lookup on GitHub, NOT from any JSON field
   const getPicture = (name) =>
     pictureMap[(name || "").trim().toLowerCase()] || null;
+
   // ═══════════════ HELPERS ═══════════════
-    // ✨ Slot modal: read chosen picture as base64 preview + pending upload
+
   const handleSlotPicture = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => setSlotStats(prev => ({ ...prev, picture: reader.result }));
     reader.readAsDataURL(file);
-    e.target.value = ""; // allow re-picking the same file
+    e.target.value = "";
   };
+
   const normalizeDate = (dateStr) => {
     if (!dateStr) return "";
     if (dateStr.length === 10 && dateStr.includes("-")) return dateStr;
@@ -193,6 +187,46 @@ function ModifyDashboard({ contributors, onSave }) {
     const r = parseFloat(rating);
     if (!isNaN(r) && r >= 7) return "good";
     return "";
+  };
+
+  // ⬅ CHANGED: 3 new helpers for player detail cards
+  const getSeasonSummary = (playerName) => {
+    const name = (playerName || "").trim().toLowerCase();
+    const matches = matchStatsData.filter(
+      s => (s.Contributor || "").trim().toLowerCase() === name
+    );
+    const goals = matches.reduce((sum, s) => sum + (parseFloat(s.Goal) || 0), 0);
+    const assists = matches.reduce((sum, s) => sum + (parseFloat(s.Assist) || 0), 0);
+    const motmCount = matches.filter(s => s["Man of the Match"] === true).length;
+    const ratings = matches.map(s => parseFloat(s.Rating)).filter(r => !isNaN(r));
+    const avgRating = ratings.length > 0
+      ? (ratings.reduce((s, r) => s + r, 0) / ratings.length).toFixed(1)
+      : null;
+    return { goals, assists, motmCount, avgRating, matchCount: matches.length };
+  };
+
+  const getPlayerAttributes = (playerName) => {
+    const name = (playerName || "").trim().toLowerCase();
+    const player = availablePlayers.find(
+      p => (p.Contributor || "").trim().toLowerCase() === name
+    );
+    if (!player) return null;
+    return [
+      { label: "PAC", value: player.pace },
+      { label: "SHO", value: player.shooting },
+      { label: "PAS", value: player.passing },
+      { label: "DRI", value: player.dribbling },
+      { label: "DEF", value: player.defending },
+      { label: "PHY", value: player.physical },
+    ].filter(a => a.value != null);
+  };
+
+  const getRecentForm = (playerName) => {
+    const name = (playerName || "").trim().toLowerCase();
+    return matchStatsData
+      .filter(s => (s.Contributor || "").trim().toLowerCase() === name)
+      .sort((a, b) => parseDate(b.Date) - parseDate(a.Date))
+      .slice(0, 5);
   };
 
   const splitSymbols = (symbolStr) => {
@@ -250,6 +284,10 @@ function ModifyDashboard({ contributors, onSave }) {
     return null;
   };
 
+  function normalizeName(name) {
+    return (name || "").trim().toLowerCase();
+  }
+
   const getPlayerMatchStats = (playerName, matchDate, matchLocation, matchTime) => {
     if (!playerName || !matchStatsData.length) return null;
     const normDate = normalizeDate(matchDate);
@@ -261,7 +299,6 @@ function ModifyDashboard({ contributors, onSave }) {
     ) || null;
   };
 
-  // ✨ THE MERGE: match_lineups.json is PRIMARY, football_stats JSON fills the gaps
   const buildResolvedMatch = (match, contributorName) => {
     const lineup = findLineupMatch(match);
     const lp = findLineupPlayer(lineup, contributorName);
@@ -301,7 +338,6 @@ function ModifyDashboard({ contributors, onSave }) {
     const goalContribution = goal + assist;
     const symbol = "⚽".repeat(goal) + "👟".repeat(assist);
 
-    // ✨ Assist-to pair rule: Ryan ↔ Darren only
     const cLower = (contributorName || "").trim().toLowerCase();
     const assistRecipient = cLower === "ryan" ? "Darren" : cLower === "darren" ? "Ryan" : "";
     const assistToCount = assistRecipient && assist > 0
@@ -314,7 +350,6 @@ function ModifyDashboard({ contributors, onSave }) {
       location: match.location,
       time: match.time,
       contributorName,
-
       rating: lp?.rating ?? (stat ? parseFloat(stat.Rating) : ""),
       picture: getPicture(contributorName) || "",
       goalContribution,
@@ -333,7 +368,6 @@ function ModifyDashboard({ contributors, onSave }) {
       source: stat?.source || (lineup ? "Lineup only" : ""),
       assistTo,
       assistToCount,
-
       hasStats: !!stat,
       hasLineup: !!lineup,
     };
@@ -349,7 +383,6 @@ function ModifyDashboard({ contributors, onSave }) {
 
   const fetchAndOpenReport = (isEditMode = false) => {
     const found = findLineupMatch(choiceMatch.match);
-
     if (!found) {
       alert("No tactical report found.");
       return;
@@ -361,7 +394,6 @@ function ModifyDashboard({ contributors, onSave }) {
     setReportPerspective(choiceMatch.name);
     setLineupVersion(v => v + 1);
 
-    // ✨ Seed the editable match result from any player's stats record
     let seededResult = "";
     const teamsSeed = [found.teamA, found.teamB].filter(Boolean);
     outerSeed: for (const team of teamsSeed) {
@@ -376,130 +408,124 @@ function ModifyDashboard({ contributors, onSave }) {
       }
     }
     setEditedResult(seededResult);
-
-    if (isEditMode) {
-      fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`)
-        .then(res => res.json())
-        .then(data => setAvailablePlayers(Array.isArray(data) ? data : []));
-    }
   };
 
-    // ═══════════════ LINEUP-ONLY MATCH MERGE ═══════════════
-  const displayContributors = useMemo(() => {
-    return filteredContributors.map(contributor => {
+  // ═══════════════ BUILD ALL CONTRIBUTORS ═══════════════
+  const allContributors = useMemo(() => {
+    const byName = new Map();
 
-      // ✨ Enrich existing matches: if the lineup carries a (newer) result, use it
-      const enrichedMatches = contributor.matches.map(match => {
-        const lineupMatch = findLineupMatch(match);
-        if (lineupMatch?.matchResult && lineupMatch.matchResult !== match.matchResult) {
-          const myTeam = findLineupPlayerTeam(lineupMatch, contributor.name);
-          return {
-            ...match,
-            matchResult: lineupMatch.matchResult,
-            winLoss: deriveOutcome(lineupMatch.matchResult, myTeam),
-          };
-        }
-        return match;
+    contributors.forEach(contributor => {
+      byName.set(normalizeName(contributor.name), {
+        name: contributor.name,
+        matches: [...contributor.matches],
       });
+    });
 
-      const existingKeys = new Set(
-        enrichedMatches.map(m =>
-          `${normalizeDate(m.date)}|${(m.location || "").trim()}|${(m.time || "").trim()}`
-        )
-      );
+    allLineups.forEach(lineup => {
+      const matchKey = `${normalizeDate(lineup.date)}|${(lineup.location || "").trim()}|${(lineup.time || "").trim()}`;
 
-      const lineupOnlyMatches = [];
-
-      allLineups.forEach(lineup => {
-        const key = `${normalizeDate(lineup.date)}|${(lineup.location || "").trim()}|${(lineup.time || "").trim()}`;
-        if (existingKeys.has(key)) return;
-
-        const me = findLineupPlayer(lineup, contributor.name);
-        if (me) {
-          // ✨ Match result: lineup's own field first, then any player's stats record
-          let matchResult = lineup.matchResult || "";
-          if (!matchResult) {
-            const teams = [lineup.teamA, lineup.teamB].filter(Boolean);
-            outer: for (const team of teams) {
-              const players = [
-                ...(Array.isArray(team.players) ? team.players : Object.values(team.players || {})),
-                ...(Array.isArray(team.subs) ? team.subs : []),
-              ];
-              for (const p of players) {
-                if (!p?.Contributor) continue;
-                const anyStat = getPlayerMatchStats(p.Contributor, lineup.date, lineup.location, lineup.time);
-                if (anyStat && anyStat["Match result"]) {
-                  matchResult = anyStat["Match result"];
-                  break outer;
-                }
-              }
+      let matchResult = lineup.matchResult || "";
+      if (!matchResult) {
+        const teams = [lineup.teamA, lineup.teamB].filter(Boolean);
+        outer: for (const team of teams) {
+          const players = [
+            ...(Array.isArray(team.players) ? team.players : Object.values(team.players || {})),
+            ...(Array.isArray(team.subs) ? team.subs : []),
+          ];
+          for (const p of players) {
+            if (!p?.Contributor) continue;
+            const anyStat = getPlayerMatchStats(p.Contributor, lineup.date, lineup.location, lineup.time);
+            if (anyStat && anyStat["Match result"]) {
+              matchResult = anyStat["Match result"];
+              break outer;
             }
           }
-          // ✨ Derive THIS player's outcome from score + their own team
-          const myTeam = findLineupPlayerTeam(lineup, contributor.name);
-          const winLoss = deriveOutcome(matchResult, myTeam);
+        }
+      }
 
-          lineupOnlyMatches.push({
+      const teams = [lineup.teamA, lineup.teamB].filter(Boolean);
+      teams.forEach((team, teamIdx) => {
+        const teamLetter = teamIdx === 0 ? "A" : "B";
+        const allPlayers = [
+          ...(Array.isArray(team.players) ? team.players : Object.values(team.players || {})),
+          ...(Array.isArray(team.subs) ? team.subs : []),
+        ];
+        allPlayers.forEach(p => {
+          if (!p?.Contributor) return;
+          const name = normalizeName(p.Contributor);
+
+          if (!byName.has(name)) {
+            byName.set(name, { name: p.Contributor, matches: [] });
+          }
+          const entry = byName.get(name);
+
+          const alreadyHas = entry.matches.some(m =>
+            `${normalizeDate(m.date)}|${(m.location || "").trim()}|${(m.time || "").trim()}` === matchKey
+          );
+          if (alreadyHas) return;
+
+          const winLoss = deriveOutcome(matchResult, teamLetter);
+
+          entry.matches.push({
             date: lineup.date,
             location: lineup.location,
             time: lineup.time,
-            rating: me.rating ?? "",
+            rating: p.rating ?? "",
             matchResult,
             winLoss,
-            goalContribution: (parseInt(me.goal) || 0) + (parseInt(me.assist) || 0),
-            assist: parseInt(me.assist) || 0,
-            symbol: "⚽".repeat(parseInt(me.goal) || 0) + "👟".repeat(parseInt(me.assist) || 0),
-            manOfTheMatch: me.manOfTheMatch === true,
+            goalContribution: (parseInt(p.goal) || 0) + (parseInt(p.assist) || 0),
+            assist: parseInt(p.assist) || 0,
+            symbol: "⚽".repeat(parseInt(p.goal) || 0) + "👟".repeat(parseInt(p.assist) || 0),
+            manOfTheMatch: p.manOfTheMatch === true,
             isLineupOnly: true,
           });
-        }
+        });
       });
-
-      if (lineupOnlyMatches.length === 0) {
-        if (enrichedMatches === contributor.matches) return contributor;
-        return { ...contributor, matches: enrichedMatches };
-      }
-      return { ...contributor, matches: [...enrichedMatches, ...lineupOnlyMatches] };
     });
-  }, [filteredContributors, allLineups, matchStatsData]);   // ← matchStatsData added
 
-  // ═══════════════ COMPARE LOGIC ═══════════════
+    return Array.from(byName.values())
+      .sort((a, b) => {
+        const rank = (n) => {
+          const l = n.toLowerCase();
+          if (l === "ryan") return 0;
+          if (l === "darren") return 1;
+          return 2;
+        };
+        const ra = rank(a.name), rb = rank(b.name);
+        if (ra !== rb) return ra - rb;
+        return a.name.localeCompare(b.name, "zh-Hant");
+      });
+  }, [contributors, allLineups, matchStatsData]);
 
-  const getSameMatchPlayers = (currentMatch, currentContributorName) => {
-    const players = [];
-    contributors.forEach(contrib => {
-      if (contrib.name !== currentContributorName) {
-        const matchingMatch = contrib.matches.find(m =>
-          m.date === currentMatch.date && m.location === currentMatch.location && m.time === currentMatch.time
+  const otherPlayers = useMemo(() =>
+    allContributors
+      .map(c => c.name)
+      .filter(n => {
+        const l = normalizeName(n);
+        return l !== "ryan" && l !== "darren";
+      })
+      .sort((a, b) => a.localeCompare(b, "zh-Hant")),
+  [allContributors]);
+
+  const displayContributors = useMemo(() => {
+    if (activeFilter === "All") return allContributors;
+    if (activeFilter === "Ryan")
+      return allContributors.filter(c => normalizeName(c.name) === "ryan");
+    if (activeFilter === "Darren")
+      return allContributors.filter(c => normalizeName(c.name) === "darren");
+    if (activeFilter === "Others") {
+      if (selectedOtherPlayer) {
+        return allContributors.filter(
+          c => normalizeName(c.name) === normalizeName(selectedOtherPlayer)
         );
-        if (matchingMatch) players.push({ name: contrib.name, match: matchingMatch });
       }
-    });
-    return players;
-  };
-
-  const handleCompareClick = (e, currentMatch, currentContributorName) => {
-    e.stopPropagation();
-    const players = getSameMatchPlayers(currentMatch, currentContributorName);
-    if (players.length === 1) {
-      setCompareData({
-        contributor1: currentContributorName, match1: currentMatch,
-        contributor2: players[0].name, match2: players[0].match
+      return allContributors.filter(c => {
+        const l = normalizeName(c.name);
+        return l !== "ryan" && l !== "darren";
       });
-    } else if (players.length > 1) {
-      setCompareMenu({ match: currentMatch, contributorName: currentContributorName, players });
-    } else {
-      alert("No other contributors found for this exact match.");
     }
-  };
-
-  const selectCompareTarget = (target) => {
-    setCompareData({
-      contributor1: compareMenu.contributorName, match1: compareMenu.match,
-      contributor2: target.name, match2: target.match
-    });
-    setCompareMenu(null);
-  };
+    return allContributors;
+  }, [allContributors, activeFilter, selectedOtherPlayer]);
 
   const enrichLineupWithMotm = (lineup) => {
     if (!lineup) return lineup;
@@ -512,7 +538,6 @@ function ModifyDashboard({ contributors, onSave }) {
             const stat = getPlayerMatchStats(player.Contributor, enriched.date, enriched.location, enriched.time);
             return {
               ...player,
-              // ✅ Lineup fields are PRIMARY; stats records fill in for legacy lineups
               isMotm: player.manOfTheMatch != null
                 ? player.manOfTheMatch === true
                 : (stat ? stat["Man of the Match"] === true : false),
@@ -547,29 +572,30 @@ function ModifyDashboard({ contributors, onSave }) {
     return (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1);
   };
 
-  // ═══════════════ SAVE (lineup + stats batch sync) ═══════════════
+  // ═══════════════ SAVE ═══════════════
 
-    const handleSaveReportLineup = async () => {
+  const handleSaveReportLineup = async () => {
     if (!editedLineup) return;
 
     const sanitizeTeam = (teamObj) => {
-      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] };
+      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: Array(4).fill(null) }; // ⬅ CHANGED
       const cleanPlayer = (p) => {
         if (!p) return null;
         return {
-          ...p,                                  // ✅ preserves goal/assist/error/leftFoot/... etc.
+          ...p,
           rating: parseFloat(p.rating) || 0,
+          manOfTheMatch: p.manOfTheMatch === true,
         };
       };
 
       const cleanPlayers = (teamObj.players || []).map(cleanPlayer);
       const cleanSubs = (teamObj.subs || []).map(cleanPlayer);
-      while (cleanSubs.length < 2) cleanSubs.push(null);
+      while (cleanSubs.length < 4) cleanSubs.push(null); // ⬅ CHANGED: was 2
 
       return {
         formation: teamObj.formation || "4-4-2",
         players: cleanPlayers.slice(0, 11),
-        subs: cleanSubs.slice(0, 2)
+        subs: cleanSubs.slice(0, 4) // ⬅ CHANGED: was 2
       };
     };
 
@@ -577,7 +603,7 @@ function ModifyDashboard({ contributors, onSave }) {
       date: editedLineup.date,
       location: editedLineup.location,
       time: editedLineup.time,
-      matchResult: editedResult ?? "", 
+      matchResult: editedResult ?? "",
       teamA: sanitizeTeam(editedLineup.teamA),
       teamB: sanitizeTeam(editedLineup.teamB),
     };
@@ -599,7 +625,6 @@ function ModifyDashboard({ contributors, onSave }) {
       setIsEditingReport(false);
       setMatchReport(JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB })));
       setLineupVersion(v => v + 1);
-      // ✨ Keep the in-memory lineup copy in sync so subsequent opens are fresh
       setAllLineups(prev => {
         const idx = prev.findIndex(l =>
           normalizeDate(l.date) === normalizeDate(payload.date) &&
@@ -616,16 +641,6 @@ function ModifyDashboard({ contributors, onSave }) {
       alert("❌ Failed to save match report");
     }
   };
-  const closeModal = () => setSelectedMatch(null);
-  const closeCompare = () => setCompareData(null);
-
-  useEffect(() => {
-    const handleClickOutside = () => setCompareMenu(null);
-    if (compareMenu) {
-      document.addEventListener("click", handleClickOutside);
-      return () => document.removeEventListener("click", handleClickOutside);
-    }
-  }, [compareMenu]);
 
   const getLayoutType = () => {
     const isMobileWidth = window.innerWidth <= 850;
@@ -651,12 +666,47 @@ function ModifyDashboard({ contributors, onSave }) {
       <div className="md-filter-bar">
         <span className="md-filter-label">Filter by Player:</span>
         <div className="md-filter-pills">
-          {contributorNames.map(name => (
-            <button key={name} className={`md-pill ${activeFilter === name ? 'active' : ''}`} onClick={() => setActiveFilter(name)}>
+          {["All", "Ryan", "Darren", "Others"].map(name => (
+            <button
+              key={name}
+              className={`md-pill ${
+                activeFilter === name || (name === "Others" && selectedOtherPlayer)
+                  ? 'active' : ''
+              }`}
+              onClick={() => {
+                if (name === "Others") {
+                  setOthersExpanded(prev => !prev);
+                  setActiveFilter("Others");
+                  setSelectedOtherPlayer(null);
+                } else {
+                  setActiveFilter(name);
+                  setOthersExpanded(false);
+                  setSelectedOtherPlayer(null);
+                }
+              }}
+            >
               {name}
             </button>
           ))}
         </div>
+
+        {othersExpanded && (
+          <div className="md-others-list">
+            {otherPlayers.map(name => (
+              <button
+                key={name}
+                className={`md-pill md-pill-sm ${selectedOtherPlayer === name ? 'active' : ''}`}
+                onClick={() => {
+                  setSelectedOtherPlayer(name);
+                  setActiveFilter("Others");
+                  setOthersExpanded(false);
+                }}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {displayContributors.map((contributor) => {
@@ -668,7 +718,6 @@ function ModifyDashboard({ contributors, onSave }) {
               <span className="md-match-count">{sortedMatches.length} Matches</span>
             </div>
 
-            {/* ===== DESKTOP/PORTRAIT: original table ===== */}
             <table className="md-table">
               <thead className="md-thead">
                 <tr>
@@ -680,84 +729,65 @@ function ModifyDashboard({ contributors, onSave }) {
                 </tr>
               </thead>
               <tbody className="md-tbody">
-                {sortedMatches.map((match, idx) => {
-                  const sameMatchPlayers = getSameMatchPlayers(match, contributor.name);
-                  return (
-                    <tr key={idx} className="md-row" onClick={() => setChoiceMatch({ match: match, name: contributor.name })}>
-                      <td className="md-td" data-label="Date & Location">
-                        <div className="md-date">
-                          {match.date}
+                {sortedMatches.map((match, idx) => (
+                  <tr key={idx} className="md-row" onClick={() => setChoiceMatch({ match: match, name: contributor.name })}>
+                    <td className="md-td" data-label="Date & Location">
+                      <div className="md-date">{match.date}</div>
+                      <div className="md-location">📍 {match.location || "Unknown"}</div>
+                    </td>
+                    <td className="md-td center" data-label="Match Result">
+                      <div className={`md-result-box ${match.winLoss ? match.winLoss.toLowerCase() : ''}`}>
+                        <div className="md-score">{match.matchResult || "—"}</div>
+                        {match.winLoss && <div className={`md-outcome ${match.winLoss.toLowerCase()}`}>{match.winLoss}</div>}
+                      </div>
+                    </td>
+                    <td className="md-td center" data-label="Contributions">
+                      {match.symbol ? (
+                        <div className="md-symbols-wrapper">
+                          {splitSymbols(match.symbol).map((row, rowIdx) => (
+                            <div key={rowIdx} className="md-symbols-row">
+                              {row.map((ch, idx) => (
+                                <span key={idx} className="md-symbol-icon">{ch}</span>
+                              ))}
+                            </div>
+                          ))}
                         </div>
-                        <div className="md-location">📍 {match.location || "Unknown"}</div>
-                      </td>
-                      <td className="md-td center" data-label="Match Result">
-                        <div className={`md-result-box ${match.winLoss ? match.winLoss.toLowerCase() : ''}`}>
-                          <div className="md-score">{match.matchResult || "—"}</div>
-                          {match.winLoss && <div className={`md-outcome ${match.winLoss.toLowerCase()}`}>{match.winLoss}</div>}
-                        </div>
-                      </td>
-                      <td className="md-td center" data-label="Contributions">
-                        {match.symbol ? (
-                          <div className="md-symbols-wrapper">
-                            {splitSymbols(match.symbol).map((row, rowIdx) => (
-                              <div key={rowIdx} className="md-symbols-row">
-                                {row.map((ch, idx) => (
-                                  <span key={idx} className="md-symbol-icon">{ch}</span>
-                                ))}
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="md-symbols empty">No symbols</span>
-                        )}
-                      </td>
-                      <td className="md-td center" data-label="Rating">
-                        {match.manOfTheMatch ? (
-                          <span className="md-rating-motm-wrapper">
-                            <span
-                              className="md-rating md-rating-motm"
-                              style={{ backgroundColor: getRatingBgColor(match.rating) }}
-                            >
-                              {match.rating || "—"}
-                            </span>
-                          </span>
-                        ) : (
+                      ) : (
+                        <span className="md-symbols empty">No symbols</span>
+                      )}
+                    </td>
+                    <td className="md-td center" data-label="Rating">
+                      {match.manOfTheMatch ? (
+                        <span className="md-rating-motm-wrapper">
                           <span
-                            className="md-rating"
+                            className="md-rating md-rating-motm"
                             style={{ backgroundColor: getRatingBgColor(match.rating) }}
                           >
                             {match.rating || "—"}
                           </span>
-                        )}
-                      </td>
-                      <td className="md-td center" data-label="Action">
-                        <div className="md-action-btns">
-                          <button className="md-edit-btn" onClick={(e) => { e.stopPropagation(); openModal(match, contributor.name); }}>Edit</button>
-                          {sameMatchPlayers.length > 0 && (
-                            <button className="md-compare-btn" title="Compare" onClick={(e) => handleCompareClick(e, match, contributor.name)}>⚔️</button>
-                          )}
-                          {compareMenu && compareMenu.match === match && compareMenu.contributorName === contributor.name && (
-                            <div className="md-compare-dropdown" onClick={(e) => e.stopPropagation()}>
-                              {compareMenu.players.map((p, pIdx) => (
-                                <div key={pIdx} className="md-compare-option" onClick={(e) => { e.stopPropagation(); selectCompareTarget(p); }}>vs {p.name}</div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                        </span>
+                      ) : (
+                        <span
+                          className="md-rating"
+                          style={{ backgroundColor: getRatingBgColor(match.rating) }}
+                        >
+                          {match.rating || "—"}
+                        </span>
+                      )}
+                    </td>
+                    <td className="md-td center" data-label="Action">
+                      <span className="md-actions-hint">Tap row →</span>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
 
-            {/* ===== MOBILE (portrait + landscape): FotMob-style list ===== */}
             <div className="fm-list">
               {sortedMatches.map((match, idx) => {
                 const goals = Math.max(0, (match.goalContribution || 0) - (match.assist || 0));
                 const assists = match.assist || 0;
                 const wlLetter = getWinLossLetter(match.winLoss);
-                const sameMatchPlayers = getSameMatchPlayers(match, contributor.name);
                 const isMotm = !!match.manOfTheMatch;
                 return (
                   <div
@@ -794,34 +824,6 @@ function ModifyDashboard({ contributors, onSave }) {
                         )}
                         {goals === 0 && assists === 0 && <span className="fm-ga fm-none">—</span>}
 
-                        <div className="fm-actions" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            className="fm-action-btn"
-                            title="Edit"
-                            onClick={(e) => { e.stopPropagation(); openModal(match, contributor.name); }}
-                          >
-                            ✏️
-                          </button>
-                          {sameMatchPlayers.length > 0 && (
-                            <button
-                              className="fm-action-btn"
-                              title="Compare"
-                              onClick={(e) => handleCompareClick(e, match, contributor.name)}
-                            >
-                              ⚔️
-                            </button>
-                          )}
-                          {compareMenu && compareMenu.match === match && compareMenu.contributorName === contributor.name && (
-                            <div className="md-compare-dropdown fm-compare-dropdown" onClick={(e) => e.stopPropagation()}>
-                              {compareMenu.players.map((p, pIdx) => (
-                                <div key={pIdx} className="md-compare-option" onClick={(e) => { e.stopPropagation(); selectCompareTarget(p); }}>
-                                  vs {p.name}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
                         <span className={`fm-rating-box ${getFmRatingClass(match.rating, isMotm)}`}>
                           {match.rating || "—"}
                         </span>
@@ -835,8 +837,6 @@ function ModifyDashboard({ contributors, onSave }) {
         );
       })}
 
-      {selectedMatch && <EditMatchModal match={selectedMatch} onClose={closeModal} onSave={onSave} />}
-      <HeadToHeadCompare open={!!compareData} onClose={closeCompare} compareData={compareData} />
       <MatchStatsModal open={statsModalOpen} match={selectedStats} onClose={() => setStatsModalOpen(false)} />
 
       {/* CHOICE MODAL */}
@@ -861,7 +861,7 @@ function ModifyDashboard({ contributors, onSave }) {
         </div>
       )}
 
-      {/* VIEW MATCH REPORT OVERLAY (Read-only / Edit) */}
+      {/* VIEW MATCH REPORT OVERLAY */}
       {matchReport && (
         <div className="report-overlay" onClick={() => { setMatchReport(null); }}>
           <div className="report-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '1000px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: '25px' }}>
@@ -873,11 +873,9 @@ function ModifyDashboard({ contributors, onSave }) {
               const avgA = calcTeamAverage(matchReport.teamA);
               const avgB = calcTeamAverage(matchReport.teamB);
 
-              // ✨ Lineup result is PRIMARY (it reflects your latest edit)
               let matchResult = matchReport.matchResult || '';
               let winLoss = '';
 
-              // Fall back to stats records for legacy lineups without matchResult
               if (!matchResult) {
                 const playersA = Array.isArray(matchReport.teamA?.players) ? matchReport.teamA.players : Object.values(matchReport.teamA?.players || {});
                 const playersB = Array.isArray(matchReport.teamB?.players) ? matchReport.teamB.players : Object.values(matchReport.teamB?.players || {});
@@ -892,16 +890,13 @@ function ModifyDashboard({ contributors, onSave }) {
                 }
               }
 
-              // ✨ Outcome derived from score + THIS viewer's team (consistent with rows)
               if (matchResult) {
                 const myTeam = findLineupPlayerTeam(matchReport, reportPerspective);
                 winLoss = deriveOutcome(matchResult, myTeam);
               }
 
-
               return (
                 <>
-                  {/* ✨ Editable scoreline in edit mode; static header in read-only */}
                   {isEditingReport ? (
                     <div style={{ background: "#f8fafc", borderRadius: "12px", padding: "14px", marginBottom: "10px" }}>
                       <div style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", textAlign: "center", marginBottom: "6px" }}>
@@ -941,7 +936,7 @@ function ModifyDashboard({ contributors, onSave }) {
                         onLineupChange={(newLineup) => {
                           setEditedLineup(prev => ({ ...prev, ...newLineup }));
                         }}
-                                                onSlotClick={(team, idx, player) => {
+                        onSlotClick={(team, idx, player) => {
                           setSlotToEdit({ team, idx, player });
                           if (player) {
                             const stat = getPlayerMatchStats(player.Contributor, matchReport.date, matchReport.location, matchReport.time);
@@ -951,12 +946,13 @@ function ModifyDashboard({ contributors, onSave }) {
                               assist: player.assist ?? (stat ? (parseInt(stat.Assist) || 0) : 0),
                               error: player.error ?? (stat ? (parseInt(stat.Error) || 0) : 0),
                               ownGoal: player.ownGoal ?? (stat ? (parseInt(stat["Own Goal"]) || 0) : 0),
-                              // ✨ seed assist-to (lineup field first, then stats record)
                               assistTo: player.assistTo ?? (stat?.["Assist to"] || ""),
                               leftFoot: player.leftFoot ?? (stat ? (parseInt(stat["Left Foot"]) || 0) : 0),
                               rightFoot: player.rightFoot ?? (stat ? (parseInt(stat["Right Foot"]) || 0) : 0),
                               head: player.head ?? (stat ? (parseInt(stat.Head) || 0) : 0),
                               other: player.other ?? (stat ? (parseInt(stat["Other body parts"]) || 0) : 0),
+                              manOfTheMatch: player.manOfTheMatch ?? (stat ? stat["Man of the Match"] === true : false),
+                              assistToCount: player.assistToCount ?? (stat ? (parseInt(stat["Assist to count"]) || 0): 0),
                             });
                           } else {
                             setSlotStats(null);
@@ -989,7 +985,7 @@ function ModifyDashboard({ contributors, onSave }) {
               );
             })()}
 
-            {/* SLOT EDIT MODAL — rating + goal/assist/error */}
+            {/* SLOT EDIT MODAL */}
             {slotToEdit && (
               <div className="slot-edit-overlay" onClick={() => setSlotToEdit(null)}>
                 <div className="slot-edit-modal" onClick={e => e.stopPropagation()}>
@@ -1028,6 +1024,7 @@ function ModifyDashboard({ contributors, onSave }) {
                             rightFoot: parseInt(selected.rightFoot) || (stat ? (parseInt(stat["Right Foot"]) || 0) : 0),
                             head: parseInt(selected.head) || (stat ? (parseInt(stat.Head) || 0) : 0),
                             other: parseInt(selected.other) || (stat ? (parseInt(stat["Other body parts"]) || 0) : 0),
+                            manOfTheMatch: selected.manOfTheMatch === true || (stat ? stat["Man of the Match"] === true : false),
                           });
                         }
                       }}
@@ -1038,7 +1035,8 @@ function ModifyDashboard({ contributors, onSave }) {
                       ))}
                     </select>
                   </div>
-                                    {slotToEdit.player && (
+
+                  {slotToEdit.player && (
                     <div style={{ marginBottom: '16px' }}>
                       <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Profile Picture</label>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1054,16 +1052,95 @@ function ModifyDashboard({ contributors, onSave }) {
                           borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '13px'
                         }}>
                           📷 Choose New Photo
-                          <input
-                            type="file"
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                            onChange={handleSlotPicture}
-                          />
+                          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleSlotPicture} />
                         </label>
                       </div>
                     </div>
                   )}
+
+                  {/* ══ ⬅ CHANGED: Player detail cards — fills the freed bottom space ══ */}
+                  {slotToEdit.player && (() => {
+                    const pname = slotToEdit.player.Contributor;
+                    const summary = getSeasonSummary(pname);
+                    const attributes = getPlayerAttributes(pname);
+                    const recentForm = getRecentForm(pname);
+
+                    return (
+                      <>
+                        {/* Season Summary */}
+                        <div className="pd-section pd-summary">
+                          <h4>📊 Season Summary</h4>
+                          {summary.matchCount > 0 ? (
+                            <div className="pd-stat-grid">
+                              <div className="pd-stat-item">
+                                <span className="pd-stat-value" style={{ color: "#16a34a" }}>{summary.goals}</span>
+                                <span className="pd-stat-label">Goals</span>
+                              </div>
+                              <div className="pd-stat-item">
+                                <span className="pd-stat-value" style={{ color: "#2563eb" }}>{summary.assists}</span>
+                                <span className="pd-stat-label">Assists</span>
+                              </div>
+                              <div className="pd-stat-item">
+                                <span className="pd-stat-value" style={{ color: "#f59e0b" }}>{summary.motmCount}</span>
+                                <span className="pd-stat-label">MOTM</span>
+                              </div>
+                              <div className="pd-stat-item">
+                                <span className="pd-stat-value" style={{ color: getRatingColor(summary.avgRating) }}>
+                                  {summary.avgRating || "—"}
+                                </span>
+                                <span className="pd-stat-label">Avg ({summary.matchCount})</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="pd-empty">No season stats yet</div>
+                          )}
+                        </div>
+
+                        {/* Player Attributes */}
+                        {attributes && attributes.length > 0 && (
+                          <div className="pd-section pd-attributes">
+                            <h4>🎯 Player Attributes</h4>
+                            <div className="pd-attr-grid">
+                              {attributes.map(a => (
+                                <div key={a.label} className="pd-attr-item">
+                                  <span className="pd-attr-value">{a.value}</span>
+                                  <span className="pd-attr-label">{a.label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Recent Form */}
+                        {recentForm.length > 0 && (
+                          <div className="pd-section pd-form">
+                            <h4>📈 Recent Form</h4>
+                            <div className="pd-form-row">
+                              {recentForm.map((m, i) => {
+                                const r = parseFloat(m.Rating);
+                                const bg = !isNaN(r)
+                                  ? r >= 7 ? "#16a34a" : r >= 5 ? "#eab308" : "#ef4444"
+                                  : "#9ca3af";
+                                const isMotm = m["Man of the Match"] === true;
+                                return (
+                                  <div
+                                    key={i}
+                                    className={`pd-form-chip ${isMotm ? "pd-form-motm" : ""}`}
+                                    style={{ background: bg }}
+                                    title={`${m.Date} — ${m.Location || ""} | Rating: ${m.Rating || "—"}${isMotm ? " ⭐MOTM" : ""}`}
+                                  >
+                                    <span className="pd-form-rating">{m.Rating || "—"}</span>
+                                    <span className="pd-form-date">{m.Date}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+
                   {slotToEdit.player && slotStats && (
                     <>
                       <div style={{ marginBottom: '10px' }}>
@@ -1084,7 +1161,6 @@ function ModifyDashboard({ contributors, onSave }) {
                         </h4>
                         <StatStepper label="Goal" value={slotStats.goal} onChange={(v) => setSlotStats(s => ({ ...s, goal: v }))} />
 
-                        {/* ✨ Goal breakdown — Ryan↔Darren only, with live tally check */}
                         {getPartner(slotToEdit.player.Contributor) && (
                           <>
                             <StatStepper label="Left Foot" value={slotStats.leftFoot} max={slotStats.goal}
@@ -1124,7 +1200,6 @@ function ModifyDashboard({ contributors, onSave }) {
                         <StatStepper label="Assist" value={slotStats.assist} onChange={(v) => setSlotStats(s => ({ ...s, assist: v }))} />
                         <StatStepper label="Error" value={slotStats.error} onChange={(v) => setSlotStats(s => ({ ...s, error: v }))} />
 
-                        {/* ✨ Assist-to detail — Ryan↔Darren only, capped at total assists */}
                         {getPartner(slotToEdit.player.Contributor) && slotStats.assist > 0 && (
                           <StatStepper
                             label={`No. of assist to ${getPartner(slotToEdit.player.Contributor)}`}
@@ -1133,79 +1208,109 @@ function ModifyDashboard({ contributors, onSave }) {
                             onChange={(v) => setSlotStats(s => ({ ...s, assistToCount: v }))}
                           />
                         )}
+
+                        <div style={{
+                          display: "flex", alignItems: "center", gap: "10px",
+                          padding: "12px 0", marginTop: "8px",
+                          borderTop: "2px solid #e2e8f0", cursor: "pointer"
+                        }}
+                          onClick={() => setSlotStats(s => ({ ...s, manOfTheMatch: !s.manOfTheMatch }))}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={!!slotStats.manOfTheMatch}
+                            onChange={(e) => setSlotStats(s => ({ ...s, manOfTheMatch: e.target.checked }))}
+                            style={{ width: "22px", height: "22px", cursor: "pointer", accentColor: "#f59e0b" }}
+                          />
+                          <label style={{
+                            fontWeight: 700, fontSize: "15px",
+                            color: slotStats.manOfTheMatch ? "#b45309" : "#475569",
+                            cursor: "pointer", userSelect: "none",
+                            display: "flex", alignItems: "center", gap: "6px"
+                          }}>
+                            ⭐ Man of the Match
+                          </label>
+                        </div>
                       </div>
                     </>
                   )}
+
                   <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                     <button onClick={() => setSlotToEdit(null)} style={{ padding: '10px 16px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
-                    <button                      onClick={async () => {
-                      const { team, idx, player } = slotToEdit;
-                      let picture = player?.picture ?? "";
+                    <button
+                      onClick={async () => {
+                        const { team, idx, player } = slotToEdit;
+                        let picture = player?.picture ?? "";
 
-                      // ✨ Upload new picture if one was picked (base64 → public/images/{name}.jpeg on GitHub)
-                      if (slotStats?.picture && slotStats.picture.startsWith("data:")) {
-                        try {
-                          const upRes = await fetch("https://football-stats-xbx6.onrender.com/upload-player-picture", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ name: player.Contributor, image: slotStats.picture }),
-                          });
-                          const upResult = await upRes.json();
-                          if (!upRes.ok) {
-                            alert(`⚠️ Picture upload failed: ${upResult.githubError || upResult.error || upRes.status}`);
+                        if (slotStats?.picture && slotStats.picture.startsWith("data:")) {
+                          try {
+                            const upRes = await fetch("https://football-stats-xbx6.onrender.com/upload-player-picture", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ name: player.Contributor, image: slotStats.picture }),
+                            });
+                            const upResult = await upRes.json();
+                            if (!upRes.ok) {
+                              alert(`⚠️ Picture upload failed: ${upResult.githubError || upResult.error || upRes.status}`);
+                              return;
+                            }
+                            picture = upResult.picture;
+                            setPictureMap(prev => ({
+                              ...prev,
+                              [player.Contributor.trim().toLowerCase()]: picture,
+                            }));
+                          } catch (err) {
+                            alert(`⚠️ Picture upload network error: ${err.message}`);
                             return;
                           }
-                          picture = upResult.picture; // ✅ raw GitHub URL
-
-                          // ✨ Update the in-memory map — new photo shows instantly
-                          setPictureMap(prev => ({
-                            ...prev,
-                            [player.Contributor.trim().toLowerCase()]: picture,
-                          }));
-                        } catch (err) {
-                          alert(`⚠️ Picture upload network error: ${err.message}`);
-                          return;
                         }
-                      }
 
-                      const teamKey = team === 'A' ? 'teamA' : 'teamB';
-                      const mergedPlayer = player
-                        ? {
-                            ...player,
-                            picture,                                   // ✅ new raw URL (or existing)
-                            rating: slotStats?.rating ?? player.rating,
-                            goal: slotStats?.goal ?? 0,
-                            assist: slotStats?.assist ?? 0,
-                            error: slotStats?.error ?? 0,
-                            ownGoal: slotStats?.ownGoal ?? 0,
-                            // ✨ Assist-to detail (Ryan↔Darren only)
-                            assistTo: getPartner(player.Contributor) && (slotStats?.assistToCount ?? 0) > 0
-                              ? getPartner(player.Contributor)
-                              : "",
-                            assistToCount: getPartner(player.Contributor) ? (slotStats?.assistToCount ?? 0) : 0,
-                          }
-                        : null;
+                        const teamKey = team === 'A' ? 'teamA' : 'teamB';
+                        const mergedPlayer = player
+                          ? {
+                              ...player,
+                              picture,
+                              rating: slotStats?.rating ?? player.rating,
+                              goal: slotStats?.goal ?? 0,
+                              assist: slotStats?.assist ?? 0,
+                              error: slotStats?.error ?? 0,
+                              ownGoal: slotStats?.ownGoal ?? 0,
+                              leftFoot: slotStats?.leftFoot ?? 0,
+                              rightFoot: slotStats?.rightFoot ?? 0,
+                              head: slotStats?.head ?? 0,
+                              other: slotStats?.other ?? 0,
+                              manOfTheMatch: slotStats?.manOfTheMatch === true,
+                              assistTo: getPartner(player.Contributor) && (slotStats?.assistToCount ?? 0) > 0
+                                ? getPartner(player.Contributor)
+                                : "",
+                              assistToCount: getPartner(player.Contributor) ? (slotStats?.assistToCount ?? 0) : 0,
+                            }
+                          : null;
 
-                      setEditedLineup(prev => {
-                        const newLineup = JSON.parse(JSON.stringify(prev));
+                        setEditedLineup(prev => {
+                          const newLineup = JSON.parse(JSON.stringify(prev));
 
-                        if (typeof idx === 'string' && idx.startsWith('sub')) {
-                          const subIdx = parseInt(idx.replace('sub', ''));
-                          if (!Array.isArray(newLineup[teamKey].subs)) {
-                            newLineup[teamKey].subs = [null, null];
+                          if (typeof idx === 'string' && idx.startsWith('sub')) {
+                            const subIdx = parseInt(idx.replace('sub', ''));
+                            // ⬅ CHANGED: pad subs to 4 instead of 2
+                            if (!Array.isArray(newLineup[teamKey].subs) || newLineup[teamKey].subs.length < 4) {
+                              const old = Array.isArray(newLineup[teamKey].subs) ? newLineup[teamKey].subs : [];
+                              newLineup[teamKey].subs = [...old, ...Array(Math.max(0, 4 - old.length)).fill(null)].slice(0, 4);
+                            }
+                            newLineup[teamKey].subs[subIdx] = mergedPlayer;
+                          } else {
+                            if (!Array.isArray(newLineup[teamKey].players)) {
+                              newLineup[teamKey].players = Array(11).fill(null);
+                            }
+                            newLineup[teamKey].players[idx] = mergedPlayer;
                           }
-                          newLineup[teamKey].subs[subIdx] = mergedPlayer;
-                        } else {
-                          if (!Array.isArray(newLineup[teamKey].players)) {
-                            newLineup[teamKey].players = Array(11).fill(null);
-                          }
-                          newLineup[teamKey].players[idx] = mergedPlayer;
-                        }
-                        return newLineup;
-                      });
-                      setLineupVersion(v => v + 1);
-                      setSlotToEdit(null);
-                    }} style={{ padding: '10px 16px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>
+                          return newLineup;
+                        });
+                        setLineupVersion(v => v + 1);
+                        setSlotToEdit(null);
+                      }}
+                      style={{ padding: '10px 16px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                    >
                       Save to Pitch
                     </button>
                   </div>
@@ -1219,7 +1324,6 @@ function ModifyDashboard({ contributors, onSave }) {
   );
 }
 
-// small helper used in the slot modal select onChange
 function prevRatingOf(player, stat) {
   if (player && player.rating !== undefined && player.rating !== null && player.rating !== "") return player.rating;
   return stat ? (parseFloat(stat.Rating) || "") : "";

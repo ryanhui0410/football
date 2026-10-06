@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import MatchLineup from "../EditStats/MatchLineup"; 
+import MatchLineup from "../EditStats/MatchLineup";
 import "./TacticalDashboard.css";
 
 // ✅ Inline stat stepper for the slot modal (same pattern as Add Stats)
@@ -20,7 +20,8 @@ function StatStepper({ label, value, onChange, max = 99 }) {
     </div>
   );
 }
-// ✅ Us–Them scoreline stepper: {no}-{no}   ← MUST BE HERE (top level)
+
+// ✅ Us–Them scoreline stepper
 function ScorelineInput({ value, onChange }) {
   const parts = (value || "").split("-");
   const us = parts[0] ?? "";
@@ -58,18 +59,19 @@ function ScorelineInput({ value, onChange }) {
     </div>
   );
 }
-// ✅ Inline calendar picker — outputs M/D/YYYY (e.g. 8/13/2026)
+
+// ✅ Inline calendar picker
 function CalendarPicker({ value, onChange }) {
   const parts = (value || "").split("/").map(Number);
   const [open, setOpen] = useState(false);
   const [viewYear, setViewYear] = useState(parts[2] && !isNaN(parts[2]) ? parts[2] : new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState(
-    parts[0] && !isNaN(parts[0]) ? parts[0] - 1 : new Date().getMonth() // 0-based
+    parts[0] && !isNaN(parts[0]) ? parts[0] - 1 : new Date().getMonth()
   );
 
   const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-  const firstWeekday = new Date(viewYear, viewMonth, 1).getDay(); // 0 = Sunday
+  const firstWeekday = new Date(viewYear, viewMonth, 1).getDay();
 
   const prevMonth = () => {
     if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
@@ -81,11 +83,10 @@ function CalendarPicker({ value, onChange }) {
   };
 
   const selectDay = (day) => {
-    onChange(`${viewMonth + 1}/${day}/${viewYear}`); // M/D/YYYY, no leading zeros
+    onChange(`${viewMonth + 1}/${day}/${viewYear}`);
     setOpen(false);
   };
 
-  // Which day is currently selected (to highlight)
   const selParts = (value || "").split("/").map(Number);
   const selMatch = (day) =>
     selParts[0] === viewMonth + 1 && selParts[1] === day && selParts[2] === viewYear;
@@ -115,7 +116,6 @@ function CalendarPicker({ value, onChange }) {
           boxShadow: "0 12px 32px rgba(0,0,0,0.18)", padding: "12px",
           width: "280px", marginTop: "6px"
         }}>
-          {/* Month navigation */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
             <button type="button" onClick={prevMonth}
               style={{ border: "none", background: "none", fontSize: "18px", cursor: "pointer", color: "#475569", padding: "4px 8px" }}>◀</button>
@@ -125,8 +125,6 @@ function CalendarPicker({ value, onChange }) {
             <button type="button" onClick={nextMonth}
               style={{ border: "none", background: "none", fontSize: "18px", cursor: "pointer", color: "#475569", padding: "4px 8px" }}>▶</button>
           </div>
-
-          {/* Weekday header */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", marginBottom: "4px" }}>
             {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => (
               <div key={d} style={{ textAlign: "center", fontSize: "10px", fontWeight: 700, color: "#94a3b8", padding: "4px 0" }}>
@@ -134,8 +132,6 @@ function CalendarPicker({ value, onChange }) {
               </div>
             ))}
           </div>
-
-          {/* Day grid */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px" }}>
             {blanks.map((_, i) => <div key={`b-${i}`} />)}
             {days.map(day => {
@@ -160,8 +156,6 @@ function CalendarPicker({ value, onChange }) {
               );
             })}
           </div>
-
-          {/* Close row */}
           <div style={{ textAlign: "center", marginTop: "8px" }}>
             <button type="button" onClick={() => setOpen(false)}
               style={{ border: "none", background: "#f1f5f9", borderRadius: "6px", padding: "6px 16px", fontSize: "12px", fontWeight: 600, color: "#475569", cursor: "pointer" }}>
@@ -174,7 +168,7 @@ function CalendarPicker({ value, onChange }) {
   );
 }
 
-// ✨ Derive outcome from score + team (Team A = first number, Team B = second)
+// ✨ Derive outcome from score + team
 function deriveOutcome(matchResult, team) {
   const parts = (matchResult || "").split("-").map(s => parseInt(s.trim()));
   if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return "";
@@ -182,6 +176,9 @@ function deriveOutcome(matchResult, team) {
   if (team === "A") return a > b ? "Win" : a < b ? "Loss" : "Draw";
   return b > a ? "Win" : b < a ? "Loss" : "Draw";
 }
+
+// ⬅ CHANGED: MAX_SUBS = 4 (was 2)
+const MAX_SUBS = 4;
 
 function TacticalDashboard() {
   const GITHUB_OWNER = "ryanhui0410";
@@ -197,16 +194,12 @@ function TacticalDashboard() {
   const [message, setMessage] = useState("");
   const [slotToEdit, setSlotToEdit] = useState(null);
   const [pictureMap, setPictureMap] = useState({});
-  // ✅ Per-player match stats, keyed by Contributor name
   const [playerStats, setPlayerStats] = useState({});
-  // Working copy while the slot modal is open
   const [slotStats, setSlotStats] = useState(null);
 
-  // Helper: GitHub raw URL for a player, or null if not uploaded yet
   const getPicture = (name) =>
     name ? pictureMap[name.trim().toLowerCase()] || null : null;
 
-  // ✨ Ryan↔Darren partner helper
   const getPartner = (name) => {
     const n = (name || "").trim().toLowerCase();
     if (n === "ryan") return "Darren";
@@ -214,12 +207,10 @@ function TacticalDashboard() {
     return null;
   };
 
-  // ✅ Three-way layout detection
   const getLayoutType = () => {
     const isPortrait = window.innerHeight > window.innerWidth;
     const w = window.innerWidth;
     const h = window.innerHeight;
-
     if (isPortrait && w <= 850) return "vertical";
     if (!isPortrait && w <= 1024 && h <= 500) return "landscape";
     return "horizontal";
@@ -292,8 +283,9 @@ function TacticalDashboard() {
         date: matchDetails.Date,
         location: matchDetails.Location,
         time: matchDetails.Time,
-        teamA: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] },
-        teamB: { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] }
+        // ⬅ CHANGED: Array(4) instead of [null, null]
+        teamA: { formation: "4-4-2", players: Array(11).fill(null), subs: Array(MAX_SUBS).fill(null) },
+        teamB: { formation: "4-4-2", players: Array(11).fill(null), subs: Array(MAX_SUBS).fill(null) }
       };
     });
   }, [matchDetails.Date, matchDetails.Location, matchDetails.Time, allLineups]);
@@ -312,7 +304,7 @@ function TacticalDashboard() {
     setSaving(true);
 
     const sanitizeTeam = (teamObj) => {
-      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: [null, null] };
+      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: Array(MAX_SUBS).fill(null) };
 
       const cleanPlayer = (p) => {
         if (!p) return null;
@@ -322,29 +314,29 @@ function TacticalDashboard() {
         return {
           Contributor: p.Contributor,
           rating: parseFloat(p.rating) || 0,
-          // ✅ Persist match stats into match_lineups.json (all players)
           goal: s.Goal ?? 0,
           assist: s.Assist ?? 0,
           leftFoot: s.LeftFoot ?? 0,
           rightFoot: s.RightFoot ?? 0,
           head: s.Head ?? 0,
           other: s.OtherBodyParts ?? 0,
-          ownGoal: s.OwnGoal ?? 0, 
+          ownGoal: s.OwnGoal ?? 0,
           error: s.Error ?? 0,
           manOfTheMatch: !!s.ManOfTheMatch,
-          // ✅ Ryan↔Darren assist-to detail
           assistTo: partner && assistToCount > 0 ? partner : "",
           assistToCount,
         };
       };
 
       const cleanPlayers = (teamObj.players || []).map(cleanPlayer);
+      // ⬅ CHANGED: slice(0, MAX_SUBS) instead of slice(0, 2)
       const cleanSubs = (teamObj.subs || []).map(cleanPlayer);
 
       return {
         formation: teamObj.formation || "4-4-2",
         players: cleanPlayers.slice(0, 11),
-        subs: cleanSubs.slice(0, 2)
+        // ⬅ CHANGED: slice(0, MAX_SUBS) instead of slice(0, 2)
+        subs: cleanSubs.slice(0, MAX_SUBS)
       };
     };
 
@@ -352,7 +344,7 @@ function TacticalDashboard() {
       date: matchDetails.Date,
       location: matchDetails.Location,
       time: matchDetails.Time,
-      matchResult: matchDetails.MatchResult ?? "",  
+      matchResult: matchDetails.MatchResult ?? "",
       teamA: sanitizeTeam(lineupData.teamA),
       teamB: sanitizeTeam(lineupData.teamB),
     };
@@ -373,7 +365,6 @@ function TacticalDashboard() {
 
       setMessage("✅ Tactical Lineup saved! Syncing player stats...");
 
-      // ── Build one stats payload per placed player ──
       const statRecords = [];
       ["teamA", "teamB"].forEach(teamKey => {
         const team = lineupData[teamKey];
@@ -396,10 +387,9 @@ function TacticalDashboard() {
             RightFoot: s.RightFoot ?? 0,
             Head: s.Head ?? 0,
             OtherBodyParts: s.OtherBodyParts ?? 0,
-            OwnGoal: s.OwnGoal ?? 0,   
+            OwnGoal: s.OwnGoal ?? 0,
             Error: s.Error ?? 0,
             ManOfTheMatch: !!s.ManOfTheMatch,
-            // ✅ Ryan↔Darren assist-to count (formatStat pairs it automatically)
             AssistTo: getPartner(p.Contributor) && s.Assist > 0 ? (parseInt(s.AssistTo) || 0) : 0,
             source: "Tactical Dashboard",
           });
@@ -419,7 +409,7 @@ function TacticalDashboard() {
           return;
         }
         setMessage("✅ Lineup + player stats saved AND synced to GitHub!");
-        setPlayerStats({}); // fresh slate for the next match
+        setPlayerStats({});
       } catch (err) {
         setMessage(`⚠️ Lineup saved, but stats network error: ${err.message}`);
         setTimeout(() => setMessage(""), 6000);
@@ -443,7 +433,7 @@ function TacticalDashboard() {
       targetTeam = 'A';
       forcedMove = true;
       if (typeof idx === 'string' && idx.startsWith('sub')) {
-        const teamASubs = lineupData.teamA?.subs || [null, null];
+        const teamASubs = lineupData.teamA?.subs || Array(MAX_SUBS).fill(null); // ⬅ CHANGED
         const emptyIdx = teamASubs.findIndex(p => p === null);
         targetIdx = emptyIdx !== -1 ? `sub${emptyIdx}` : idx;
       } else {
@@ -460,9 +450,13 @@ function TacticalDashboard() {
 
       if (typeof targetIdx === 'string' && targetIdx.startsWith('sub')) {
         const subIdx = parseInt(targetIdx.replace('sub', ''));
-        if (!Array.isArray(newLineup[teamKey].subs)) newLineup[teamKey].subs = [null, null];
+        // ⬅ CHANGED: Array(MAX_SUBS) instead of [null, null]
+        if (!Array.isArray(newLineup[teamKey].subs) || newLineup[teamKey].subs.length < MAX_SUBS) {
+          const old = Array.isArray(newLineup[teamKey].subs) ? newLineup[teamKey].subs : [];
+          newLineup[teamKey].subs = [...old, ...Array(MAX_SUBS - old.length).fill(null)].slice(0, MAX_SUBS);
+        }
         newLineup[teamKey].subs[subIdx] = player;
-      } 
+      }
       else {
         if (!Array.isArray(newLineup[teamKey].players)) newLineup[teamKey].players = Array(11).fill(null);
         newLineup[teamKey].players[targetIdx] = player;
@@ -485,7 +479,6 @@ function TacticalDashboard() {
     setSlotToEdit(null);
   };
 
-  // ✅ Reusable details card (rendered standalone OR inside the grid)
   const renderDetailsCard = () => (
     <div className="td-details-card">
       <h3>Match Details</h3>
@@ -575,7 +568,7 @@ function TacticalDashboard() {
 
             <div className="td-modal-field">
               <label>Select Player:</label>
-              <select 
+              <select
                 value={slotToEdit.player?.Contributor || ""}
                 onChange={(e) => {
                   const val = e.target.value;
@@ -611,20 +604,20 @@ function TacticalDashboard() {
                 ))}
               </select>
             </div>
-            
+
             {slotToEdit.player && (
               <div className="td-modal-field">
                 <label>Match Rating (0-10.0):</label>
-                <input 
+                <input
                   type="number" min="0" max="10" step="0.1"
                   value={slotToEdit.player.rating !== "" && slotToEdit.player.rating !== undefined ? slotToEdit.player.rating : ""}
                   onChange={(e) => {
                     const val = e.target.value;
                     setSlotToEdit(prev => ({
                       ...prev,
-                      player: { 
-                        ...prev.player, 
-                        rating: val === "" ? "" : parseFloat(val) 
+                      player: {
+                        ...prev.player,
+                        rating: val === "" ? "" : parseFloat(val)
                       }
                     }));
                   }}
@@ -632,7 +625,6 @@ function TacticalDashboard() {
               </div>
             )}
 
-            {/* ✅ MATCH STATS — entered right here in the Tactical Dashboard */}
             {slotToEdit.player && slotStats && (
               <div style={{ borderTop: "2px solid #e2e8f0", marginTop: "16px", paddingTop: "12px" }}>
                 <h4 style={{ margin: "0 0 8px", fontFamily: "'Oswald', sans-serif", color: "#1e3a8a", textTransform: "uppercase", fontSize: "13px", letterSpacing: "0.1em" }}>
@@ -642,7 +634,6 @@ function TacticalDashboard() {
                 <StatStepper label="Goal" value={slotStats.Goal} onChange={(v) => setSlotStats(s => ({ ...s, Goal: v }))} />
                 <StatStepper label="Assist" value={slotStats.Assist} onChange={(v) => setSlotStats(s => ({ ...s, Assist: v }))} />
 
-                {/* ✅ Ryan↔Darren assist-to detail — how many assists went to the partner */}
                 {getPartner(slotToEdit.player.Contributor) && slotStats.Assist > 0 && (
                   <StatStepper
                     label={`No. of assist to ${getPartner(slotToEdit.player.Contributor)}`}
@@ -674,7 +665,7 @@ function TacticalDashboard() {
                 </div>
               </div>
             )}
-            
+
             <div className="td-modal-actions">
               <button className="td-modal-cancel" onClick={() => setSlotToEdit(null)}>Cancel</button>
               <button className="td-modal-save" onClick={handleSaveSlot}>

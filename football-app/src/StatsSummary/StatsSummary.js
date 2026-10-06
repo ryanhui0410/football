@@ -24,10 +24,8 @@ function getSeasonFromDate(dateStr) {
   return month >= 8 ? `${year}-${year + 1}` : `${year - 1}-${year}`;
 }
 
-// ✅ Helper: Normalize names to avoid whitespace/case mismatches
 const normalizeName = (name) => (name || "").trim().toLowerCase();
 
-// ✅ Capitalize first letter for display
 const prettyName = (name) => {
   if (!name) return "";
   return name.split(' ').map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()).join(' ');
@@ -39,53 +37,30 @@ function StatsSummary({ stats }) {
   const [showAllPlayers, setShowAllPlayers] = useState(false);
   const [lineups, setLineups] = useState([]);
   const [debugInfo, setDebugInfo] = useState("");
+  const [attributes, setAttributes] = useState([]);
+
+  // ⬅ CHANGED: Sort state for the all-players table
+  const [sortKey, setSortKey] = useState("avgRating");
+  const [sortDir, setSortDir] = useState("desc");
 
   useEffect(() => {
     setDebugInfo("⏳ Loading lineups...");
-    fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`)
-      .then((res) => res.json())
-      .then((data) => {
-        let arr = [];
-        if (Array.isArray(data)) {
-          arr = data;
-        } else if (data && typeof data === "object") {
-          if (Array.isArray(data.lineups)) arr = data.lineups;
-          else if (Array.isArray(data.matches)) arr = data.matches;
-          else arr = Object.values(data).filter((m) => m && (m.date || m.teamA || m.teamB));
-        }
-        console.log("lineups raw:", data, "→ parsed:", arr.length, "matches");
-        setLineups(arr);
-        setDebugInfo(`✅ Loaded ${arr.length} match lineups`);
+    Promise.all([
+      fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`).then((res) => res.json()),
+      fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`).then((res) => res.json()),
+    ])
+      .then(([lineupData, attrData]) => {
+        setLineups(Array.isArray(lineupData) ? lineupData : []);
+        setAttributes(Array.isArray(attrData) ? attrData : []);
+        setDebugInfo(`✅ Loaded ${Array.isArray(lineupData) ? lineupData.length : 0} match lineups`);
       })
       .catch(() => setDebugInfo("❌ Failed to load lineups"));
   }, []);
 
   const dropdownPlayers = useMemo(() => {
-    const names = new Set();
+    return ["Ryan", "Darren"];
+  }, []);
 
-    stats.forEach(s => {
-      if (s.Contributor) names.add(prettyName(s.Contributor));
-    });
-
-    lineups.forEach(match => {
-      const teams = [match.teamA, match.teamB].filter(Boolean);
-      teams.forEach(team => {
-        const players = Array.isArray(team.players) ? team.players : Object.values(team.players || {});
-        players.forEach(p => {
-          if (p && p.Contributor) names.add(prettyName(p.Contributor));
-        });
-        if (Array.isArray(team.subs)) {
-          team.subs.forEach(p => {
-            if (p && p.Contributor) names.add(prettyName(p.Contributor));
-          });
-        }
-      });
-    });
-
-    return Array.from(names).filter(Boolean).sort();
-  }, [stats, lineups]);
-
-  // ✅ FIX: lineupStats is now declared BEFORE getLineupTotals (avoids TDZ risk)
   const lineupStats = useMemo(() => {
     const map = {};
 
@@ -167,51 +142,109 @@ function StatsSummary({ stats }) {
     return map;
   }, [stats]);
 
-  // ✅ All-players table: matches + avg rating, season-aware, merged from lineups + stats
   const allPlayersTable = useMemo(() => {
-    const rows = new Map(); // normalizedName -> { name, matches, totalRating, source }
+    const rows = new Map();
 
-    // 1. Lineup-based records (season-filtered)
-    Object.entries(lineupStats).forEach(([name, seasons]) => {
-      let matches = 0, totalRating = 0;
-      Object.entries(seasons).forEach(([season, d]) => {
-        if (!filterSeason || season === filterSeason) {
-          matches += d.matches;
-          totalRating += d.totalRating;
-        }
-      });
-      if (matches > 0) {
-        rows.set(name, { name: prettyName(name), matches, totalRating, source: "lineup" });
+    const ensureRow = (name) => {
+      if (!rows.has(name)) {
+        rows.set(name, {
+          name: prettyName(name),
+          matches: 0, totalRating: 0,
+          goals: 0, assists: 0, errors: 0, ownGoals: 0,
+        });
       }
-    });
+      return rows.get(name);
+    };
 
-    // 2. Fill gaps with match-stats records for players without lineup data
     const seasonFilteredStats = filterSeason
       ? stats.filter((s) => getSeasonFromDate(s.Date) === filterSeason)
       : stats;
 
+    const isPair = (n) => n === "ryan" || n === "darren";
+
+    lineups.forEach((match) => {
+      if (!match || !match.date) return;
+      const season = getSeasonFromDate(match.date);
+      if (filterSeason && season !== filterSeason) return;
+
+      const teams = [match.teamA, match.teamB].filter(Boolean);
+      teams.forEach((team) => {
+        const allPlayers = [
+          ...(Array.isArray(team.players) ? team.players : Object.values(team.players || {})),
+          ...(Array.isArray(team.subs) ? team.subs : []),
+        ];
+        allPlayers.forEach((p) => {
+          if (!p || !p.Contributor) return;
+          const name = normalizeName(p.Contributor);
+          const row = ensureRow(name);
+
+          if (!isPair(name)) {
+            row.matches += 1;
+            row.totalRating += parseFloat(p.rating) || 0;
+            row.goals += parseInt(p.goal) || 0;
+            row.assists += parseInt(p.assist) || 0;
+          }
+          row.errors += parseInt(p.error) || 0;
+          row.ownGoals += parseInt(p.ownGoal) || 0;
+        });
+      });
+    });
+
     seasonFilteredStats.forEach((s) => {
       const name = normalizeName(s.Contributor);
       if (!name) return;
-      if (rows.has(name)) return; // lineup data already covers this player
+      const row = ensureRow(name);
 
-      const rating = parseFloat(s.Rating) || 0;
-      if (!rows.has(name)) {
-        rows.set(name, { name: prettyName(name), matches: 0, totalRating: 0, source: "stats" });
+      if (isPair(name)) {
+        const left = parseInt(s["Left Foot"] || 0);
+        const right = parseInt(s["Right Foot"] || 0);
+        const head = parseInt(s.Head || 0);
+        const other = parseInt(s["Other body parts"] || 0);
+        row.matches += 1;
+        row.totalRating += parseFloat(s.Rating) || 0;
+        row.goals += left + right + head + other;
+        row.assists += parseInt(s.Assist || 0);
+        row.errors += parseInt(s["Error?"] ?? s.Error ?? 0) || 0;
+        row.ownGoals += parseFloat(s["Own Goal"] ?? 0) || 0;
+      } else if (!row || row.matches === 0) {
+        row.matches += 1;
+        row.totalRating += parseFloat(s.Rating) || 0;
+        row.goals += parseInt(s.Goal) || 0;
+        row.assists += parseInt(s.Assist) || 0;
+        row.errors += parseInt(s["Error?"] ?? s.Error ?? 0) || 0;
+        row.ownGoals += parseFloat(s["Own Goal"] ?? 0) || 0;
       }
-      const row = rows.get(name);
-      row.matches += 1;
-      row.totalRating += rating;
     });
 
+    // ⬅ CHANGED: Sort by the active sortKey / sortDir instead of always avgRating desc
     return Array.from(rows.values())
       .filter((r) => r.matches > 0)
       .map((r) => ({ ...r, avgRating: r.totalRating / r.matches }))
-      .sort((a, b) => b.avgRating - a.avgRating); // highest rated first
-  }, [lineupStats, stats, filterSeason]);
+      .sort((a, b) => {
+        const valA = a[sortKey] ?? 0;
+        const valB = b[sortKey] ?? 0;
+        if (sortDir === "desc") return valB - valA;
+        return valA - valB;
+      });
+  }, [lineups, stats, filterSeason, sortKey, sortDir]); // ⬅ CHANGED: added sortKey, sortDir
+
+  // ⬅ CHANGED: Handler for clicking a sortable header
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir(prev => prev === "desc" ? "asc" : "desc");
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  };
+
+  // ⬅ CHANGED: Render sort arrow in header
+  const sortArrow = (key) => {
+    if (sortKey !== key) return <span className="sort-arrow inactive">⇅</span>;
+    return <span className="sort-arrow active">{sortDir === "desc" ? "▼" : "▲"}</span>;
+  };
 
   const getDetailedPlayerStats = (playerName) => {
-    // 🐛 FIX 1: Normalize the target playerName so it matches the lowercase keys in stats
     const normalizedTarget = normalizeName(playerName);
     const playerStats = filteredStats.filter((s) => normalizeName(s.Contributor) === normalizedTarget);
     if (playerStats.length === 0) return null;
@@ -249,7 +282,7 @@ function StatsSummary({ stats }) {
 
   const renderDetailedProfile = (playerName) => {
     const statsData = getDetailedPlayerStats(playerName);
-    if (!statsData) return null; // Returns null if player has no detailed stats
+    if (!statsData) return null;
 
     const avgRating = statsData.ratings.reduce((sum, r) => sum + r, 0) / (statsData.ratings.length || 1);
     const totalGoals = statsData.left + statsData.right + statsData.head + statsData.other;
@@ -271,14 +304,12 @@ function StatsSummary({ stats }) {
     const errorClass = statsData.errors === 0 ? "none" : statsData.errors <= 3 ? "low" : "high";
     const winRateClass = winRate >= 50 ? "high" : winRate > 0 ? "mid" : "low";
 
-    // 🐛 FIX 2: Use normalizeName for motmStats lookup
     const normName = normalizeName(playerName);
     const playerMotm = motmStats[normName] || {};
     const totalMotm = filterSeason
       ? (playerMotm[filterSeason] || 0)
       : Object.values(playerMotm).reduce((a, b) => a + b, 0);
 
-    // 🐛 FIX 3: Use normalized names for Assist tracking logic
     const targetAssistPlayer = (normName === "ryan") ? "Darren" : (normName === "darren") ? "Ryan" : null;
     let totalAssistTo = 0;
     if (targetAssistPlayer) {
@@ -324,7 +355,6 @@ function StatsSummary({ stats }) {
             <span className="plain-value">{totalMotm}</span>
           </div>
 
-          {/* ✅ Lineup Stats (inside summary-list to preserve the CSS grid) */}
           {lineupTotals && lineupTotals.matches > 0 && (
             <>
               <div className="summary-row" style={{marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed #cbd5e1'}}>
@@ -349,7 +379,6 @@ function StatsSummary({ stats }) {
           </div>
         )}
 
-        {/* ✅ Graphs in sections for Landscape Grid mapping */}
         <div className="card-section form-section">
           <FormTrendGraph matches={statsData.matches} />
         </div>
@@ -479,7 +508,6 @@ function StatsSummary({ stats }) {
         <div className="filter-panel">
           <h3 className="filter-title">Filters</h3>
 
-          {/* ✅ WRAPPED: Filter groups for horizontal landscape layout */}
           <div className="filter-group">
             <label className="filter-label">Player:</label>
             <select
@@ -510,7 +538,6 @@ function StatsSummary({ stats }) {
             </div>
           )}
 
-          {/* ✅ All-Players toggle button */}
           <div className="filter-group">
             <button
               className={`all-players-btn ${showAllPlayers ? "active" : ""}`}
@@ -528,35 +555,82 @@ function StatsSummary({ stats }) {
                 📊 All Players {filterSeason ? `(${filterSeason})` : "(All Seasons)"}
               </h3>
               {allPlayersTable.length > 0 ? (
-                <table className="all-players-table">
-                  <thead>
-                    <tr>
-                      <th>Player</th>
-                      <th>Matches</th>
-                      <th>Avg Rating</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allPlayersTable.map(({ name, matches, avgRating }) => {
-                      const ratingClass = avgRating < 6 ? "low" : avgRating <= 8 ? "mid" : "high";
-                      return (
-                        <tr
-                          key={name}
-                          onClick={() => { setSelectedPlayer(name); setShowAllPlayers(false); }}
-                          title="Click to view detailed stats"
+                <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                  <table className="all-players-table" style={{ minWidth: "380px" }}>
+                    <thead>
+                      <tr>
+                        {/* Player — not sortable */}
+                        <th style={{ textAlign: "left", paddingLeft: "6px", minWidth: "80px", maxWidth: "100px" }}>Player</th>
+
+                        {/* ⬅ CHANGED: clickable sortable headers */}
+                        <th
+                          className="sortable-th"
+                          onClick={() => handleSort("matches")}
+                          title="Sort by Appearances"
                         >
-                          <td className="apt-player">{name}</td>
-                          <td>{matches}</td>
-                          <td>
-                            <span className={`badge badge-rating-${ratingClass}`}>
-                              {avgRating.toFixed(2)}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                          Apps {sortArrow("matches")}
+                        </th>
+                        <th
+                          className="sortable-th"
+                          onClick={() => handleSort("avgRating")}
+                          title="Sort by Avg Rating"
+                        >
+                          Avg {sortArrow("avgRating")}
+                        </th>
+                        <th
+                          className="sortable-th"
+                          onClick={() => handleSort("goals")}
+                          title="Sort by Goals"
+                        >
+                          Goals {sortArrow("goals")}
+                        </th>
+                        <th
+                          className="sortable-th"
+                          onClick={() => handleSort("assists")}
+                          title="Sort by Assists"
+                        >
+                          Assists {sortArrow("assists")}
+                        </th>
+                        <th
+                          className="sortable-th"
+                          onClick={() => handleSort("errors")}
+                          title="Sort by Errors"
+                        >
+                          Errors {sortArrow("errors")}
+                        </th>
+                        <th
+                          className="sortable-th"
+                          onClick={() => handleSort("ownGoals")}
+                          title="Sort by Own Goals"
+                        >
+                          Own Goals {sortArrow("ownGoals")}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allPlayersTable.map(({ name, matches, avgRating, goals, assists, errors, ownGoals }) => {
+                        const ratingClass = avgRating < 6 ? "low" : avgRating <= 8 ? "mid" : "high";
+                        return (
+                          <tr
+                            key={name}
+                            onClick={() => { setSelectedPlayer(name); setShowAllPlayers(false); }}
+                            title="Click to view detailed stats"
+                          >
+                            <td className="apt-player">{name}</td>
+                            <td>{matches}</td>
+                            <td>
+                              <span className={`badge badge-rating-${ratingClass}`}>{avgRating.toFixed(2)}</span>
+                            </td>
+                            <td>{goals}</td>
+                            <td>{assists}</td>
+                            <td>{errors}</td>
+                            <td>{ownGoals}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
                 <div className="no-data">No player records for this filter.</div>
               )}

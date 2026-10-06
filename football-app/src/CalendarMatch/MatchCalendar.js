@@ -4,6 +4,9 @@ import "./MatchCalendar.css";
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const DOW = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
 
+// ✅ Only these two players appear on the calendar
+const ALLOWED_PLAYERS = ["ryan", "darren"];
+
 // "7/29/2026" -> { y:2026, m:7, d:29 }
 function parseDate(str) {
   const [m, d, y] = (str || "").split("/").map(Number);
@@ -11,33 +14,42 @@ function parseDate(str) {
 }
 
 function MatchCalendar({ stats = [] }) {
+
+  // ✅ Filter to Ryan + Darren only (case-insensitive)
+  const filteredStats = useMemo(() =>
+    stats.filter(s =>
+      ALLOWED_PLAYERS.includes((s.Contributor || "").trim().toLowerCase())
+    ),
+  [stats]);
+
   // default to the latest month that actually has matches
   const latest = useMemo(() => {
     let best = null;
-    stats.forEach((s) => {
+    filteredStats.forEach((s) => {
       const { y, m } = parseDate(s.Date);
       if (!y || !m) return;
       const val = y * 12 + (m - 1);
       if (!best || val > best.val) best = { val, y, m: m - 1 };
     });
     return best;
-  }, [stats]);
+  }, [filteredStats]);
 
   const now = new Date();
   const [viewYear, setViewYear] = useState(latest ? latest.y : now.getFullYear());
   const [viewMonth, setViewMonth] = useState(latest ? latest.m : now.getMonth());
   const [contributor, setContributor] = useState("All");
-  const [selectedDay, setSelectedDay] = useState(null); // ✨ TAP-TO-OPEN STATE
+  const [selectedDay, setSelectedDay] = useState(null);
 
+  // ✅ Only Ryan & Darren appear in the filter chips
   const contributors = useMemo(
-    () => ["All", ...new Set(stats.map((s) => s.Contributor).filter(Boolean))],
-    [stats]
+    () => ["All", ...new Set(filteredStats.map((s) => s.Contributor).filter(Boolean))],
+    [filteredStats]
   );
 
-  // group matches by "y-m-d"
+  // ✅ Group by day — uses filteredStats
   const matchesByDay = useMemo(() => {
     const map = {};
-    stats.forEach((s) => {
+    filteredStats.forEach((s) => {
       if (contributor !== "All" && s.Contributor !== contributor) return;
       const { y, m, d } = parseDate(s.Date);
       if (!y || !m || !d) return;
@@ -45,7 +57,7 @@ function MatchCalendar({ stats = [] }) {
       (map[key] = map[key] || []).push(s);
     });
     return map;
-  }, [stats, contributor]);
+  }, [filteredStats, contributor]);
 
   const firstDow = new Date(viewYear, viewMonth, 1).getDay();
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
@@ -95,14 +107,13 @@ function MatchCalendar({ stats = [] }) {
           const has = dayMatches.length > 0;
 
           return (
-            <div 
-              key={key} 
+            <div
+              key={key}
               className={`cal-cell ${has ? "has-match" : ""}`}
-              onClick={() => has && setSelectedDay({ day, matches: dayMatches })} // ✨ TAP TO OPEN
+              onClick={() => has && setSelectedDay({ day, matches: dayMatches })}
             >
               <span className="cal-day-num">{day}</span>
-              
-              {/* Inline Match Events (compact on mobile) */}
+
               {has && (
                 <div className="cal-events">
                   {dayMatches.map((m, idx) => {
@@ -122,7 +133,6 @@ function MatchCalendar({ stats = [] }) {
                 </div>
               )}
 
-              {/* Tooltip for desktop hover (hidden on mobile via CSS) */}
               {has && (
                 <div className="cal-tooltip">
                   <div className="cal-tt-date">{viewMonth + 1}/{day}/{viewYear}</div>
@@ -158,7 +168,6 @@ function MatchCalendar({ stats = [] }) {
         <span className="legend-sym">⚽ Goal &nbsp; 👟 Assist</span>
       </div>
 
-      {/* ✨ TAP-TO-OPEN MATCH DETAILS MODAL */}
       {selectedDay && (
         <div className="cal-modal-overlay" onClick={() => setSelectedDay(null)}>
           <div className="cal-modal" onClick={(e) => e.stopPropagation()}>

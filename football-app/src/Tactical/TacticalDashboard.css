@@ -1,22 +1,31 @@
+/* =========================================================
+   TacticalDashboard.css
+   ========================================================= */
+
+/* ===== BASE WRAPPER — ✅ FIX: allow vertical scrolling ===== */
 .td-wrap {
   max-width: 1100px;
   margin: 0 auto;
   padding: 20px;
+  padding-bottom: 100px;           /* ✅ FIX: clearance for sticky save btn */
+  min-height: 100vh;
+  overflow-y: auto;                /* ✅ FIX: scroll vertically */
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
-/* ===== Pitch lines + boxes aligned (all coordinated at 1%) ===== */
 
-/* 1. Pitch outline — drawn at the wrapper edge */
+/* =========================================================
+   PITCH LINES + BOXES (aligned at 1%)
+   ========================================================= */
 .td-pitch-container .pitch-wrapper .pitch-outline {
   inset: 1% !important;
 }
 
-/* 2. Center line — horizontal mode */
 .td-pitch-container .pitch-wrapper .center-line {
   top: 1% !important;
   bottom: 1% !important;
 }
 
-/* 3. Center line — vertical mode (rotated) */
 .td-pitch-container .pitch-wrapper.vertical .center-line {
   left: 1% !important;
   right: 1% !important;
@@ -25,36 +34,37 @@
   width: auto !important;
 }
 
-/* 4. Horizontal pitch boxes — 1%, with full axis resets */
 .td-pitch-container .pitch-wrapper .penalty-box-left {
-  left: 1% !important; right: auto !important;
-  top: 25% !important; bottom: auto !important;
+  left: 1% !important;  right: auto !important;
+  top: 25% !important;  bottom: auto !important;
   width: 12% !important; height: 50% !important;
 }
 .td-pitch-container .pitch-wrapper .penalty-box-right {
-  right: 1% !important; left: auto !important;
-  top: 25% !important; bottom: auto !important;
+  right: 1% !important;  left: auto !important;
+  top: 25% !important;   bottom: auto !important;
   width: 12% !important; height: 50% !important;
 }
 
-/* 5. Vertical pitch boxes — 1%, with full axis resets */
 .td-pitch-container .pitch-wrapper.vertical .penalty-box-left {
-  top: 1% !important; bottom: auto !important;
-  left: 25% !important; right: auto !important;
-  width: 50% !important; height: 12% !important;
+  top: 1% !important;     bottom: auto !important;
+  left: 25% !important;   right: auto !important;
+  width: 50% !important;  height: 12% !important;
 }
 .td-pitch-container .pitch-wrapper.vertical .penalty-box-right {
-  bottom: 1% !important; top: auto !important;
-  left: 25% !important; right: auto !important;
-  width: 50% !important; height: 12% !important;
+  bottom: 1% !important;  top: auto !important;
+  left: 25% !important;   right: auto !important;
+  width: 50% !important;  height: 12% !important;
 }
 
-/* 6. Keep the vertical pitch shape correct */
 .td-pitch-container .match-lineup-container .pitch-wrapper.vertical {
   aspect-ratio: 2 / 3 !important;
   min-height: 0 !important;
   height: auto !important;
 }
+
+/* =========================================================
+   TITLE
+   ========================================================= */
 .td-title {
   font-family: 'Oswald', sans-serif;
   font-size: 32px;
@@ -65,6 +75,9 @@
   letter-spacing: 0.05em;
 }
 
+/* =========================================================
+   DETAILS CARD
+   ========================================================= */
 .td-details-card {
   background: #ffffff;
   padding: 24px;
@@ -72,6 +85,7 @@
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 6px rgba(0,0,0,0.02);
   margin-bottom: 32px;
+  overflow: visible;             /* ✅ FIX: don't clip dropdowns */
 }
 
 .td-details-card h3 {
@@ -121,6 +135,9 @@
   background: #fff;
 }
 
+/* =========================================================
+   PLACEHOLDER
+   ========================================================= */
 .td-placeholder {
   background: #eff6ff;
   border: 2px dashed #93c5fd;
@@ -132,13 +149,22 @@
   font-family: 'Barlow', sans-serif;
 }
 
-@media (max-width: 768px) {
-  .td-inputs {
-    grid-template-columns: 1fr;
-  }
+/* =========================================================
+   REMARK BAR
+   ========================================================= */
+.td-remark {
+  background: #eff6ff;
+  border-left: 4px solid #2563eb;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e3a8a;
+  margin-bottom: 16px;
 }
 
-/* --- Save Button & Actions --- */
+/* =========================================================
+   PITCH CONTAINER — ✅ FIX: never clip children
+   ========================================================= */
 .td-pitch-container {
   background: #ffffff;
   padding: 24px;
@@ -146,12 +172,37 @@
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 6px rgba(0,0,0,0.02);
   margin-bottom: 24px;
+  overflow: visible;             /* ✅ FIX: was potentially hidden */
+  max-height: none;              /* ✅ FIX: no height cap */
+  height: auto;
 }
 
+/* ✅ FIX: lineup container must not clip */
+.td-pitch-container .match-lineup-container {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* ✅ FIX: team sections must not clip */
+.td-pitch-container .team-section {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* =========================================================
+   SAVE BUTTON & ACTIONS — ✅ FIX: sticky at bottom
+   ========================================================= */
 .td-actions {
+  position: sticky;              /* ✅ FIX: always visible */
+  bottom: 0;
+  z-index: 100;
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 40px;
+  padding: 12px 0 0;
+  background: linear-gradient(to top, #ffffff 60%, rgba(255,255,255,0));
+  margin-bottom: 0;
 }
 
 .td-save-btn {
@@ -182,7 +233,9 @@
   box-shadow: none;
 }
 
-/* --- Toast Message --- */
+/* =========================================================
+   TOAST MESSAGE
+   ========================================================= */
 .td-toast {
   padding: 12px 20px;
   border-radius: 8px;
@@ -191,6 +244,9 @@
   font-weight: 600;
   text-align: center;
   animation: slideDown 0.3s ease;
+  position: sticky;              /* ✅ FIX: stays visible */
+  top: 0;
+  z-index: 200;
 }
 
 .td-toast.success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
@@ -201,28 +257,48 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* --- Slot Edit Modal --- */
+/* =========================================================
+   SLOT EDIT MODAL — ✅ FIX: scrollable
+   ========================================================= */
 .td-slot-overlay {
-  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); 
-  backdrop-filter: blur(4px); display: flex; align-items: center; 
-  justify-content: center; z-index: 4000; animation: fadeIn 0.2s ease;
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4000;
+  animation: fadeIn 0.2s ease;
+  padding: 16px;                 /* ✅ FIX: edge padding */
 }
 
 .td-slot-modal {
-  background: #fff; padding: 32px; border-radius: 16px; width: 420px; 
-  text-align: left; box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
-  position: relative; animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: #fff;
+  padding: 32px;
+  border-radius: 16px;
+  width: 420px;
+  max-width: 100%;
+  max-height: 88vh;              /* ✅ FIX: cap height */
+  overflow-y: auto;              /* ✅ FIX: scroll if too tall */
+  text-align: left;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  position: relative;
+  animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-sizing: border-box;
 }
 
-.td-slot-modal h3 { 
-  margin-top: 0; margin-bottom: 24px; 
-  font-family: 'Oswald', sans-serif; color: #0f172a; font-size: 24px; 
+.td-slot-modal h3 {
+  margin-top: 0; margin-bottom: 24px;
+  font-family: 'Oswald', sans-serif;
+  color: #0f172a; font-size: 24px;
   border-bottom: 2px solid #e2e8f0; padding-bottom: 12px;
 }
 
 .td-slot-close {
-  position: absolute; top: 16px; right: 20px; background: none; border: none; 
-  font-size: 24px; color: #94a3b8; cursor: pointer; transition: color 0.2s;
+  position: absolute; top: 16px; right: 20px;
+  background: none; border: none;
+  font-size: 24px; color: #94a3b8;
+  cursor: pointer; transition: color 0.2s;
 }
 .td-slot-close:hover { color: #ef4444; }
 
@@ -231,62 +307,77 @@
 }
 
 .td-modal-field label {
-  display: block; font-weight: 600; margin-bottom: 8px; color: #334155; font-size: 14px;
+  display: block; font-weight: 600;
+  margin-bottom: 8px; color: #334155; font-size: 14px;
 }
 
-.td-modal-field select, .td-modal-field input {
-  width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; 
-  font-size: 15px; font-family: 'Barlow', sans-serif; background: #f8fafc;
-  transition: border-color 0.2s;
+.td-modal-field select,
+.td-modal-field input {
+  width: 100%; padding: 12px;
+  border-radius: 8px; border: 1px solid #cbd5e1;
+  font-size: 15px; font-family: 'Barlow', sans-serif;
+  background: #f8fafc; transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
-.td-modal-field select:focus, .td-modal-field input:focus {
+.td-modal-field select:focus,
+.td-modal-field input:focus {
   outline: none; border-color: #2563eb; background: #fff;
 }
 
 .td-modal-actions {
-  display: flex; gap: 12px; justify-content: flex-end; margin-top: 28px;
+  display: flex; gap: 12px;
+  justify-content: flex-end; margin-top: 28px;
 }
 
 .td-modal-cancel {
-  padding: 10px 20px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; 
-  border-radius: 8px; cursor: pointer; font-weight: 600; transition: background 0.2s;
+  padding: 10px 20px;
+  background: #f1f5f9; color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px; cursor: pointer;
+  font-weight: 600; transition: background 0.2s;
 }
 .td-modal-cancel:hover { background: #e2e8f0; }
 
 .td-modal-save {
-  padding: 10px 24px; background: #2563eb; color: #fff; border: none; 
-  border-radius: 8px; cursor: pointer; font-weight: 600; transition: background 0.2s;
+  padding: 10px 24px;
+  background: #2563eb; color: #fff;
+  border: none; border-radius: 8px;
+  cursor: pointer; font-weight: 600;
+  transition: background 0.2s;
   box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
 }
 .td-modal-save:hover { background: #1d4ed8; }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp  { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-/* =========================================
-   PITCH DIMENSIONS (Desktop - Horizontal)
-   ========================================= */
+/* =========================================================
+   PITCH DIMENSIONS (Desktop – Horizontal)
+   ========================================================= */
 .pitch-wrapper {
   position: relative;
   width: 100%;
   aspect-ratio: 1.6 / 1 !important;
   min-height: 500px !important;
+  max-height: 75vh !important;           /* ✅ FIX: cap so page stays usable */
   background: linear-gradient(90deg, #1b4332 0%, #2d6a4f 50%, #1b4332 100%) !important;
   border-radius: 12px !important;
   overflow: visible !important;
   box-shadow: inset 0 0 30px rgba(0,0,0,0.4) !important;
   margin-top: 20px !important;
+  box-sizing: border-box;
 }
 
 .pitch-wrapper.vertical {
   aspect-ratio: 1 / 1.6 !important;
   min-height: 750px !important;
+  max-height: 85vh !important;           /* ✅ FIX */
 }
 
-/* =========================================
-   PLAYER CARD LEGIBILITY (Desktop - 80% base)
-   ========================================= */
+/* =========================================================
+   PLAYER CARD LEGIBILITY (Desktop – 80 % base)
+   ========================================================= */
 .slot-card {
   background: rgba(15, 23, 42, 0.92) !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
@@ -298,6 +389,7 @@
   width: 60px !important;
   box-shadow: 0 5px 13px rgba(0,0,0,0.6) !important;
   backdrop-filter: blur(4px);
+  position: relative;                    /* ✅ FIX: anchor for badges */
 }
 
 .slot-card img {
@@ -352,17 +444,26 @@
 }
 
 /* =========================================================
-   MOBILE TACTICAL DASHBOARD
+   TABLET (up to 900px) — 2-column inputs
+   ========================================================= */
+@media (max-width: 900px) and (min-width: 769px) {
+  .td-inputs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* =========================================================
+   MOBILE TACTICAL DASHBOARD  (≤ 768px)
    ========================================================= */
 @media (max-width: 768px) {
-  
-  /* Wrapper */
+
   .td-wrap {
-  padding: 8px !important;                    /* was 8px 4px 8px 2px */
-  max-width: 100% !important;                 /* ← also: was 100vw (overflow source) */
-  overflow-x: clip !important;                /* ← was: visible */
-  box-sizing: border-box !important;
-}
+    padding: 8px !important;
+    max-width: 100% !important;
+    overflow-x: clip !important;
+    box-sizing: border-box !important;
+    padding-bottom: 100px !important;   /* ✅ FIX: clear the sticky bar */
+  }
 
   .td-title {
     font-size: 22px !important;
@@ -370,7 +471,7 @@
     padding-left: 2px !important;
   }
 
-  /* Strip pitch container box */
+  /* Pitch container — transparent strip */
   .td-pitch-container {
     background: transparent !important;
     border: none !important;
@@ -379,10 +480,11 @@
     border-radius: 0 !important;
     margin-bottom: 16px !important;
     overflow: visible !important;
-    max-height: none !important;    
+    max-height: none !important;
+    height: auto !important;
   }
 
-  /* Strip remark box */
+  /* Remark bar */
   .td-remark {
     background: transparent !important;
     border: none !important;
@@ -393,7 +495,7 @@
     color: #475569 !important;
   }
 
-  /* Strip match lineup container */
+  /* Match-lineup container — transparent strip */
   .match-lineup-container {
     background: transparent !important;
     border: none !important;
@@ -407,10 +509,11 @@
     -webkit-overflow-scrolling: touch;
     margin: 0 !important;
     box-sizing: border-box !important;
-    max-height: none !important;  
+    max-height: none !important;
+    height: auto !important;
   }
 
-  /* Strip team section boxes */
+  /* Team sections — transparent */
   .team-section {
     background: transparent !important;
     border: none !important;
@@ -421,15 +524,17 @@
     max-width: 100% !important;
     box-sizing: border-box !important;
     margin: 0 !important;
-    height: auto !important;  
+    height: auto !important;
     overflow: visible !important;
+    max-height: none !important;
   }
 
-  /* Vertical pitch - 80% height */
+  /* Pitch wrapper — mobile sizing */
   .pitch-wrapper,
   .pitch-wrapper.horizontal {
     aspect-ratio: auto !important;
     min-height: 430px !important;
+    max-height: none !important;          /* ✅ FIX */
     height: auto !important;
     width: 92% !important;
     max-width: 92% !important;
@@ -440,17 +545,13 @@
     position: relative !important;
   }
 
-  /* ===== HIDE TEAM B FORMATION SELECTOR ===== */
+  /* Hide Team B formation selector */
   .match-lineup-header > div:nth-child(2) {
     display: none !important;
   }
-
-  /* Team A selector takes full width */
   .match-lineup-header > div:first-child {
     width: 100% !important;
   }
-
-  /* Formation selectors - stacked */
   .match-lineup-header {
     display: flex !important;
     flex-direction: column !important;
@@ -459,7 +560,6 @@
     width: 100% !important;
     padding-left: 0 !important;
   }
-
   .match-lineup-header > div {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -469,7 +569,6 @@
     align-items: center !important;
     gap: 6px !important;
   }
-
   .match-lineup-header label {
     font-size: 11px !important;
     margin-bottom: 0 !important;
@@ -478,7 +577,6 @@
     flex-shrink: 0 !important;
     min-width: 60px !important;
   }
-
   .match-lineup-header select {
     flex: 1 !important;
     padding: 5px 8px !important;
@@ -489,31 +587,29 @@
     box-sizing: border-box !important;
   }
 
+  /* Base mobile slot cards */
   .slot-card {
     width: 58px !important;
     padding: 1.5px !important;
     margin: 0 !important;
+    position: relative !important;
   }
-
   .slot-card img {
     width: 42px !important;
     height: 42px !important;
     margin-bottom: 1px !important;
     border-width: 1px !important;
   }
-
   .slot-name {
     font-size: 13px !important;
     max-width: 45px !important;
     line-height: 1 !important;
   }
-
   .slot-rating {
     font-size: 14px !important;
     line-height: 1 !important;
   }
 
-  /* Formation rows - tighter spacing */
   .formation-row {
     gap: 1px !important;
     padding: 1px 0 !important;
@@ -521,133 +617,124 @@
     justify-content: space-evenly !important;
     box-sizing: border-box !important;
   }
-  /* ✅ Portrait pitch cards — clean, square, self-consistent */
+
+  /* Portrait pitch cards — clean, square */
   .td-pitch-container .match-lineup-container .slot-card {
     width: 64px !important;
     padding: 3px !important;
     margin: 0 !important;
     box-sizing: border-box !important;
+    position: relative !important;
   }
 
   .td-pitch-container .match-lineup-container .slot-card img {
     width: 46px !important;
-    height: 46px !important;            /* ✅ SQUARE — 50×50, not 58×45 */
-    aspect-ratio: 1 / 1 !important;     /* ✅ guarantees circle even if
-                                            another rule wins on one axis */
-    object-fit: cover !important;       /* ✅ crops, never stretches */
+    height: 46px !important;
+    aspect-ratio: 1 / 1 !important;
+    object-fit: cover !important;
     border-radius: 50% !important;
     border-width: 2px !important;
     margin: 0 !important;
-    max-width: none !important;         /* ✅ beats global img max-width: 100% */
+    max-width: none !important;
   }
 
   .td-pitch-container .match-lineup-container .slot-name {
     font-size: 11px !important;
-    max-width: 58px !important;         /* ✅ fits inside the 64px card */
+    max-width: 58px !important;
     line-height: 1.1 !important;
     white-space: nowrap !important;
     overflow: hidden !important;
-    text-overflow: ellipsis !important; /* long names truncate, don't stretch */
-    margin-top: 5px !important; 
+    text-overflow: ellipsis !important;
+    margin-top: 5px !important;
   }
 
-  /* ✅ Rating badge — proper box, properly positioned */
+  /* Rating badge */
   .td-pitch-container .match-lineup-container .card-rating-badge {
-    position: absolute !important;      /* ✅ REQUIRED — makes top/right work */
-    top: -11px !important;               /* ✅ above the photo corner */
+    position: absolute !important;
+    top: -11px !important;
     right: -9px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     font-size: 11px !important;
     font-weight: 700 !important;
-    min-width: 20px !important;         /* ✅ box bigger than the number */
+    min-width: 20px !important;
     min-height: 15px !important;
-    padding: 1px 3px !important;        /* ✅ was 0 — real breathing room */
+    padding: 1px 3px !important;
     border-radius: 5px !important;
     line-height: 1 !important;
     box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
-    z-index: 5 !important;              /* sits above the photo */
+    z-index: 5 !important;
   }
 
-  /* ✅ And make the slot-card the positioning anchor */
-  .td-pitch-container .match-lineup-container .slot-card {
-    position: relative !important;      /* absolute badge anchors to card */
-  }
   .match-lineup-container.layout-vertical {
     gap: 2px !important;
   }
 
   .team-label {
-  font-size: 12px !important;
-  margin-bottom: 2px !important;
-  padding: 4px 10px !important;   /* symmetric — both sides equal */
-  /* remove: width: 100%, padding-left: 0, text-align: center (flex already centers) */
-}
+    font-size: 12px !important;
+    margin-bottom: 2px !important;
+    padding: 4px 10px !important;
+  }
 
-  /* VS divider */
   .vs-divider {
     font-size: 10px !important;
     margin: 4px 0 !important;
   }
 
-  /* Average badges */
   .pitch-avg-badge {
     font-size: 10px !important;
     padding: 2px 8px !important;
     top: -18px !important;
   }
-
   .pitch-avg-left  { left: 2px !important; }
   .pitch-avg-right { right: 2px !important; }
 
-  /* MOTM badge */
   .motm-badge {
     font-size: 5px !important;
     padding: 1px 2px !important;
   }
 
-  /* Modal adjustments */
+  /* Empty slot */
+  .td-pitch-container .empty-slot-label {
+    font-size: 16px !important;
+    width: 44px !important;
+    height: 44px !important;
+    box-sizing: border-box !important;
+    transform: translate(9px, 6px) !important;
+  }
+
+  /* Modal */
   .td-slot-modal {
     width: 94% !important;
     max-width: 380px !important;
     padding: 16px !important;
     margin: 0 8px !important;
-  }
-  .td-pitch-container .empty-slot-label {
-    font-size: 16px !important;      /* 10px × 1.6 */
-    width: 44px !important;
-    height: 44px !important;
-    box-sizing: border-box !important;   /* padding counts INSIDE the 44px */
-    transform: translate(9px, 6px) !important;  /* ← 8px right, 4px down */
+    max-height: 85vh !important;          /* ✅ FIX */
+    overflow-y: auto !important;          /* ✅ FIX */
   }
   .td-slot-modal h3 {
     font-size: 18px !important;
     margin-bottom: 12px !important;
     padding-bottom: 8px !important;
   }
-
   .td-modal-field {
     margin-bottom: 14px !important;
   }
-
   .td-modal-field label {
     font-size: 13px !important;
     margin-bottom: 6px !important;
   }
-
   .td-modal-field select,
   .td-modal-field input {
     padding: 9px !important;
     font-size: 14px !important;
   }
-
   .td-modal-actions {
     flex-direction: column !important;
     gap: 8px !important;
     margin-top: 16px !important;
   }
-
   .td-modal-save,
   .td-modal-cancel {
     width: 100% !important;
@@ -659,8 +746,10 @@
   .td-actions {
     width: 100% !important;
     padding: 0 !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    background: linear-gradient(to top, #fff 70%, rgba(255,255,255,0)) !important;
   }
-
   .td-save-btn {
     width: 100% !important;
     padding: 12px !important;
@@ -673,14 +762,18 @@
     border-radius: 10px !important;
   }
 }
+
 /* =========================================================
-   ANDROID LANDSCAPE — details left, subs right, pitch below
+   ANDROID LANDSCAPE (≤ 1024×500)
    ========================================================= */
 @media (orientation: landscape) and (max-width: 1024px) and (max-height: 500px) {
 
   .td-wrap {
     padding: 6px 10px !important;
+    padding-bottom: 60px !important;      /* ✅ FIX */
     max-width: 100vw !important;
+    overflow-y: auto !important;          /* ✅ FIX */
+    box-sizing: border-box !important;
   }
 
   .td-title {
@@ -692,9 +785,12 @@
     padding: 8px 14px !important;
     font-size: 12px !important;
     margin-bottom: 10px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 200 !important;
   }
 
-  /* ✅ THE GRID — remark top-left, subs spans rows 1–2 right, pitch below */
+  /* Grid layout */
   .td-pitch-container {
     display: grid !important;
     grid-template-columns: 1fr 1fr;
@@ -710,14 +806,17 @@
     box-shadow: none !important;
     padding: 0 !important;
     margin-bottom: 10px !important;
+    overflow: visible !important;
+    max-height: none !important;
   }
 
-  /* Details card → left column, stacked fields */
+  /* Details card → left */
   .td-pitch-container .td-details-card {
     grid-area: details;
     padding: 10px 12px !important;
     margin-bottom: 0 !important;
     align-self: start;
+    overflow: visible !important;
   }
   .td-pitch-container .td-details-card h3 {
     font-size: 14px !important;
@@ -732,7 +831,7 @@
   .td-field label { font-size: 9px !important; }
   .td-field input { padding: 6px 9px !important; font-size: 12px !important; }
 
-  /* Remark → top-left strip */
+  /* Remark → top-left */
   .td-remark {
     grid-area: remark;
     font-size: 10px !important;
@@ -744,28 +843,28 @@
     align-self: start;
   }
 
-  /* ✅ Unwrap ALL THREE MatchLineup wrappers */
+  /* Unwrap MatchLineup wrappers */
   .td-pitch-container .match-lineup-container,
   .td-pitch-container .lineup-content,
   .td-pitch-container .pitch-and-controls {
     display: contents !important;
   }
 
-  /* ✅ Subs → right column, FIXED size — never expands */
+  /* Subs → right column */
   .td-pitch-container .subs-container {
     grid-area: subs;
     display: flex !important;
-    flex-direction: column !important;   /* Team A stacked over Team B */
+    flex-direction: column !important;
     justify-content: flex-start;
     align-items: center;
     gap: 3px;
-    height: 250px !important;            /* ✅ fixed height — no stretching */
+    height: 250px !important;
     padding: 5px 5px !important;
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid #e2e8f0;
     border-radius: 10px;
     box-sizing: border-box !important;
-    overflow: hidden !important;         /* ✅ safety: nothing grows the box */
+    overflow: hidden !important;
     margin: 0 !important;
     min-width: 0;
   }
@@ -784,30 +883,27 @@
     justify-content: center;
   }
 
-  /* ✅ Sub cards — bigger cards + bigger player icons */
+  /* Sub cards */
   .td-pitch-container .subs-container .slot-card {
     width: 65px !important;
     padding: 2px !important;
-    position: relative;                  /* anchor for the rating badge */
+    position: relative;
   }
   .td-pitch-container .subs-container .slot-card img {
-    width: 48px !important;              /* ✅ bigger player icon */
+    width: 48px !important;
     height: 48px !important;
     border-width: 1.5px !important;
     margin: 0 !important;
   }
-
-  /* ✅ Rating badge — bigger, seated on the photo corner */
   .td-pitch-container .subs-container .card-rating-badge {
     font-size: 14px !important;
     min-width: 18px !important;
     padding: 1px 4px !important;
-    top: -15px !important;                /* sits on the photo's top area */
+    top: -15px !important;
     right: -4px !important;
     border-radius: 4px;
     line-height: 1.2 !important;
   }
-
   .td-pitch-container .subs-container .slot-name {
     font-size: 14px !important;
     max-width: 48px !important;
@@ -815,31 +911,28 @@
     margin-top: 2px !important;
   }
 
-  /* ✅ Sub slot shells — fixed size, same empty or filled */
+  /* Sub slot shells */
   .td-pitch-container .subs-container .sub-slot {
     width: 66px !important;
     height: 75px !important;
     margin: 0 !important;
     padding: 0 !important;
   }
-
-  /* ✅ Empty placeholder — bigger SUB 1 / SUB 2, no dashed lines */
   .td-pitch-container .subs-container .empty-sub-card {
     width: 66px !important;
-    height: 75px !important;             /* matches filled card exactly */
+    height: 75px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    background: rgba(15, 23, 42, 0.06) !important; 
-    border: none !important;             /* ✅ no dashed lines */
+    background: rgba(15, 23, 42, 0.06) !important;
+    border: none !important;
     border-radius: 8px !important;
     box-sizing: border-box !important;
     margin: 0 !important;
     padding: 0 !important;
   }
-
   .td-pitch-container .subs-container .empty-sub-label {
-    font-size: 13px !important;          /* ✅ BIGGER SUB 1 / SUB 2 */
+    font-size: 13px !important;
     font-family: 'Oswald', sans-serif !important;
     font-weight: 700 !important;
     color: #475569 !important;
@@ -851,7 +944,7 @@
     white-space: nowrap !important;
   }
 
-  /* ✅ Pitch spans full width below both columns */
+  /* Pitch → full width below */
   .td-pitch-container .pitch-wrapper {
     grid-area: pitch;
     aspect-ratio: 2.1 / 1 !important;
@@ -860,13 +953,11 @@
     width: 100% !important;
     max-width: 100% !important;
     margin: 8px 0 0 0 !important;
+    overflow: visible !important;
   }
 
-  /* Team labels inside pitch */
   .team-label { font-size: 10px !important; }
-
   .motm-badge { font-size: 6px !important; padding: 1px 2px !important; }
-
   .pitch-avg-badge {
     font-size: 10px !important;
     padding: 2px 8px !important;
@@ -874,10 +965,19 @@
   }
 
   /* Save button */
-  .td-actions { justify-content: flex-end !important; margin-bottom: 10px !important; }
-  .td-save-btn { padding: 9px 24px !important; font-size: 13px !important; }
+  .td-actions {
+    justify-content: flex-end !important;
+    margin-bottom: 10px !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    background: linear-gradient(to top, #fff 70%, rgba(255,255,255,0)) !important;
+  }
+  .td-save-btn {
+    padding: 9px 24px !important;
+    font-size: 13px !important;
+  }
 
-  /* Slot edit modal — wide & short */
+  /* Modal — wide & short */
   .td-slot-modal {
     width: min(560px, 92vw) !important;
     max-width: 92vw !important;
@@ -885,9 +985,36 @@
     max-height: 88vh !important;
     overflow-y: auto;
   }
-  .td-slot-modal h3 { font-size: 16px !important; margin-bottom: 10px !important; }
-  .td-modal-field { margin-bottom: 10px !important; }
-  .td-modal-field select, .td-modal-field input { padding: 8px !important; font-size: 14px !important; }
-  .td-modal-actions { flex-direction: row !important; gap: 10px !important; margin-top: 12px !important; }
-  .td-modal-save, .td-modal-cancel { width: auto !important; padding: 8px 18px !important; font-size: 13px !important; }
+  .td-slot-modal h3 {
+    font-size: 16px !important;
+    margin-bottom: 10px !important;
+  }
+  .td-modal-field {
+    margin-bottom: 10px !important;
+  }
+  .td-modal-field select,
+  .td-modal-field input {
+    padding: 8px !important;
+    font-size: 14px !important;
+  }
+  .td-modal-actions {
+    flex-direction: row !important;
+    gap: 10px !important;
+    margin-top: 12px !important;
+  }
+  .td-modal-save,
+  .td-modal-cancel {
+    width: auto !important;
+    padding: 8px 18px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* =========================================================
+   DESKTOP (> 1024px) — keep inputs 3-col
+   ========================================================= */
+@media (min-width: 1025px) {
+  .td-inputs {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
 }

@@ -261,3 +261,50 @@
     font-size: 14px;
   }
 }
+/* ═══════════════════════════════════════════════
+   BOTTOM NAV / LEFT SIDEBAR CLEARANCE
+   ═══════════════════════════════════════════════ */
+
+/* --- Mobile portrait (bottom nav bar) --- */
+@media (max-width: 768px) {
+
+  .msm-overlay {
+    align-items: flex-start !important;
+    padding-top: 12px !important;
+    padding-bottom: 80px !important;         /* reserve space for bottom nav */
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    z-index: 5000 !important;                 /* above bottom nav */
+  }
+
+  .msm-container {
+    max-height: calc(88vh - 80px) !important; /* shrink to clear bottom nav */
+    margin-bottom: 80px !important;
+    padding-bottom: 30px !important;           /* extra space at scroll bottom */
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* ✅ Make sure last card has breathing room */
+  .msm-grid > .msm-col:last-child {
+    padding-bottom: 10px;
+  }
+}
+
+/* --- Landscape phone (left sidebar nav) --- */
+@media (orientation: landscape) and (max-width: 1024px) {
+  .msm-overlay {
+    align-items: center !important;
+    padding-left: 90px !important;            /* clear left sidebar nav */
+    padding-right: 10px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .msm-container {
+    max-height: 92vh !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 20px !important;
+  }
+}

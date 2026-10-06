@@ -12,7 +12,6 @@ import BottomNav from "./UI/BottomNav";
 import MatchCalendar from "./CalendarMatch/MatchCalendar";
 import AddPlayerCard from "./PlayerCards/AddPlayerCard";
 import TacticalDashboard from "./Tactical/TacticalDashboard";
-import "./MobileOverrides.css";
 
 class PlayerStats {
   constructor(fields) {

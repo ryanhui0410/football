@@ -671,16 +671,18 @@ app.post("/match-lineups", async (req, res) => {
       date: normDate,
       location: normLoc,
       time: normTime,
-      matchResult: (lineup.matchResult ?? "").trim(),   // ✅ NEW — persist the scoreline on the lineup
+      matchResult: (lineup.matchResult ?? "").trim(),
       teamA: {
         formation: lineup.teamA?.formation || "4-4-2",
         players: lineup.teamA?.players || Array(11).fill(null),
-        subs: lineup.teamA?.subs || [null, null]
+        // ⬅ CHANGED: Array(4) instead of [null, null]
+        subs: lineup.teamA?.subs || Array(4).fill(null)
       },
       teamB: {
         formation: lineup.teamB?.formation || "4-4-2",
         players: lineup.teamB?.players || Array(11).fill(null),
-        subs: lineup.teamB?.subs || [null, null]
+        // ⬅ CHANGED: Array(4) instead of [null, null]
+        subs: lineup.teamB?.subs || Array(4).fill(null)
       }
     };
 

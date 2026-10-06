@@ -1,77 +1,83 @@
+/* ═══════════════════════════════════════
+   1. ROOT — NO WHITE GAPS ANYWHERE
+   ═══════════════════════════════════════ */
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background-color: #083a29;        /* ✅ kills all white gaps */
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Kill jelly/bounce */
+html, body, * {
+  overscroll-behavior: none !important;
+  overscroll-behavior-x: none !important;
+  overscroll-behavior-y: none !important;
+}
+
+/* ═══════════════════════════════════════
+   2. APP WRAPPER
+   ═══════════════════════════════════════ */
+
 .App {
+  width: 100%;
+  background-color: #083a29;
+  overflow-x: hidden;
   text-align: center;
+  margin: 0;
+  padding: 0;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
+/* ═══════════════════════════════════════
+   3. APP CONTENT — centered, minimal gap
+   ═══════════════════════════════════════ */
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+.app-content {
+  width: 100%;
+  padding: 5px 5px 5px 5px;     /* ✅ tiny 10px all around */
+  margin: 0 auto;
+  background-color: #083a29;         /* ✅ same as page bg */
+  overflow-x: hidden;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  box-sizing: border-box;
 }
 
-.App-link {
-  color: #61dafb;
+/* Desktop with sidebar open */
+.app-content.menu-open {
+  padding-left: 280px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* ═══════════════════════════════════════
+   4. SIDEBAR
+   ═══════════════════════════════════════ */
 
-@keyframes slideIn {
-  from { left: -250px; }
-  to { left: 0; }
-}
-
-@keyframes slideOut {
-  from { left: 0; }
-  to { left: -250px; }
-}
-
-/* ===== Menu Button Fixed Position ===== */
 .menu-button {
   position: fixed;
-  top: 20px;
-  left: 20px;
+  top: 15px;
+  left: 15px;
   z-index: 1100;
   background: none;
   border: none;
   cursor: pointer;
   padding: 8px;
   border-radius: 8px;
-  transition: background-color 0.2s ease;
-}
-
-.menu-button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  min-height: 44px;
+  min-width: 44px;
 }
 
 .menu-button svg {
   width: 28px;
   height: 28px;
-  color: #333;
+  color: #fff;
 }
 
-/* ===== Sidebar ===== */
 .sidebar {
   position: fixed;
   top: 0;
@@ -82,74 +88,383 @@
   color: #fff;
   z-index: 1000;
   padding-top: 70px;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
   transition: transform 0.4s ease;
+  max-width: 80vw;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
-.sidebar.closed {
-  transform: translateX(-250px);
-}
+.sidebar.closed { transform: translateX(-250px); }
+.sidebar.open   { transform: translateX(0); }
 
-.sidebar.open {
-  transform: translateX(0);
-}
-
-/* Sidebar menu items */
 .sidebar-item {
   display: block;
   width: 100%;
   padding: 14px 24px;
   background: none;
   border: none;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 15px;
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
   border-left: 3px solid transparent;
+  transition: all 0.2s ease;
 }
 
 .sidebar-item:hover {
-  background-color: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   color: #fff;
-  border-left-color: #4CAF50;
+  border-left-color: #4caf50;
   padding-left: 28px;
 }
 
-/* ===== Content area shift ===== */
-.content-area {
-  transition: padding-left 0.4s ease;
-  min-height: 100vh;
+/* ═══════════════════════════════════════
+   5. CONTENT WRAPPERS — center + contain
+   ═══════════════════════════════════════ */
+
+.md-wrap, .td-wrap, .pr-page,
+.stats-summary-wrap, .em-wrap, .cal-wrap {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 3px;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════
+   6. MODALS
+   ═══════════════════════════════════════ */
+
+.choice-modal, .slot-edit-modal,
+.td-slot-modal, .report-modal {
+  width: 92vw;
+  max-width: 92vw;
+  max-height: 85vh;
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+.report-overlay, .choice-overlay,
+.slot-edit-overlay, .td-slot-overlay,
+.cal-modal-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 2000;
+}
+
+/* ═══════════════════════════════════════
+   7. TABLES
+   ═══════════════════════════════════════ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+td, th {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.md-table {
+  display: block;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* ═══════════════════════════════════════
+   8. INPUTS & BUTTONS
+   ═══════════════════════════════════════ */
+
+input, select, button, textarea {
+  font-size: 16px;
+  max-width: 100%;
   box-sizing: border-box;
-  padding-top: 80px;
-  padding-right: 20px;
 }
 
-.content-area.sidebar-open {
-  padding-left: 280px;
+button {
+  min-height: 44px;
 }
 
-.content-area.sidebar-closed {
-  padding-left: 70px;
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
-/* Remove top padding from main app container on mobile */
+
+/* ═══════════════════════════════════════
+   9. GRIDS — stack on mobile
+   ═══════════════════════════════════════ */
+
+.td-inputs, .apc-grid-2, .apc-ea-grid,
+.cards-grid {
+  grid-template-columns: 1fr !important;
+  gap: 14px !important;
+}
+
+.stats-layout {
+  flex-direction: column !important;
+}
+
+.filter-panel {
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 12px;
+}
+
+.filter-select {
+  width: 100%;
+}
+
+/* ═══════════════════════════════════════
+   10. MISC UI
+   ═══════════════════════════════════════ */
+
+.md-filter-bar {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  width: 100%;
+}
+
+.md-filter-pills {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.md-pill {
+  padding: 6px 14px;
+  font-size: 12px;
+}
+
+.report-result-header {
+  flex-direction: row;
+  gap: 8px;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+.result-score { font-size: 24px; }
+
+.md-edit-btn, .choice-btn, .td-save-btn {
+  padding: 12px 20px;
+  font-size: 14px;
+}
+
+.choice-btn {
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+}
+
+.td-toast {
+  font-size: 13px;
+  padding: 10px 14px;
+}
+
+.em-card {
+  padding: 12px;
+  margin-bottom: 12px;
+  max-width: 100%;
+}
+
+.em-header {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pr-card {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.chart-container {
+  height: 250px;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════
+   11. PITCH / LINEUP
+   ═══════════════════════════════════════ */
+
+.match-lineup-container .pitch-wrapper {
+  width: 100%;
+  max-width: 100%;
+  min-height: 300px;
+  margin: 40px auto 0;
+  overflow: visible;
+}
+
+.match-lineup-container .pitch-avg-badge {
+  padding: 4px 10px;
+  font-size: 12px;
+  top: -45px;
+}
+
+.match-lineup-container .pitch-avg-left  { left: 8px; bottom: auto; }
+.match-lineup-container .pitch-avg-right { right: 8px; bottom: auto; }
+
+/* ═══════════════════════════════════════
+   12. MOBILE (≤768px)
+   ═══════════════════════════════════════ */
+
+
 @media (max-width: 768px) {
-  .app-container,
-  .main-content,
-  main {
-    padding-top: 60px !important; /* Just enough for the menu icon */
+  .app-content {
+    /* ✅ 120px bottom padding + safe area for phones with gesture bars */
+    padding: 5px 5px calc(120px + env(safe-area-inset-bottom)) 5px;
+  }
+
+  .app-content.menu-open {
+    padding-left: 5px;
+  }
+
+  .match-lineup-container .slot-card {
+    width: 61px;
+    padding: 3px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .match-lineup-container .slot-name {
+    font-size: 10px;
+    max-width: 56px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 1);
+  }
+
+  .match-lineup-container .pitch-slot {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .match-lineup-container .empty-slot-card {
+    display: flex;
+    background: transparent;
+    border: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .match-lineup-container .empty-slot-icon,
+  .match-lineup-container .empty-slot-hint {
+    display: none;
   }
 }
-/* Example: Assuming your main content wrapper has a class of .app-content */
-@media (max-width: 768px) and (orientation: landscape) {
-  .app-content { 
-    margin-left: 80px; /* Must match the width of your .bottom-nav */
+
+/* ═══════════════════════════════════════
+   13. DESKTOP LINEUP (≥769px)
+   ═══════════════════════════════════════ */
+
+@media (min-width: 769px) {
+  .match-lineup-container .slot-card img {
+    width: 56px;
+    height: 56px;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    object-fit: cover;
+    aspect-ratio: 1 / 1;
+  }
+
+  .match-lineup-container .slot-name {
+    font-size: 18px;
+    max-width: 104px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 1);
+  }
+
+  .match-lineup-container .slot-rating {
+    font-size: 24px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 1);
+  }
+
+  .match-lineup-container .pitch-slot {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .match-lineup-container .empty-slot-label {
+    font-family: "Oswald", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    text-transform: uppercase;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.3);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    margin: 0;
   }
 }
-body {
-  /* Prevents content from hiding behind the notch or gesture bars */
-  padding-top: env(safe-area-inset-top);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-  padding-bottom: env(safe-area-inset-bottom);
+
+/* ═══════════════════════════════════════
+   14. LANDSCAPE PHONE
+   ═══════════════════════════════════════ */
+
+@media (orientation: landscape) and (max-width: 1024px) {
+  .app-content {
+    /* ✅ Landscape: nav is LEFT sidebar (80px wide), so padding is on left */
+    padding: 5px 5px calc(120px + env(safe-area-inset-bottom)) calc(95px + env(safe-area-inset-left));
+  }
+
+  .match-lineup-container .slot-card {
+    width: 65px;
+    padding: 3px;
+  }
+
+  .match-lineup-container .slot-card img {
+    width: 45px;
+    height: 45px;
+  }
+
+  .match-lineup-container .slot-name {
+    font-size: 14px;
+    max-width: 70px;
+  }
+
+  .match-lineup-container .slot-rating {
+    font-size: 15px;
+  }
+
+  .match-lineup-container .pitch-slot {
+    width: 75px;
+    height: 95px;
+  }
+
+  .match-lineup-container .empty-slot-label {
+    font-size: 14px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .match-lineup-container .motm-badge {
+    font-size: 19px;
+    padding: 2px 4px;
+  }
+
+  .match-lineup-container .slot-symbol {
+    font-size: 12px;
+  }
+
+  .match-lineup-container .pitch-avg-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
 }

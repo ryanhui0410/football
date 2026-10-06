@@ -15,8 +15,8 @@ function MatchStatsModal({ open, match, onClose }) {
   // 获取该场助攻给目标球员的次数（若目标匹配则取 count，否则 0）
   let assistToTargetCount = 0;
   if (assistTarget) {
-    const rawAssistTo = match.assistTo || match["Assist to"] || "";
-    const rawCount = parseInt(match.assistToCount || match["Assist to count"] || 0);
+    const rawAssistTo = match.assistTo ?? match["Assist to"] ?? "";
+    const rawCount = parseInt(match.assistToCount ?? match["Assist to count"] ?? 0);  
     if (rawAssistTo === assistTarget) {
       assistToTargetCount = rawCount;
     }

@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap');
 
-/* ================= Wrapper ================= */
+/* ═══════════════════════════════════════════════
+   WRAPPER
+   ═══════════════════════════════════════════════ */
 .stats-summary-wrap {
   max-width: 1400px;
   margin: 0 auto;
@@ -22,26 +24,30 @@
   color: #0f172a;
 }
 
-/* ================= Layout (Centered Column for all screens) ================= */
+/* ═══════════════════════════════════════════════
+   LAYOUT (Centered Column)
+   ═══════════════════════════════════════════════ */
 .stats-layout {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centers filter and cards horizontally */
+  align-items: center;
   gap: 30px;
   width: 100%;
 }
 
-/* ================= Filter Panel ================= */
+/* ═══════════════════════════════════════════════
+   FILTER PANEL
+   ═══════════════════════════════════════════════ */
 .filter-panel {
   width: 100%;
-  max-width: 600px; /* Limits width so it sits nicely in the middle */
+  max-width: 600px;
   padding: 24px;
   background: #ffffff;
   border: 1px solid #dbeafe;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(14, 165, 233, 0.05);
   box-sizing: border-box;
-  position: static; /* Removed sticky since it's centered now */
+  position: static;
 }
 
 .filter-title {
@@ -100,10 +106,12 @@
 }
 .filter-active strong { color: #1d4ed8; }
 
-/* ================= Cards Grid ================= */
+/* ═══════════════════════════════════════════════
+   CARDS GRID
+   ═══════════════════════════════════════════════ */
 .cards-grid {
   width: 100%;
-  max-width: 800px; /* Limits width so cards sit nicely in the middle */
+  max-width: 800px;
   display: grid;
   grid-template-columns: 1fr;
   gap: 24px;
@@ -136,7 +144,9 @@
   color: #0f172a;
 }
 
-/* ================= Summary Numbers ================= */
+/* ═══════════════════════════════════════════════
+   SUMMARY NUMBERS
+   ═══════════════════════════════════════════════ */
 .summary-list {
   display: flex;
   flex-direction: column;
@@ -163,7 +173,62 @@
   word-break: break-word;
   white-space: normal;
 }
-/* ================= All-Players Table ================= */
+
+.plain-value {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* ═══════════════════════════════════════════════
+   BADGES
+   ═══════════════════════════════════════════════ */
+.badge {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #fff;
+  min-width: 50px;
+  text-align: center;
+}
+
+.badge-rating-low  { background: #ef4444; }
+.badge-rating-mid  { background: #10b981; }
+.badge-rating-high { background: #059669; }
+
+.badge-error-none { background: #10b981; }
+.badge-error-low  { background: #f59e0b; }
+.badge-error-high { background: #ef4444; }
+
+.badge-winrate-high { background: #10b981; }
+.badge-winrate-mid  { background: #f59e0b; }
+.badge-winrate-low  { background: #ef4444; }
+
+/* ═══════════════════════════════════════════════
+   CHART
+   ═══════════════════════════════════════════════ */
+.chart-container {
+  width: 100%;
+  max-width: 180px;
+  height: 180px;
+  margin: 0 auto;
+}
+
+.no-data {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+  font-style: italic;
+  margin: 24px 0;
+}
+
+/* ═══════════════════════════════════════════════
+   ALL-PLAYERS BUTTON
+   ═══════════════════════════════════════════════ */
 .all-players-btn {
   width: 100%;
   padding: 12px 16px;
@@ -189,39 +254,81 @@
   color: #fff;
 }
 
-.all-players-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
+/* ═══════════════════════════════════════════════
+   ALL-PLAYERS CARD
+   ═══════════════════════════════════════════════ */
+.all-players-card {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
+
+/* ═══════════════════════════════════════════════
+   ALL-PLAYERS TABLE
+   ═══════════════════════════════════════════════ */
+.all-players-table {
+  min-width: 380px;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+/* Header */
 .all-players-table th {
-  padding: 10px 8px;
-  background: #eff6ff;
-  color: #1e40af;
+  text-align: center;
+  padding: 10px 4px;
   font-family: 'Oswald', sans-serif;
-  font-weight: 500;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  font-size: 12px;
-  text-align: center;
-  border-bottom: 2px solid #bfdbfe;
+  color: #475569;
+  background: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
 }
-.all-players-table th:first-child { text-align: left; padding-left: 12px; }
 
-.all-players-table td {
-  padding: 10px 8px;
-  border-bottom: 1px solid #f1f5f9;
-  text-align: center;
-  color: #334155;
+/* Data columns — compact */
+.all-players-table th:not(:first-child),
+.all-players-table td:not(.apt-player) {
+  width: 50px;
+  min-width: 44px;
+  padding: 10px 4px;
 }
+
+/* Player column — compact & sticky */
+.all-players-table th:first-child,
 .all-players-table td.apt-player {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 80px;
+  min-width: 70px;
+  max-width: 100px;
+  background: #ffffff;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.06);
   text-align: left;
-  padding-left: 12px;
+  vertical-align: middle;
+  padding-left: 6px;
+  padding-right: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-weight: 600;
+  font-size: 13px;
   color: #0f172a;
+  cursor: pointer;
 }
-.all-players-table tr:last-child td { border-bottom: none; }
 
+/* Body cells */
+.all-players-table td {
+  text-align: center;
+  vertical-align: middle;
+  padding: 10px 4px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Hover states */
 .all-players-table tbody tr {
   cursor: pointer;
   transition: background 0.15s ease;
@@ -229,54 +336,62 @@
 .all-players-table tbody tr:hover {
   background: #eff6ff;
 }
-.plain-value {
-  font-family: 'Oswald', sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  color: #0f172a;
+.all-players-table tbody tr:hover td.apt-player {
+  background: #f1f5f9;
+}
+.all-players-table tr:last-child td {
+  border-bottom: none;
 }
 
-.badge {
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-family: 'Oswald', sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: #fff;
-  min-width: 50px;
-  text-align: center;
+/* Icon cells */
+.all-players-table td.apt-icons {
+  white-space: nowrap;
 }
-
-.badge-rating-low  { background: #ef4444; }
-.badge-rating-mid  { background: #10b981; }
-.badge-rating-high { background: #059669; }
-
-.badge-error-none { background: #10b981; }
-.badge-error-low  { background: #f59e0b; }
-.badge-error-high { background: #ef4444; }
-
-.badge-winrate-high { background: #10b981; }
-.badge-winrate-mid  { background: #f59e0b; }
-.badge-winrate-low  { background: #ef4444; }
-
-/* ================= Chart ================= */
-.chart-container {
-    width: 100%;
-    max-width: 180px;
-    height: 180px;
-    margin: 0 auto;
-  }
-
-.no-data {
-  text-align: center;
-  color: #94a3b8;
+.all-players-table .icon {
   font-size: 14px;
-  font-style: italic;
-  margin: 24px 0;
+  margin-right: 2px;
+}
+.all-players-table .icon + .icon {
+  margin-left: -4px;
 }
 
-/* ================= Location Table ================= */
+.all-players-table .icon-error {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #dc2626;
+  border: 1px solid #fff;
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.all-players-table .icon-og {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 14px;
+  border-radius: 3px;
+  background: #dc2626;
+  border: 1px solid #fff;
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+}
+
+.apt-zero {
+  color: #cbd5e1;
+}
+
+/* ═══════════════════════════════════════════════
+   LOCATION TABLE
+   ═══════════════════════════════════════════════ */
 .location-section {
   margin-top: 24px;
   border-top: 1px solid #e2e8f0;
@@ -331,7 +446,9 @@
   color: #0f172a;
 }
 
-.location-table tr:last-child td { border-bottom: none; }
+.location-table tr:last-child td {
+  border-bottom: none;
+}
 
 .location-table tr.highlight {
   background: #ecfdf5;
@@ -341,7 +458,9 @@
   font-weight: 700;
 }
 
-/* ================= Lineup Matrix Table ================= */
+/* ═══════════════════════════════════════════════
+   LINEUP MATRIX TABLE
+   ═══════════════════════════════════════════════ */
 .lineup-table-section {
   background: #ffffff;
   border-radius: 12px;
@@ -381,7 +500,9 @@
   font-size: 0.85rem;
 }
 
-/* ================= Simple Card & Season Table ================= */
+/* ═══════════════════════════════════════════════
+   SIMPLE CARD & SEASON TABLE
+   ═══════════════════════════════════════════════ */
 .simple-card {
   max-width: 600px;
   margin: 0 auto;
@@ -419,7 +540,9 @@
   background-color: #f8fafc;
 }
 
-/* ================= Mobile Portrait ================= */
+/* ═══════════════════════════════════════════════
+   MOBILE PORTRAIT (≤ 768px)
+   ═══════════════════════════════════════════════ */
 @media (max-width: 768px) and (orientation: portrait) {
   .stats-summary-wrap {
     padding: 24px 16px;
@@ -442,25 +565,49 @@
     height: 220px;
     width: 220px;
   }
-  .location-table th, .location-table td {
+  .location-table th,
+  .location-table td {
     padding: 8px 6px;
+    font-size: 12px;
+  }
+
+  /* All-players table — even tighter */
+  .all-players-table {
+    min-width: 320px;
+  }
+  .all-players-table th:first-child,
+  .all-players-table td.apt-player {
+    width: 65px;
+    min-width: 55px;
+    max-width: 85px;
+    font-size: 11px;
+    padding-left: 4px;
+    padding-right: 2px;
+  }
+  .all-players-table th:not(:first-child),
+  .all-players-table td:not(.apt-player) {
+    width: 42px;
+    min-width: 38px;
+    padding: 8px 3px;
     font-size: 12px;
   }
 }
 
-/* ================= Mobile Landscape (Dashboard Layout) ================= */
+/* ═══════════════════════════════════════════════
+   MOBILE LANDSCAPE (Dashboard Layout)
+   ═══════════════════════════════════════════════ */
 @media (max-height: 600px) and (orientation: landscape) {
   .stats-summary-wrap {
     padding: 16px 24px;
     min-height: auto;
   }
-  
+
   .stats-header {
     font-size: 24px;
     margin-bottom: 16px;
   }
 
-  /* Horizontal Filter Panel */
+  /* Horizontal filter panel */
   .filter-panel {
     display: flex;
     flex-wrap: wrap;
@@ -469,30 +616,30 @@
     max-width: 100%;
     padding: 16px;
   }
-  
+
   .filter-title {
     width: 100%;
     margin-bottom: 8px;
     padding-bottom: 8px;
     font-size: 16px;
   }
-  
+
   .filter-group {
     flex: 1;
     min-width: 180px;
   }
-  
+
   .filter-label { margin-bottom: 4px; }
   .filter-select { margin-bottom: 0; }
   .filter-active { margin-top: 8px; }
 
   .cards-grid { max-width: 100%; }
 
-  /* 2-Column Grid Layout for Player Card */
+  /* 2-column grid for player card */
   .player-card {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-areas: 
+    grid-template-areas:
       "name name"
       "summary chart"
       "form streak"
@@ -500,11 +647,13 @@
     gap: 16px;
     padding: 20px;
   }
-   .player-card > .summary-list,
+
+  .player-card > .summary-list,
   .player-card > .card-section,
   .player-card > .location-section {
     min-width: 0;
   }
+
   .player-name {
     grid-area: name;
     font-size: 22px;
@@ -522,8 +671,8 @@
     height: 180px;
     margin: 0 auto;
   }
-  
-  .card-section.form-section { grid-area: form; }
+
+  .card-section.form-section   { grid-area: form; }
   .card-section.streak-section { grid-area: streak; }
 
   .location-section {
@@ -532,22 +681,79 @@
     padding-top: 16px;
     border-top: 1px solid #e2e8f0;
   }
-  
-  /* Simple card layout for seasonal profile */
+
+  /* Simple card layout */
   .simple-card {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-areas: 
+    grid-template-areas:
       "name name"
       "summary location";
     gap: 16px;
   }
-  .simple-card .player-name { grid-area: name; }
-  .simple-card .summary-list { grid-area: summary; margin-bottom: 0; }
+  .simple-card .player-name      { grid-area: name; }
+  .simple-card .summary-list     { grid-area: summary; margin-bottom: 0; }
   .simple-card .location-section { grid-area: location; margin-top: 0; border-top: none; padding-top: 0; }
-  
-  .location-table th, .location-table td {
+
+  .location-table th,
+  .location-table td {
     padding: 8px 6px;
     font-size: 12px;
   }
+}
+/* ═══════════════════════════════════════════════
+   RATING VALUE — fit on one row
+   ═══════════════════════════════════════════════ */
+
+.summary-row {
+  flex-wrap: nowrap;              /* ⬅ prevent wrapping to 2 rows */
+  gap: 8px;
+}
+
+.summary-label {
+  flex-shrink: 1;                /* ⬅ allow label to shrink */
+  min-width: 0;
+}
+
+.badge {
+  font-size: 13px;               /* ⬅ was 15px */
+  padding: 3px 8px;              /* ⬅ was 4px 12px */
+  min-width: 40px;               /* ⬅ was 50px */
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.plain-value {
+  font-size: 15px;               /* ⬅ was 18px */
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+/* ═══════════════════════════════════════════════
+   SORTABLE TABLE HEADERS
+   ═══════════════════════════════════════════════ */
+
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+}
+
+.sortable-th:hover {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.sort-arrow {
+  font-size: 10px;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+
+.sort-arrow.inactive {
+  color: #cbd5e1;
+}
+
+.sort-arrow.active {
+  color: #2563eb;
 }
