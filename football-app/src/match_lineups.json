@@ -1069,12 +1069,14 @@
         {
           "Contributor": "Jackson",
           "rating": 6.6,
-          "picture": "./Jackson.jpeg"
+          "picture": "./Jackson.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Eugene",
           "rating": 6.6,
-          "picture": "/Eugene.jpeg"
+          "picture": "/Eugene.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Po",
@@ -1088,17 +1090,20 @@
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "普巴",
           "rating": 6.9,
-          "picture": "/普巴.jpeg"
+          "picture": "/普巴.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "KK",
           "rating": 7.2,
-          "picture": "/KK.jpeg"
+          "picture": "/KK.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Chris",
@@ -1112,12 +1117,14 @@
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Chun",
           "rating": 7,
-          "picture": "/Chun.jpeg"
+          "picture": "/Chun.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "子睿",
@@ -1131,7 +1138,8 @@
           "error": 0,
           "ownGoal": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Raymond",
@@ -1149,25 +1157,31 @@
           "head": 0,
           "other": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ryan",
           "rating": 7.9,
-          "picture": "/Ryan.jpeg"
+          "picture": "/Ryan.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Darren",
           "rating": 9.6,
-          "picture": "/Darren.jpeg"
+          "picture": "/Darren.jpeg",
+          "manOfTheMatch": false
         }
       ],
       "subs": [
         {
           "Contributor": "Leung Gor",
           "rating": 6.3,
-          "picture": "/Leung Gor.jpeg"
+          "picture": "/Leung Gor.jpeg",
+          "manOfTheMatch": false
         },
+        null,
+        null,
         null
       ]
     },
@@ -1177,12 +1191,14 @@
         {
           "Contributor": "Pierre",
           "rating": 4.2,
-          "picture": "/Pierre.jpeg"
+          "picture": "/Pierre.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "大嚿",
           "rating": 6.9,
-          "picture": "/大嚿.jpeg"
+          "picture": "/大嚿.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Nick",
@@ -1196,42 +1212,63 @@
           "error": 0,
           "ownGoal": 1,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Tiga",
           "rating": 6.3,
-          "picture": "/images/Tiga.jpeg"
+          "picture": "/images/Tiga.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "QC",
           "rating": 5.7,
-          "picture": "/images/QC.jpeg"
+          "picture": "/images/QC.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Derek",
           "rating": 7,
-          "picture": "/images/Derek.jpeg"
+          "picture": "/images/Derek.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "hong",
           "rating": 7.4,
-          "picture": "/hong.jpeg"
+          "picture": "/hong.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Lu",
           "rating": 7.2,
-          "picture": "/Lu.jpeg"
+          "picture": "/Lu.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ken",
           "rating": 6.9,
-          "picture": "/images/Ken.jpeg"
+          "picture": "/images/Ken.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Jacob",
           "rating": 7.1,
-          "picture": "/Jacob.jpeg"
+          "picture": "/Jacob.jpeg",
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 1,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Gawai",
@@ -1244,10 +1281,13 @@
           "assist": 0,
           "error": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         }
       ],
       "subs": [
+        null,
+        null,
         null,
         null
       ]
