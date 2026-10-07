@@ -2666,7 +2666,9 @@
           "goals": 0,
           "assists": 0,
           "manOfTheMatch": false
-        }
+        },
+        null,
+        null
       ]
     },
     "teamB": {
@@ -2714,14 +2716,21 @@
         {
           "Contributor": "Nick",
           "picture": "/Nick.jpeg",
-          "rating": 4.8,
+          "rating": 4.5,
           "goal": 0,
           "assist": 0,
           "error": 1,
           "ownGoal": 0,
           "assistTo": "",
           "assistToCount": 0,
-          "manOfTheMatch": false
+          "manOfTheMatch": false,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0
         },
         {
           "Contributor": "大嚿",
@@ -2841,7 +2850,9 @@
           "assistTo": "",
           "assistToCount": 0,
           "manOfTheMatch": false
-        }
+        },
+        null,
+        null
       ]
     }
   }
