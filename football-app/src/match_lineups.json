@@ -1196,9 +1196,22 @@
         },
         {
           "Contributor": "大嚿",
-          "rating": 6.9,
+          "rating": 6.5,
           "picture": "/大嚿.jpeg",
-          "manOfTheMatch": false
+          "manOfTheMatch": false,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Nick",
@@ -1221,9 +1234,22 @@
         },
         {
           "Contributor": "Tiga",
-          "rating": 6.3,
+          "rating": 6,
           "picture": "/images/Tiga.jpeg",
-          "manOfTheMatch": false
+          "manOfTheMatch": false,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "QC",
@@ -1251,9 +1277,22 @@
         },
         {
           "Contributor": "Ken",
-          "rating": 6.9,
+          "rating": 6.7,
           "picture": "/images/Ken.jpeg",
-          "manOfTheMatch": false
+          "manOfTheMatch": false,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Jacob",
