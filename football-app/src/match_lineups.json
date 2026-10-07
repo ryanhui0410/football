@@ -1202,7 +1202,7 @@
         },
         {
           "Contributor": "Nick",
-          "rating": 5,
+          "rating": 4.8,
           "picture": "/Nick.jpeg",
           "isMotm": false,
           "goals": 0,
@@ -1213,7 +1213,11 @@
           "ownGoal": 1,
           "assistTo": "",
           "assistToCount": 0,
-          "manOfTheMatch": false
+          "manOfTheMatch": false,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0
         },
         {
           "Contributor": "Tiga",
