@@ -4153,7 +4153,7 @@
     "SHO": 60,
     "PAS": 73,
     "DRI": 68,
-    "DEF": 77,
+    "DEF": 75,
     "PHY": 70,
     "DIV": 0,
     "HAN": 0,
@@ -4196,7 +4196,7 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "CB": 77
+      "CB": 75
     }
   },
   {
