@@ -1724,6 +1724,7 @@
     "date": "9/26/2026",
     "location": "香港仔",
     "time": "11:30 AM",
+    "matchResult": "4-4",
     "teamA": {
       "formation": "4-4-2",
       "players": [
@@ -1731,29 +1732,64 @@
         {
           "Contributor": "QC",
           "rating": 5.8,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/QC.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/QC.jpeg",
+          "manOfTheMatch": false
         },
-        null,
-        null,
+        {
+          "Contributor": "QC2",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/QC2.jpeg",
+          "rating": 5.8,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "QC3",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/QC3.jpeg",
+          "rating": 6,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         {
           "Contributor": "KK",
           "rating": 5.7,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/KK.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/KK.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Alex",
           "rating": 6.7,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Alex.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Alex.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Chun",
           "rating": 6.6,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Chun.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Chun.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Raymond",
           "rating": 6.9,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Raymond.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Raymond.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Derek",
@@ -1771,25 +1807,31 @@
           "head": 0,
           "other": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ryan",
           "rating": 8.7,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ryan.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ryan.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Darren",
           "rating": 9.8,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Darren.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Darren.jpeg",
+          "manOfTheMatch": false
         }
       ],
       "subs": [
         {
           "Contributor": "Dave",
           "rating": 6.9,
-          "picture": "/images/Dave.jpeg"
+          "picture": "/images/Dave.jpeg",
+          "manOfTheMatch": false
         },
+        null,
+        null,
         null
       ]
     },
@@ -1799,7 +1841,8 @@
         {
           "Contributor": "Steve",
           "rating": 6.6,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Steve.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Steve.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Jackson",
@@ -1817,17 +1860,20 @@
           "head": 0,
           "other": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Lu",
           "rating": 7.3,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Lu.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Lu.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Nick",
           "rating": 6.7,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Nick.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Nick.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "大嚿",
@@ -1845,12 +1891,14 @@
           "head": 0,
           "other": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Barry",
           "rating": 6.6,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Barry.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Barry.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "R",
@@ -1868,7 +1916,8 @@
           "head": 0,
           "other": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "hong",
@@ -1886,12 +1935,14 @@
           "head": 0,
           "other": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Hong1",
           "rating": 7,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Hong1.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Hong1.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "局長",
@@ -1909,15 +1960,19 @@
           "head": 0,
           "other": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Jacob",
           "rating": 6,
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Jacob.jpeg"
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Jacob.jpeg",
+          "manOfTheMatch": false
         }
       ],
       "subs": [
+        null,
+        null,
         null,
         null
       ]
