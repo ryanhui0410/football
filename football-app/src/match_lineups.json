@@ -2829,7 +2829,7 @@
         {
           "Contributor": "大嚿",
           "picture": "/大嚿.jpeg",
-          "rating": 5,
+          "rating": 4.9,
           "goal": 0,
           "assist": 0,
           "error": 0,
@@ -2839,7 +2839,11 @@
           "isMotm": false,
           "goals": 0,
           "assists": 0,
-          "manOfTheMatch": false
+          "manOfTheMatch": false,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0
         },
         {
           "Contributor": "Lu",
