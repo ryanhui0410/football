@@ -1196,7 +1196,7 @@
         },
         {
           "Contributor": "大嚿",
-          "rating": 6.5,
+          "rating": 6.2,
           "picture": "/大嚿.jpeg",
           "manOfTheMatch": false,
           "isMotm": false,
@@ -1234,7 +1234,7 @@
         },
         {
           "Contributor": "Tiga",
-          "rating": 6,
+          "rating": 5.7,
           "picture": "/images/Tiga.jpeg",
           "manOfTheMatch": false,
           "isMotm": false,
@@ -1259,9 +1259,22 @@
         },
         {
           "Contributor": "Derek",
-          "rating": 7,
+          "rating": 6.9,
           "picture": "/images/Derek.jpeg",
-          "manOfTheMatch": false
+          "manOfTheMatch": false,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "hong",
@@ -1271,9 +1284,22 @@
         },
         {
           "Contributor": "Lu",
-          "rating": 7.2,
+          "rating": 7.1,
           "picture": "/Lu.jpeg",
-          "manOfTheMatch": false
+          "manOfTheMatch": false,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Ken",
