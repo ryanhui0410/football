@@ -1180,7 +1180,22 @@
           "picture": "/Leung Gor.jpeg",
           "manOfTheMatch": false
         },
-        null,
+        {
+          "Contributor": "Ricky",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ricky.jpeg",
+          "rating": 6.4,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         null,
         null
       ]
