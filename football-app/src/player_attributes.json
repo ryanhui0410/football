@@ -2731,13 +2731,13 @@
   },
   {
     "Contributor": "吳克軍",
-    "overall": 70,
+    "overall": 71,
     "position": "CF",
     "weakFoot": 3,
     "preferredFoot": "Right",
     "filterGroup": "馬哲",
     "PAC": 65,
-    "SHO": 70,
+    "SHO": 71,
     "PAS": 64,
     "DRI": 68,
     "DEF": 56,
@@ -2751,7 +2751,7 @@
     "Acceleration": 63,
     "Sprint Speed": 67,
     "Positioning": 73,
-    "Finishing": 70,
+    "Finishing": 71,
     "Shot Power": 65,
     "Long Shots": 64,
     "Volleys": 63,
@@ -2783,8 +2783,8 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "SS": 70,
-      "CF": 70
+      "CF": 71,
+      "SS": 71
     }
   },
   {
