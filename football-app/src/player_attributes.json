@@ -2079,14 +2079,14 @@
   {
     "Contributor": "杜威",
     "picture": "/images/杜威.jpeg",
-    "overall": 68,
+    "overall": 69,
     "position": "DM",
     "weakFoot": 3,
     "preferredFoot": "Right",
     "filterGroup": "馬哲",
     "PAC": 64,
     "SHO": 64,
-    "PAS": 67,
+    "PAS": 68,
     "DRI": 66,
     "DEF": 66,
     "PHY": 65,
@@ -2105,9 +2105,9 @@
     "Volleys": 60,
     "Penalties": 63,
     "Vision": 67,
-    "Crossing": 61,
+    "Crossing": 67,
     "Free Kick Accuracy": 62,
-    "Short Passing": 63,
+    "Short Passing": 68,
     "Long Passing": 62,
     "Curve": 65,
     "Agility": 65,
@@ -2131,9 +2131,10 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "CM": 66,
-      "LB": 64,
-      "RB": 64
+      "CM": 69,
+      "LB": 66,
+      "RB": 66,
+      "DM": 69
     }
   },
   {
