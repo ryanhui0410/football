@@ -3629,10 +3629,10 @@
     "weakFoot": 3,
     "preferredFoot": "Right",
     "filterGroup": "梁哥",
-    "PAC": 75,
+    "PAC": 76,
     "SHO": 70,
     "PAS": 71,
-    "DRI": 77,
+    "DRI": 78,
     "DEF": 60,
     "PHY": 64,
     "DIV": 0,
@@ -3678,7 +3678,8 @@
     "positionRatings": {
       "RW": 77,
       "RM": 77
-    }
+    },
+    "overall": 77
   },
   {
     "Contributor": "Justin",
