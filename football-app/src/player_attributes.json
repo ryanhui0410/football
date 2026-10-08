@@ -4926,7 +4926,7 @@
     "PAC": 77,
     "SHO": 69,
     "PAS": 71,
-    "DRI": 78,
+    "DRI": 77,
     "DEF": 55,
     "PHY": 63,
     "DIV": 0,
@@ -4970,8 +4970,8 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "LM": 78,
-      "LW": 78,
+      "LM": 77,
+      "LW": 77,
       "AM": 75
     }
   },
