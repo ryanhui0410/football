@@ -2261,7 +2261,7 @@
   {
     "Contributor": "QC1",
     "picture": "/images/QC1.jpeg",
-    "overall": 74,
+    "overall": 75,
     "position": "SS",
     "weakFoot": 3,
     "preferredFoot": "Right",
@@ -2269,7 +2269,7 @@
     "PAC": 71,
     "SHO": 72,
     "PAS": 69,
-    "DRI": 70,
+    "DRI": 74,
     "DEF": 58,
     "PHY": 76,
     "DIV": 0,
@@ -2292,11 +2292,11 @@
     "Short Passing": 69,
     "Long Passing": 69,
     "Curve": 64,
-    "Agility": 67,
+    "Agility": 72,
     "Balance": 66,
     "Reactions": 67,
     "Ball Control": 70,
-    "Dribbling": 68,
+    "Dribbling": 74,
     "Composure": 66,
     "Interceptions": 57,
     "Heading Accuracy": 59,
@@ -2313,7 +2313,7 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "CF": 72,
+      "CF": 74,
       "AM": 69,
       "SS": 74
     }
