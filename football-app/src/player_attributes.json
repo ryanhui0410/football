@@ -5387,7 +5387,7 @@
   {
     "Contributor": "Thomas Tam",
     "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Thomas Tam.jpeg",
-    "overall": 72,
+    "overall": 71,
     "position": "CB",
     "weakFoot": 3,
     "preferredFoot": "Right",
@@ -5396,7 +5396,7 @@
     "SHO": 56,
     "PAS": 65,
     "DRI": 63,
-    "DEF": 72,
+    "DEF": 71,
     "PHY": 69,
     "DIV": 0,
     "HAN": 0,
@@ -5439,8 +5439,8 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "CB": 72,
-      "RB": 70
+      "CB": 71,
+      "RB": 69
     }
   },
   {
