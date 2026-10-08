@@ -5451,15 +5451,15 @@
   {
     "Contributor": "Rex",
     "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Rex.jpeg",
-    "overall": 70,
+    "overall": 69,
     "position": "CM",
     "weakFoot": 3,
     "preferredFoot": "Right",
     "filterGroup": "馬哲",
     "PAC": 70,
     "SHO": 63,
-    "PAS": 69,
-    "DRI": 69,
+    "PAS": 68,
+    "DRI": 68,
     "DEF": 59,
     "PHY": 56,
     "DIV": 0,
@@ -5503,8 +5503,8 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "CM": 70,
-      "DM": 67
+      "CM": 69,
+      "DM": 66
     }
   },
   {
