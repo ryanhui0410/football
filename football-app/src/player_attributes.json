@@ -2859,7 +2859,7 @@
   },
   {
     "Contributor": "Szeto",
-    "overall": 76,
+    "overall": 75,
     "position": "AM",
     "weakFoot": 3,
     "preferredFoot": "Right",
@@ -2867,7 +2867,7 @@
     "PAC": 71,
     "SHO": 70,
     "PAS": 71,
-    "DRI": 76,
+    "DRI": 75,
     "DEF": 57,
     "PHY": 64,
     "DIV": 0,
@@ -2890,10 +2890,10 @@
     "Short Passing": 72,
     "Long Passing": 68,
     "Curve": 69,
-    "Agility": 74,
-    "Balance": 75,
-    "Reactions": 78,
-    "Ball Control": 74,
+    "Agility": 73,
+    "Balance": 74,
+    "Reactions": 77,
+    "Ball Control": 73,
     "Dribbling": 75,
     "Composure": 73,
     "Interceptions": 56,
@@ -2911,8 +2911,8 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "CM": 76,
-      "AM": 76
+      "CM": 75,
+      "AM": 75
     }
   },
   {
