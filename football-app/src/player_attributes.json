@@ -4097,7 +4097,7 @@
   {
     "Contributor": "Man",
     "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Man.jpeg",
-    "overall": 75,
+    "overall": 74,
     "position": "CB",
     "weakFoot": 3,
     "preferredFoot": "Right",
@@ -4106,7 +4106,7 @@
     "SHO": 57,
     "PAS": 70,
     "DRI": 65,
-    "DEF": 74,
+    "DEF": 73,
     "PHY": 70,
     "DIV": 0,
     "HAN": 0,
@@ -4149,9 +4149,8 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "CB": 75,
-      "RB": 72,
-      "LB": 72
+      "CB": 74,
+      "LB": 71
     }
   },
   {
