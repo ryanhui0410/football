@@ -3144,7 +3144,7 @@
   },
   {
     "Contributor": "阿泰",
-    "overall": 75,
+    "overall": 74,
     "position": "CB",
     "weakFoot": 3,
     "preferredFoot": "Right",
@@ -3153,7 +3153,7 @@
     "SHO": 62,
     "PAS": 72,
     "DRI": 67,
-    "DEF": 75,
+    "DEF": 74,
     "PHY": 69,
     "DIV": 0,
     "HAN": 0,
@@ -3182,8 +3182,8 @@
     "Dribbling": 64,
     "Composure": 67,
     "Interceptions": 73,
-    "Heading Accuracy": 68,
-    "Def Awareness": 75,
+    "Heading Accuracy": 67,
+    "Def Awareness": 74,
     "Standing Tackle": 60,
     "Sliding Tackle": 60,
     "Jumping": 68,
@@ -3196,9 +3196,9 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "CB": 75,
-      "LB": 75,
-      "RB": 75
+      "CB": 74,
+      "LB": 74,
+      "RB": 74
     }
   },
   {
