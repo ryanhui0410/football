@@ -2445,7 +2445,7 @@
   {
     "Contributor": "Tiga",
     "picture": "/images/Tiga.jpeg",
-    "overall": 78,
+    "overall": 77,
     "position": "CB",
     "weakFoot": 3,
     "preferredFoot": "Right",
@@ -2454,8 +2454,8 @@
     "SHO": 59,
     "PAS": 74,
     "DRI": 68,
-    "DEF": 78,
-    "PHY": 73,
+    "DEF": 77,
+    "PHY": 71,
     "DIV": 0,
     "HAN": 0,
     "KIC": 0,
@@ -2497,7 +2497,7 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "CB": 78
+      "CB": 77
     }
   },
   {
