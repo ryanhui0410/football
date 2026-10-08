@@ -2377,7 +2377,7 @@
   },
   {
     "Contributor": "Gawai",
-    "picture": "/images/Gawai.jpeg",
+    "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Gawai.jpeg",
     "overall": 78,
     "position": "CF",
     "weakFoot": 3,
