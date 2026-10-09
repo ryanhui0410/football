@@ -2212,7 +2212,7 @@
         {
           "Contributor": "高佬 Jason",
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/高佬 Jason.jpeg",
-          "rating": 6.6,
+          "rating": 6.8,
           "goal": 0,
           "assist": 0,
           "error": 0,
@@ -2223,7 +2223,10 @@
           "other": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
         },
         null
       ]
