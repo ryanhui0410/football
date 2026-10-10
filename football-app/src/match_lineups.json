@@ -3274,7 +3274,7 @@
     "date": "10/10/2026",
     "location": "大坑東",
     "time": "3:00 PM",
-    "matchResult": "5-12",
+    "matchResult": "",
     "teamA": {
       "formation": "4-4-2",
       "players": [
@@ -3464,7 +3464,7 @@
         {
           "Contributor": "hong",
           "rating": 9.6,
-          "goal": 0,
+          "goal": 1,
           "assist": 3,
           "leftFoot": 0,
           "rightFoot": 0,
@@ -3474,7 +3474,11 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 3,
+          "picture": ""
         },
         {
           "Contributor": "Derek",
