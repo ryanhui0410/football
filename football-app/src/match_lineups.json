@@ -3298,7 +3298,7 @@
         null,
         {
           "Contributor": "KK",
-          "rating": 3.3,
+          "rating": 3,
           "goal": 0,
           "assist": 0,
           "leftFoot": 0,
@@ -3309,7 +3309,11 @@
           "error": 1,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "picture": ""
         },
         {
           "Contributor": "Barry",
