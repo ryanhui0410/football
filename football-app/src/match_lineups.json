@@ -3293,7 +3293,11 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 1,
+          "assists": 0,
+          "picture": ""
         },
         null,
         {
@@ -3347,7 +3351,7 @@
         },
         {
           "Contributor": "大嚿",
-          "rating": 6.4,
+          "rating": 5.8,
           "goal": 0,
           "assist": 1,
           "leftFoot": 0,
@@ -3358,11 +3362,15 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 1,
+          "picture": ""
         },
         {
           "Contributor": "KK1",
-          "rating": 5.1,
+          "rating": 4.7,
           "goal": 0,
           "assist": 0,
           "leftFoot": 0,
@@ -3373,7 +3381,11 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "picture": ""
         },
         {
           "Contributor": "Darren",
