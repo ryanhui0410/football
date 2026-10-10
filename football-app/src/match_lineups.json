@@ -3336,7 +3336,7 @@
         },
         {
           "Contributor": "Alex",
-          "rating": 7.8,
+          "rating": 7.4,
           "goal": 1,
           "assist": 1,
           "leftFoot": 0,
@@ -3347,7 +3347,11 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 1,
+          "assists": 1,
+          "picture": ""
         },
         {
           "Contributor": "大嚿",
@@ -3432,7 +3436,7 @@
         null,
         {
           "Contributor": "鉦",
-          "rating": 6.4,
+          "rating": 6.1,
           "goal": 0,
           "assist": 0,
           "leftFoot": 0,
@@ -3443,11 +3447,15 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "picture": ""
         },
         {
           "Contributor": "普巴",
-          "rating": 7.1,
+          "rating": 7,
           "goal": 1,
           "assist": 0,
           "leftFoot": 0,
@@ -3458,11 +3466,15 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 1,
+          "assists": 0,
+          "picture": ""
         },
         {
           "Contributor": "Po",
-          "rating": 7.4,
+          "rating": 7.2,
           "goal": 1,
           "assist": 0,
           "leftFoot": 0,
@@ -3473,13 +3485,17 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 1,
+          "assists": 0,
+          "picture": ""
         },
         null,
         null,
         {
           "Contributor": "hong",
-          "rating": 9.6,
+          "rating": 9.9,
           "goal": 1,
           "assist": 3,
           "leftFoot": 0,
@@ -3492,7 +3508,7 @@
           "assistTo": "",
           "assistToCount": 0,
           "isMotm": false,
-          "goals": 0,
+          "goals": 1,
           "assists": 3,
           "picture": ""
         },
