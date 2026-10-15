@@ -3701,9 +3701,9 @@
         },
         {
           "Contributor": "Bryan",
-          "rating": 5.5,
+          "rating": 6.1,
           "goal": 0,
-          "assist": 0,
+          "assist": 1,
           "leftFoot": 0,
           "rightFoot": 0,
           "head": 0,
@@ -3712,7 +3712,11 @@
           "error": 1,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "picture": ""
         },
         {
           "Contributor": "Rex",
