@@ -3796,7 +3796,7 @@
         {
           "Contributor": "南韓門將",
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/南韓門將.jpeg",
-          "rating": 6,
+          "rating": 5.7,
           "goal": 0,
           "assist": 0,
           "error": 2,
@@ -3807,7 +3807,10 @@
           "other": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
         },
         null,
         null,
