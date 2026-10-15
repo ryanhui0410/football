@@ -4807,17 +4807,17 @@
   {
     "Contributor": "Woody",
     "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Woody.jpeg",
-    "overall": 70,
+    "overall": 62,
     "position": "RM",
     "weakFoot": 3,
     "preferredFoot": "Right",
     "filterGroup": "馬哲",
-    "PAC": 70,
-    "SHO": 63,
-    "PAS": 66,
-    "DRI": 70,
-    "DEF": 58,
-    "PHY": 62,
+    "PAC": 65,
+    "SHO": 57,
+    "PAS": 61,
+    "DRI": 62,
+    "DEF": 56,
+    "PHY": 60,
     "DIV": 0,
     "HAN": 0,
     "KIC": 0,
@@ -4859,8 +4859,8 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "RW": 70,
-      "RM": 70
+      "RW": 62,
+      "RM": 62
     }
   },
   {
