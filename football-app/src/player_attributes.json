@@ -4866,7 +4866,7 @@
   {
     "Contributor": "Hei",
     "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Hei.jpeg",
-    "overall": 81,
+    "overall": 79,
     "position": "CB",
     "weakFoot": 3,
     "preferredFoot": "Right",
@@ -4875,7 +4875,7 @@
     "SHO": 58,
     "PAS": 70,
     "DRI": 64,
-    "DEF": 79,
+    "DEF": 77,
     "PHY": 84,
     "DIV": 0,
     "HAN": 0,
@@ -4918,7 +4918,7 @@
     "GK Positioning": 0,
     "GK Reflexes": 0,
     "positionRatings": {
-      "CB": 81
+      "CB": 79
     }
   },
   {
