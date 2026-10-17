@@ -1419,6 +1419,7 @@
     "date": "9/8/2026",
     "location": "興華街西",
     "time": "8:00 PM",
+    "matchResult": "19-13",
     "teamA": {
       "formation": "4-4-2",
       "players": [
@@ -1437,7 +1438,8 @@
           "assist": 0,
           "error": 1,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "吳克軍",
@@ -1449,7 +1451,8 @@
           "assist": 0,
           "error": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ben",
@@ -1461,21 +1464,26 @@
           "assist": 0,
           "error": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         null,
         {
           "Contributor": "Darren",
           "rating": 10,
-          "picture": "/Darren.jpeg"
+          "picture": "/Darren.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ryan",
           "rating": 10,
-          "picture": "/Ryan.jpeg"
+          "picture": "/Ryan.jpeg",
+          "manOfTheMatch": false
         }
       ],
       "subs": [
+        null,
+        null,
         null,
         null
       ]
@@ -1496,9 +1504,25 @@
           "assist": 0,
           "error": 1,
           "assistTo": "",
+          "assistToCount": 0,
+          "manOfTheMatch": false
+        },
+        {
+          "Contributor": "港研3",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/港研3.jpeg",
+          "rating": 5.4,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
           "assistToCount": 0
         },
-        null,
         null,
         null,
         {
@@ -1512,11 +1536,13 @@
           "assist": 0,
           "error": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Jacky",
-          "rating": 6.9
+          "rating": 6.9,
+          "manOfTheMatch": false
         },
         null,
         {
@@ -1530,7 +1556,8 @@
           "assist": 0,
           "error": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ronson",
@@ -1543,10 +1570,13 @@
           "assist": 0,
           "error": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         }
       ],
       "subs": [
+        null,
+        null,
         null,
         null
       ]
