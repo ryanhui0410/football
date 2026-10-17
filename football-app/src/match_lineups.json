@@ -2771,7 +2771,7 @@
         null,
         {
           "Contributor": "Po",
-          "rating": 5.7,
+          "rating": 5.8,
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Po.jpeg",
           "goal": 0,
           "assist": 0,
@@ -4240,7 +4240,7 @@
         },
         {
           "Contributor": "Hong1",
-          "rating": 6.4,
+          "rating": 4.9,
           "goal": 0,
           "assist": 0,
           "leftFoot": 0,
@@ -4248,7 +4248,7 @@
           "head": 0,
           "other": 0,
           "ownGoal": 0,
-          "error": 0,
+          "error": 1,
           "manOfTheMatch": false,
           "assistTo": "",
           "assistToCount": 0,
