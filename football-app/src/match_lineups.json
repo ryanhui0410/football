@@ -4172,10 +4172,10 @@
         {
           "Contributor": "Dan2",
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Dan2.jpeg",
-          "rating": 4.8,
+          "rating": 4.1,
           "goal": 0,
           "assist": 0,
-          "error": 0,
+          "error": 1,
           "ownGoal": 0,
           "leftFoot": 0,
           "rightFoot": 0,
