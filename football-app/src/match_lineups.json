@@ -3998,19 +3998,23 @@
           "assistToCount": 0
         },
         {
-          "Contributor": "Nin",
-          "rating": 7.3,
-          "goal": 1,
+          "Contributor": "Timothy",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Timothy.jpeg",
+          "rating": 6.6,
+          "goal": 0,
           "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
           "leftFoot": 0,
           "rightFoot": 0,
           "head": 0,
           "other": 0,
-          "ownGoal": 0,
-          "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
         },
         {
           "Contributor": "普巴",
@@ -4042,7 +4046,22 @@
           "assistTo": "",
           "assistToCount": 0
         },
-        null,
+        {
+          "Contributor": "Nin",
+          "picture": "/images/Nin.jpeg",
+          "rating": 7.3,
+          "goal": 1,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         {
           "Contributor": "Lu",
           "picture": "/Lu.jpeg",
