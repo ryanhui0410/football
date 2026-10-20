@@ -3347,7 +3347,7 @@
     "date": "10/10/2026",
     "location": "大坑東",
     "time": "3:00 PM",
-    "matchResult": "",
+    "matchResult": "5-12",
     "teamA": {
       "formation": "4-4-2",
       "players": [
@@ -3513,7 +3513,7 @@
         null,
         {
           "Contributor": "鉦",
-          "rating": 6.1,
+          "rating": 6.4,
           "goal": 0,
           "assist": 0,
           "leftFoot": 0,
