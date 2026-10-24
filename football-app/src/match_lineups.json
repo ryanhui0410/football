@@ -4413,5 +4413,209 @@
         null
       ]
     }
+  },
+  {
+    "date": "10/24/2026",
+    "location": "跑馬地",
+    "time": "3:00 PM",
+    "matchResult": "3-8",
+    "teamA": {
+      "formation": "4-4-2",
+      "players": [
+        {
+          "Contributor": "Lu",
+          "rating": 7.3,
+          "goal": 1,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Raymond",
+          "rating": 4.8,
+          "goal": 0,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 1,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Kit",
+          "rating": 5.8,
+          "goal": 0,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "阿榮",
+          "rating": 5.2,
+          "goal": 0,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "KK",
+          "rating": 5.5,
+          "goal": 0,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Eugene",
+          "rating": 5.8,
+          "goal": 0,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "hong",
+          "rating": 6,
+          "goal": 0,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "大嚿",
+          "rating": 5.3,
+          "goal": 0,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Jacob",
+          "rating": 7.5,
+          "goal": 1,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Ryan",
+          "rating": 9.3,
+          "goal": 0,
+          "assist": 3,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Gawai",
+          "rating": 7.6,
+          "goal": 1,
+          "assist": 0,
+          "leftFoot": 1,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        }
+      ],
+      "subs": [
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    "teamB": {
+      "formation": "4-4-2",
+      "players": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "subs": [
+        null,
+        null,
+        null,
+        null
+      ]
+    }
   }
 ]
