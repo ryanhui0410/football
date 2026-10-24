@@ -4608,10 +4608,10 @@
         {
           "Contributor": "Po",
           "picture": "/images/Po.jpeg",
-          "rating": 5.6,
+          "rating": 4.9,
           "goal": 0,
           "assist": 0,
-          "error": 0,
+          "error": 1,
           "ownGoal": 0,
           "leftFoot": 0,
           "rightFoot": 0,
@@ -4619,7 +4619,10 @@
           "other": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0
         },
         null,
         null
