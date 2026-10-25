@@ -4983,7 +4983,22 @@
         }
       ],
       "subs": [
-        null,
+        {
+          "Contributor": "普巴",
+          "picture": "/普巴.jpeg",
+          "rating": 6.1,
+          "goal": 1,
+          "assist": 0,
+          "error": 1,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         null,
         null,
         null
