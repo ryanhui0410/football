@@ -4994,7 +4994,22 @@
           "assistTo": "",
           "assistToCount": 0
         },
-        null,
+        {
+          "Contributor": "Ken6",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Ken6.jpeg",
+          "rating": 7.6,
+          "goal": 1,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         {
           "Contributor": "Andy",
           "picture": "/Andy.jpeg",
