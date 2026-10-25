@@ -416,10 +416,11 @@ function ModifyDashboard({ contributors, onSave }) {
     setEditedResult(seededResult);
   };
 
-  // ═══════════════ BUILD ALL CONTRIBUTORS ═══════════════
+    // ═══════════════ BUILD ALL CONTRIBUTORS ═══════════════
   const allContributors = useMemo(() => {
     const byName = new Map();
 
+    // ── Step 1: Seed from contributors prop ──
     contributors.forEach(contributor => {
       byName.set(normalizeName(contributor.name), {
         name: contributor.name,
@@ -427,6 +428,7 @@ function ModifyDashboard({ contributors, onSave }) {
       });
     });
 
+    // ── Step 2: Process allLineups — ALWAYS overwrite existing matches ──
     allLineups.forEach(lineup => {
       const matchKey = `${normalizeDate(lineup.date)}|${(lineup.location || "").trim()}|${(lineup.time || "").trim()}`;
 
@@ -465,14 +467,9 @@ function ModifyDashboard({ contributors, onSave }) {
           }
           const entry = byName.get(name);
 
-          const alreadyHas = entry.matches.some(m =>
-            `${normalizeDate(m.date)}|${(m.location || "").trim()}|${(m.time || "").trim()}` === matchKey
-          );
-          if (alreadyHas) return;
-
           const winLoss = deriveOutcome(matchResult, teamLetter);
 
-          entry.matches.push({
+          const newMatch = {
             date: lineup.date,
             location: lineup.location,
             time: lineup.time,
@@ -484,7 +481,17 @@ function ModifyDashboard({ contributors, onSave }) {
             symbol: "⚽".repeat(parseInt(p.goal) || 0) + "👟".repeat(parseInt(p.assist) || 0),
             manOfTheMatch: p.manOfTheMatch === true,
             isLineupOnly: true,
-          });
+          };
+
+          // ── KEY FIX: REPLACE existing match instead of skipping ──
+          const existingIdx = entry.matches.findIndex(m =>
+            `${normalizeDate(m.date)}|${(m.location || "").trim()}|${(m.time || "").trim()}` === matchKey
+          );
+          if (existingIdx !== -1) {
+            entry.matches[existingIdx] = newMatch;
+          } else {
+            entry.matches.push(newMatch);
+          }
         });
       });
     });
