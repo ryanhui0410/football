@@ -103,6 +103,7 @@
   },
   {
     "Contributor": "Lu",
+    "filterGroup": "Barry",
     "Acceleration": 68,
     "Sprint Speed": 67,
     "Positioning": 73,
@@ -152,6 +153,7 @@
   },
   {
     "Contributor": "Nick",
+    "filterGroup": "Barry",
     "Acceleration": 70,
     "Sprint Speed": 71,
     "Positioning": 58,
@@ -202,6 +204,7 @@
   },
   {
     "Contributor": "Tony",
+    "filterGroup": "馬哲",
     "Acceleration": 77,
     "Sprint Speed": 74,
     "Positioning": 73,
@@ -250,6 +253,7 @@
   },
   {
     "Contributor": "Jacob",
+    "filterGroup": "Barry",
     "Acceleration": 69,
     "Sprint Speed": 71,
     "Positioning": 78,
@@ -298,6 +302,7 @@
   },
   {
     "Contributor": "普巴",
+    "filterGroup": "Barry",
     "Acceleration": 67,
     "Sprint Speed": 67,
     "Positioning": 62,
@@ -346,6 +351,7 @@
   },
   {
     "Contributor": "Chris",
+    "filterGroup": "Barry",
     "Acceleration": 77,
     "Sprint Speed": 76,
     "Positioning": 76,
@@ -396,6 +402,7 @@
   },
   {
     "Contributor": "馬俊翔",
+    "filterGroup": "馬哲",
     "Acceleration": 64,
     "Sprint Speed": 62,
     "Positioning": 67,
@@ -444,6 +451,7 @@
   },
   {
     "Contributor": "局長",
+    "filterGroup": "Barry",
     "Acceleration": 64,
     "Sprint Speed": 64,
     "Positioning": 74,
@@ -493,6 +501,7 @@
   },
   {
     "Contributor": "Eugene",
+    "filterGroup": "Barry",
     "Acceleration": 58,
     "Sprint Speed": 58,
     "Positioning": 65,
@@ -540,6 +549,7 @@
   },
   {
     "Contributor": "大嚿",
+    "filterGroup": "Barry",
     "Acceleration": 63,
     "Sprint Speed": 62,
     "Positioning": 64,
@@ -588,6 +598,7 @@
   },
   {
     "Contributor": "Barry",
+    "filterGroup": "Barry",
     "Acceleration": 59,
     "Sprint Speed": 58,
     "Positioning": 64,
@@ -634,6 +645,7 @@
   },
   {
     "Contributor": "Chun",
+    "filterGroup": "Barry",
     "Acceleration": 72,
     "Sprint Speed": 74,
     "Positioning": 71,
@@ -683,6 +695,7 @@
   },
   {
     "Contributor": "hong",
+    "filterGroup": "Barry",
     "Acceleration": 66,
     "Sprint Speed": 70,
     "Positioning": 75,
@@ -732,6 +745,7 @@
   },
   {
     "Contributor": "Alex",
+    "filterGroup": "Barry",
     "Acceleration": 73,
     "Sprint Speed": 72,
     "Positioning": 72,
@@ -782,6 +796,7 @@
   },
   {
     "Contributor": "Steve",
+    "filterGroup": "Barry",
     "Acceleration": 63,
     "Sprint Speed": 63,
     "Positioning": 61,
@@ -830,6 +845,7 @@
   },
   {
     "Contributor": "子睿",
+    "filterGroup": "Barry",
     "picture": "/子睿.jpeg",
     "overall": 83,
     "position": "CM",
@@ -882,6 +898,7 @@
   },
   {
     "Contributor": "KK",
+    "filterGroup": "Barry",
     "picture": "/KK.jpeg",
     "overall": 66,
     "position": "CB",
@@ -929,6 +946,7 @@
   },
   {
     "Contributor": "R",
+    "filterGroup": "Barry",
     "picture": "/R.jpeg",
     "overall": 85,
     "position": "AM",
