@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./AddPlayerCard.css";
 
 // ── Outfield EA Fields & Detailed Stats ──
@@ -13,7 +13,6 @@ const STAT_CATEGORIES = {
   PHY: ["Jumping", "Stamina", "Strength", "Aggression"],
 };
 
-// ── Goalkeeper EA Fields & Detailed Stats ──
 const GK_EA_FIELDS = ["DIV", "HAN", "KIC", "REF", "SPD", "POS"];
 
 const GK_DETAILED_CATEGORIES = {
@@ -33,7 +32,6 @@ const ALL_POSITIONS = [
 
 const FILTER_OPTIONS = ["Barry", "The Bros", "馬哲", "梁哥"];
 
-// Combine all possible sub-stats to initialize the form state
 const ALL_SUB_STATS = [
   ...Object.values(STAT_CATEGORIES).flat(),
   ...Object.values(GK_DETAILED_CATEGORIES).flat()
@@ -48,10 +46,8 @@ const buildEmptyForm = () => {
     position: "CB",
     weakFoot: 3,
     preferredFoot: "Right",
-    filterGroup: "", // Added Filter Group
-    // Outfield EA
+    filterGroup: "",
     PAC: "", SHO: "", PAS: "", DRI: "", DEF: "", PHY: "",
-    // GK EA
     DIV: "", HAN: "", KIC: "", REF: "", SPD: "", POS: "",
   };
   UNIQUE_SUB_STATS.forEach((s) => {
@@ -60,24 +56,47 @@ const buildEmptyForm = () => {
   return form;
 };
 
+const STORAGE_KEY = "apc_draft";
+
+function saveDraft(data) {
+  try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (_) {}
+}
+function loadDraft() {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) { return null; }
+}
+function clearDraft() {
+  try { sessionStorage.removeItem(STORAGE_KEY); } catch (_) {}
+}
+
 function AddPlayerCard() {
-  const [formData, setFormData] = useState(buildEmptyForm());
-  const [positionRatings, setPositionRatings] = useState([]);
-  const [newPos, setNewPos] = useState("RB"); 
-  const [newPosRating, setNewPosRating] = useState("");
+  const saved = loadDraft();
+
+  const [formData, setFormData] = useState(() => saved?.formData ?? buildEmptyForm());
+  const [positionRatings, setPositionRatings] = useState(() => saved?.positionRatings ?? []);
+  const [newPos, setNewPos] = useState(() => saved?.newPos ?? "RB");
+  const [newPosRating, setNewPosRating] = useState(() => saved?.newPosRating ?? "");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    saveDraft({ formData, positionRatings, newPos, newPosRating });
+  }, [formData, positionRatings, newPos, newPosRating]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
   const handlePicture = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => handleChange("picture", reader.result); // stores base64 data URL
+    reader.onloadend = () => handleChange("picture", reader.result);
     reader.readAsDataURL(file);
   };
+
   const autoCalculate = () => {
     const isGK = formData.position === "GK";
     const avg = (...vals) => {
@@ -88,9 +107,7 @@ function AddPlayerCard() {
 
     setFormData((prev) => {
       const updated = { ...prev };
-      
       if (isGK) {
-        // Map GK sub-stats to the 6 EA fields
         updated.DIV = parseInt(prev["GK Diving"]) || 0;
         updated.HAN = parseInt(prev["GK Handling"]) || 0;
         updated.KIC = parseInt(prev["GK Kicking"]) || 0;
@@ -98,12 +115,10 @@ function AddPlayerCard() {
         updated.SPD = avg(prev["Acceleration"], prev["Sprint Speed"]);
         updated.POS = parseInt(prev["GK Positioning"]) || 0;
       } else {
-        // Map Outfield sub-stats to the 6 EA fields
         Object.entries(STAT_CATEGORIES).forEach(([ea, stats]) => {
           updated[ea] = avg(...stats.map(s => prev[s]));
         });
       }
-      
       return updated;
     });
   };
@@ -126,74 +141,76 @@ function AddPlayerCard() {
     setPositionRatings((prev) => prev.filter((p) => p.position !== pos));
   };
 
-    const handleSubmit = async (e) => {
-  e.preventDefault();
-  const playerName = formData.Contributor.trim();
-  if (!playerName) {
-    alert("Please enter a player name.");
-    return;
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const playerName = formData.Contributor.trim();
+    if (!playerName) {
+      alert("Please enter a player name.");
+      return;
+    }
 
-  setSaving(true);
-  setMessage("");
+    setSaving(true);
+    setMessage("");
 
-  try {
-    let picturePath = formData.picture;
+    try {
+      let picturePath = formData.picture;
 
-    // ── STEP 1: Upload picture if user picked a new one ──
-    if (picturePath && picturePath.startsWith("data:")) {
-      setMessage("📸 Uploading picture to GitHub...");
-      const imgRes = await fetch("https://football-stats-xbx6.onrender.com/upload-player-picture", {
+      if (picturePath && picturePath.startsWith("data:")) {
+        setMessage("📸 Uploading picture to GitHub...");
+        const imgRes = await fetch("https://football-stats-xbx6.onrender.com/upload-player-picture", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: playerName, image: picturePath }),
+        });
+        const imgResult = await imgRes.json();
+        if (!imgRes.ok) {
+          throw new Error(imgResult.githubError || imgResult.error || "Picture upload failed");
+        }
+        picturePath = imgResult.picture;
+      }
+
+      const posRatingsObj = {};
+      positionRatings.forEach(({ position, rating }) => {
+        posRatingsObj[position] = rating;
+      });
+
+      const stringFields = ["Contributor", "picture", "position", "preferredFoot", "filterGroup"];
+
+      const payload = {
+        ...formData,
+        picture: picturePath,
+        ...Object.fromEntries(
+          Object.entries(formData).map(([k, v]) => [
+            k,
+            stringFields.includes(k) ? v : parseInt(v) || 0,
+          ])
+        ),
+        positionRatings: formData.position === "GK" ? {} : posRatingsObj,
+      };
+
+      const res = await fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: playerName, image: picturePath }),
+        body: JSON.stringify(payload),
       });
-      const imgResult = await imgRes.json();
-      if (!imgRes.ok) {
-        throw new Error(imgResult.githubError || imgResult.error || "Picture upload failed");
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.githubError || result.error || "Save failed");
       }
-      picturePath = imgResult.picture; // "/images/PlayerName.jpeg"
+
+      setMessage(result.message || "✅ Player card saved successfully!");
+
+      clearDraft();
+      setFormData(buildEmptyForm());
+      setPositionRatings([]);
+      setNewPos("RB");
+      setNewPosRating("");
+    } catch (err) {
+      setMessage(`❌ Failed: ${err.message}`);
+    } finally {
+      setSaving(false);
     }
-
-    // ── STEP 2: Save the player card with the picture PATH ──
-    const posRatingsObj = {};
-    positionRatings.forEach(({ position, rating }) => {
-      posRatingsObj[position] = rating;
-    });
-
-    const stringFields = ["Contributor", "picture", "position", "preferredFoot", "filterGroup"];
-
-    const payload = {
-      ...formData,
-      picture: picturePath,
-      ...Object.fromEntries(
-        Object.entries(formData).map(([k, v]) => [
-          k,
-          stringFields.includes(k) ? v : parseInt(v) || 0,
-        ])
-      ),
-      positionRatings: formData.position === "GK" ? {} : posRatingsObj,
-    };
-
-    const res = await fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const result = await res.json();
-    if (!res.ok) {
-      throw new Error(result.githubError || result.error || "Save failed");
-    }
-
-    setMessage(result.message || "✅ Player card saved successfully!");
-    setFormData(buildEmptyForm());
-    setPositionRatings([]);
-  } catch (err) {
-    setMessage(`❌ Failed: ${err.message}`);
-  } finally {
-    setSaving(false);
-  }
-};
+  };
 
   const isGK = formData.position === "GK";
   const activeEAFields = isGK ? GK_EA_FIELDS : OUTFIELD_EA_FIELDS;
@@ -205,7 +222,6 @@ function AddPlayerCard() {
       {message && <div className="apc-msg">{message}</div>}
 
       <form onSubmit={handleSubmit}>
-        {/* ── BASIC INFO ── */}
         <section className="apc-card">
           <h2 className="apc-section-title">Player Info</h2>
           <div className="apc-grid-2">
@@ -283,7 +299,6 @@ function AddPlayerCard() {
           )}
         </section>
 
-        {/* ── EA SUMMARY FIELDS ── */}
         <section className="apc-card">
           <div className="apc-ea-header">
             <h2 className="apc-section-title">EA Card Ratings</h2>
@@ -305,7 +320,6 @@ function AddPlayerCard() {
           </div>
         </section>
 
-        {/* ── DETAILED STATS ── */}
         <section className="apc-card">
           <h2 className="apc-section-title">Detailed Stats</h2>
           {Object.entries(activeDetailedCats).map(([cat, stats]) => (
@@ -327,7 +341,6 @@ function AddPlayerCard() {
           ))}
         </section>
 
-        {/* ── POSITION RATINGS (Hidden for GK) ── */}
         {!isGK && (
           <section className="apc-card">
             <h2 className="apc-section-title">Playable Positions</h2>
@@ -360,7 +373,6 @@ function AddPlayerCard() {
           </section>
         )}
 
-        {/* ── SUBMIT ── */}
         <div className="apc-actions">
           <button type="submit" className="apc-save-btn" disabled={saving}>
             {saving ? "Saving..." : "💾 Save Player Card"}

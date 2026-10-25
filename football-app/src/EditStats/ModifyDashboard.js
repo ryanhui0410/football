@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import MatchStatsModal from "./MatchStatsModal";
+import PlayerPicker from "./PlayerPicker";
 import "./ModifyDashboard.css";
 import MatchLineup from "./MatchLineup";
 
@@ -66,10 +67,16 @@ function deriveOutcome(matchResult, team) {
   return b > a ? "Win" : b < a ? "Loss" : "Draw";
 }
 
+const HOME_FILTER_GROUPS = ["Barry", "馬哲", "梁哥"];
+
+function prevRatingOf(player, stat) {
+  if (player && player.rating !== undefined && player.rating !== null && player.rating !== "") return player.rating;
+  return stat ? (parseFloat(stat.Rating) || "") : "";
+}
+
 // ═══════════════ MAIN COMPONENT ═══════════════
 
 function ModifyDashboard({ contributors, onSave }) {
-  const [compareData, setCompareData] = useState(null);
   const [statsModalOpen, setStatsModalOpen] = useState(false);
   const [selectedStats, setSelectedStats] = useState(null);
   const [choiceMatch, setChoiceMatch] = useState(null);
@@ -84,14 +91,14 @@ function ModifyDashboard({ contributors, onSave }) {
   const [reportPerspective, setReportPerspective] = useState("");
   const [editedResult, setEditedResult] = useState("");
   const [slotStats, setSlotStats] = useState(null);
-  const [selectedOtherPlayer, setSelectedOtherPlayer] = useState(null);
+  const [selectedGroupPlayer, setSelectedGroupPlayer] = useState(null);
   const GITHUB_OWNER = "ryanhui0410";
   const GITHUB_REPO = "football";
   const IMAGES_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/football-app/public/images`;
 
   const [pictureMap, setPictureMap] = useState({});
   const [activeFilter, setActiveFilter] = useState("All");
-  const [othersExpanded, setOthersExpanded] = useState(false);
+  const [expandedGroup, setExpandedGroup] = useState(null); // which group pill is expanded
 
   const getPartner = (name) => {
     const n = (name || "").trim().toLowerCase();
@@ -144,34 +151,34 @@ function ModifyDashboard({ contributors, onSave }) {
     if (dateStr.length === 10 && dateStr.includes("-")) return dateStr;
     const parts = dateStr.split("/");
     if (parts.length === 3) {
-      return `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+      return `${parts[2]}-${parts[0].padStart(2, "0")}-${parts[1].padStart(2, "0")}`;
     }
     return dateStr;
   };
 
   const parseDate = (dateStr) => {
     if (!dateStr) return new Date(0);
-    const parts = dateStr.split('/');
+    const parts = dateStr.split("/");
     if (parts.length === 3) return new Date(parts[2], parts[0] - 1, parts[1]);
     return new Date(dateStr);
   };
 
   const getRatingColor = (rating) => {
     const r = parseFloat(rating);
-    if (isNaN(r)) return '#9e9e9e';
-    if (r >= 9.0) return '#2563eb';
-    if (r >= 7.0) return '#16a34a';
-    if (r >= 5.0) return '#ea580c';
-    return '#dc2626';
+    if (isNaN(r)) return "#9e9e9e";
+    if (r >= 9.0) return "#2563eb";
+    if (r >= 7.0) return "#16a34a";
+    if (r >= 5.0) return "#ea580c";
+    return "#dc2626";
   };
 
   const getRatingBgColor = (rating) => {
     const r = parseFloat(rating);
-    if (isNaN(r)) return '#e2e8f0';
-    if (r > 9) return '#3b82f6';
-    if (r >= 7) return '#22c55e';
-    if (r >= 5) return '#eab308';
-    return '#ef4444';
+    if (isNaN(r)) return "#e2e8f0";
+    if (r > 9) return "#3b82f6";
+    if (r >= 7) return "#22c55e";
+    if (r >= 5) return "#eab308";
+    return "#ef4444";
   };
 
   const getWinLossLetter = (winLoss) => {
@@ -189,7 +196,6 @@ function ModifyDashboard({ contributors, onSave }) {
     return "";
   };
 
-  // ⬅ CHANGED: 3 new helpers for player detail cards
   const getSeasonSummary = (playerName) => {
     const name = (playerName || "").trim().toLowerCase();
     const matches = matchStatsData.filter(
@@ -212,12 +218,12 @@ function ModifyDashboard({ contributors, onSave }) {
     );
     if (!player) return null;
     return [
-      { label: "PAC", value: player.pace },
-      { label: "SHO", value: player.shooting },
-      { label: "PAS", value: player.passing },
-      { label: "DRI", value: player.dribbling },
-      { label: "DEF", value: player.defending },
-      { label: "PHY", value: player.physical },
+      { label: "PAC", value: player.PAC ?? player.pace },
+      { label: "SHO", value: player.SHO ?? player.shooting },
+      { label: "PAS", value: player.PAS ?? player.passing },
+      { label: "DRI", value: player.DRI ?? player.dribbling },
+      { label: "DEF", value: player.DEF ?? player.defending },
+      { label: "PHY", value: player.PHY ?? player.physical },
     ].filter(a => a.value != null);
   };
 
@@ -497,41 +503,60 @@ function ModifyDashboard({ contributors, onSave }) {
       });
   }, [contributors, allLineups, matchStatsData]);
 
-  const otherPlayers = useMemo(() =>
-    allContributors
-      .map(c => c.name)
-      .filter(n => {
-        const l = normalizeName(n);
-        return l !== "ryan" && l !== "darren";
-      })
-      .sort((a, b) => a.localeCompare(b, "zh-Hant")),
-  [allContributors]);
+  // ── Dynamic filter groups for home page ──
+  const filterGroups = useMemo(() => {
+    const groups = new Set();
+    availablePlayers.forEach(p => {
+      const g = (p.filterGroup || "").trim();
+      if (g) groups.add(g);
+    });
+    return HOME_FILTER_GROUPS.filter(g => groups.has(g));
+  }, [availablePlayers]);
 
+  // ── Players inside the currently expanded group ──
+  const groupPlayerNames = useMemo(() => {
+    if (!expandedGroup) return [];
+    return availablePlayers
+      .filter(p => (p.filterGroup || "").trim() === expandedGroup)
+      .map(p => p.Contributor)
+      .sort((a, b) => (a || "").localeCompare(b || ""));
+  }, [availablePlayers, expandedGroup]);
+
+  // ── What to display ──
   const displayContributors = useMemo(() => {
+    // All
     if (activeFilter === "All") return allContributors;
+
+    // Ryan / Darren
     if (activeFilter === "Ryan")
       return allContributors.filter(c => normalizeName(c.name) === "ryan");
     if (activeFilter === "Darren")
       return allContributors.filter(c => normalizeName(c.name) === "darren");
-    if (activeFilter === "Others") {
-      if (selectedOtherPlayer) {
+
+    // Group filter (Barry, 馬哲, 梁哥)
+    if (HOME_FILTER_GROUPS.includes(activeFilter)) {
+      // If a specific player is selected within the group, show only that player
+      if (selectedGroupPlayer) {
         return allContributors.filter(
-          c => normalizeName(c.name) === normalizeName(selectedOtherPlayer)
+          c => normalizeName(c.name) === normalizeName(selectedGroupPlayer)
         );
       }
-      return allContributors.filter(c => {
-        const l = normalizeName(c.name);
-        return l !== "ryan" && l !== "darren";
-      });
+      // Otherwise show all players in the group
+      const groupMembers = availablePlayers
+        .filter(p => (p.filterGroup || "").trim() === activeFilter)
+        .map(p => normalizeName(p.Contributor));
+      const groupSet = new Set(groupMembers);
+      return allContributors.filter(c => groupSet.has(normalizeName(c.name)));
     }
+
     return allContributors;
-  }, [allContributors, activeFilter, selectedOtherPlayer]);
+  }, [allContributors, activeFilter, availablePlayers, selectedGroupPlayer]);
 
   const enrichLineupWithMotm = (lineup) => {
     if (!lineup) return lineup;
     const enriched = JSON.parse(JSON.stringify(lineup));
-    ['teamA', 'teamB'].forEach(team => {
-      ['players', 'subs'].forEach(key => {
+    ["teamA", "teamB"].forEach(team => {
+      ["players", "subs"].forEach(key => {
         if (Array.isArray(enriched[team]?.[key])) {
           enriched[team][key] = enriched[team][key].map(player => {
             if (!player) return null;
@@ -578,7 +603,7 @@ function ModifyDashboard({ contributors, onSave }) {
     if (!editedLineup) return;
 
     const sanitizeTeam = (teamObj) => {
-      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: Array(4).fill(null) }; // ⬅ CHANGED
+      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: Array(4).fill(null) };
       const cleanPlayer = (p) => {
         if (!p) return null;
         return {
@@ -590,12 +615,12 @@ function ModifyDashboard({ contributors, onSave }) {
 
       const cleanPlayers = (teamObj.players || []).map(cleanPlayer);
       const cleanSubs = (teamObj.subs || []).map(cleanPlayer);
-      while (cleanSubs.length < 4) cleanSubs.push(null); // ⬅ CHANGED: was 2
+      while (cleanSubs.length < 4) cleanSubs.push(null);
 
       return {
         formation: teamObj.formation || "4-4-2",
         players: cleanPlayers.slice(0, 11),
-        subs: cleanSubs.slice(0, 4) // ⬅ CHANGED: was 2
+        subs: cleanSubs.slice(0, 4)
       };
     };
 
@@ -653,53 +678,135 @@ function ModifyDashboard({ contributors, onSave }) {
 
   useEffect(() => {
     const handleResize = () => setLayout(getLayoutType());
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
     };
   }, []);
 
+  // ═══════════════ PlayerPicker callback ═══════════════
+  const handlePlayerSelect = (selected) => {
+    if (!selected) {
+      setSlotToEdit(prev => ({ ...prev, player: null }));
+      setSlotStats(null);
+    } else {
+      setSlotToEdit(prev => ({
+        ...prev,
+        player: {
+          Contributor: selected.Contributor,
+          picture: selected.picture || `/${selected.Contributor}.jpeg`,
+          rating: prev.player?.rating !== undefined ? prev.player.rating : ""
+        }
+      }));
+      const stat = getPlayerMatchStats(selected.Contributor, matchReport.date, matchReport.location, matchReport.time);
+      setSlotStats({
+        rating: prevRatingOf(selected, stat),
+        goal: parseInt(selected.goal) || (stat ? (parseInt(stat.Goal) || 0) : 0),
+        assist: parseInt(selected.assist) || (stat ? (parseInt(stat.Assist) || 0) : 0),
+        error: parseInt(selected.error) || (stat ? (parseInt(stat.Error) || 0) : 0),
+        ownGoal: parseInt(selected.ownGoal) || (stat ? (parseInt(stat["Own Goal"]) || 0) : 0),
+        assistToCount: selected.assistToCount ?? (stat ? (parseInt(stat["Assist to count"]) || 0) : 0),
+        leftFoot: parseInt(selected.leftFoot) || (stat ? (parseInt(stat["Left Foot"]) || 0) : 0),
+        rightFoot: parseInt(selected.rightFoot) || (stat ? (parseInt(stat["Right Foot"]) || 0) : 0),
+        head: parseInt(selected.head) || (stat ? (parseInt(stat.Head) || 0) : 0),
+        other: parseInt(selected.other) || (stat ? (parseInt(stat["Other body parts"]) || 0) : 0),
+        manOfTheMatch: selected.manOfTheMatch === true || (stat ? stat["Man of the Match"] === true : false),
+      });
+    }
+  };
+
   return (
     <div className="md-wrap">
+      {/* ══════ FILTER BAR ══════ */}
       <div className="md-filter-bar">
         <span className="md-filter-label">Filter by Player:</span>
         <div className="md-filter-pills">
-          {["All", "Ryan", "Darren", "Others"].map(name => (
-            <button
-              key={name}
-              className={`md-pill ${
-                activeFilter === name || (name === "Others" && selectedOtherPlayer)
-                  ? 'active' : ''
-              }`}
-              onClick={() => {
-                if (name === "Others") {
-                  setOthersExpanded(prev => !prev);
-                  setActiveFilter("Others");
-                  setSelectedOtherPlayer(null);
-                } else {
-                  setActiveFilter(name);
-                  setOthersExpanded(false);
-                  setSelectedOtherPlayer(null);
-                }
-              }}
-            >
-              {name}
-            </button>
-          ))}
+          {/* All */}
+          <button
+            className={`md-pill ${activeFilter === "All" && !selectedGroupPlayer ? "active" : ""}`}
+            onClick={() => {
+              setActiveFilter("All");
+              setExpandedGroup(null);
+              setSelectedGroupPlayer(null);
+            }}
+          >
+            All
+          </button>
+
+          {/* Ryan */}
+          <button
+            className={`md-pill ${activeFilter === "Ryan" ? "active" : ""}`}
+            onClick={() => {
+              setActiveFilter("Ryan");
+              setExpandedGroup(null);
+              setSelectedGroupPlayer(null);
+            }}
+          >
+            Ryan
+          </button>
+
+          {/* Darren */}
+          <button
+            className={`md-pill ${activeFilter === "Darren" ? "active" : ""}`}
+            onClick={() => {
+              setActiveFilter("Darren");
+              setExpandedGroup(null);
+              setSelectedGroupPlayer(null);
+            }}
+          >
+            Darren
+          </button>
+
+          {/* Dynamic groups: Barry, 馬哲, 梁哥 */}
+          {filterGroups.map(group => {
+            const isExpanded = expandedGroup === group;
+            const isGroupActive = activeFilter === group;
+            return (
+              <button
+                key={group}
+                className={`md-pill ${isGroupActive || isExpanded ? "active" : ""}`}
+                onClick={() => {
+                  if (isExpanded) {
+                    // Collapse
+                    setExpandedGroup(null);
+                    setActiveFilter("All");
+                    setSelectedGroupPlayer(null);
+                  } else {
+                    // Expand this group's player list
+                    setExpandedGroup(group);
+                    setActiveFilter(group);
+                    setSelectedGroupPlayer(null);
+                  }
+                }}
+              >
+                {group}
+              </button>
+            );
+          })}
         </div>
 
-        {othersExpanded && (
+        {/* ── Expanded player list for the selected group ── */}
+                {/* ── Expanded player list for the selected group ── */}
+        {expandedGroup && groupPlayerNames.length > 0 && (
           <div className="md-others-list">
-            {otherPlayers.map(name => (
+            <button
+              className={`md-pill md-pill-sm ${!selectedGroupPlayer ? "active" : ""}`}
+              onClick={() => {
+                setSelectedGroupPlayer(null);
+                setExpandedGroup(null);  // hide the list
+              }}
+            >
+              All {expandedGroup}
+            </button>
+            {groupPlayerNames.map(name => (
               <button
                 key={name}
-                className={`md-pill md-pill-sm ${selectedOtherPlayer === name ? 'active' : ''}`}
+                className={`md-pill md-pill-sm ${selectedGroupPlayer === name ? "active" : ""}`}
                 onClick={() => {
-                  setSelectedOtherPlayer(name);
-                  setActiveFilter("Others");
-                  setOthersExpanded(false);
+                  setSelectedGroupPlayer(name);
+                  setExpandedGroup(null);  // ← hide the list after selecting a player
                 }}
               >
                 {name}
@@ -709,6 +816,7 @@ function ModifyDashboard({ contributors, onSave }) {
         )}
       </div>
 
+      {/* ══════ CONTRIBUTOR SECTIONS ══════ */}
       {displayContributors.map((contributor) => {
         const sortedMatches = [...contributor.matches].sort((a, b) => parseDate(b.date) - parseDate(a.date));
         return (
@@ -736,7 +844,7 @@ function ModifyDashboard({ contributors, onSave }) {
                       <div className="md-location">📍 {match.location || "Unknown"}</div>
                     </td>
                     <td className="md-td center" data-label="Match Result">
-                      <div className={`md-result-box ${match.winLoss ? match.winLoss.toLowerCase() : ''}`}>
+                      <div className={`md-result-box ${match.winLoss ? match.winLoss.toLowerCase() : ""}`}>
                         <div className="md-score">{match.matchResult || "—"}</div>
                         {match.winLoss && <div className={`md-outcome ${match.winLoss.toLowerCase()}`}>{match.winLoss}</div>}
                       </div>
@@ -746,8 +854,8 @@ function ModifyDashboard({ contributors, onSave }) {
                         <div className="md-symbols-wrapper">
                           {splitSymbols(match.symbol).map((row, rowIdx) => (
                             <div key={rowIdx} className="md-symbols-row">
-                              {row.map((ch, idx) => (
-                                <span key={idx} className="md-symbol-icon">{ch}</span>
+                              {row.map((ch, i) => (
+                                <span key={i} className="md-symbol-icon">{ch}</span>
                               ))}
                             </div>
                           ))}
@@ -759,18 +867,12 @@ function ModifyDashboard({ contributors, onSave }) {
                     <td className="md-td center" data-label="Rating">
                       {match.manOfTheMatch ? (
                         <span className="md-rating-motm-wrapper">
-                          <span
-                            className="md-rating md-rating-motm"
-                            style={{ backgroundColor: getRatingBgColor(match.rating) }}
-                          >
+                          <span className="md-rating md-rating-motm" style={{ backgroundColor: getRatingBgColor(match.rating) }}>
                             {match.rating || "—"}
                           </span>
                         </span>
                       ) : (
-                        <span
-                          className="md-rating"
-                          style={{ backgroundColor: getRatingBgColor(match.rating) }}
-                        >
+                        <span className="md-rating" style={{ backgroundColor: getRatingBgColor(match.rating) }}>
                           {match.rating || "—"}
                         </span>
                       )}
@@ -790,40 +892,28 @@ function ModifyDashboard({ contributors, onSave }) {
                 const wlLetter = getWinLossLetter(match.winLoss);
                 const isMotm = !!match.manOfTheMatch;
                 return (
-                  <div
-                    key={`fm-${idx}`}
-                    className="fm-row"
-                    onClick={() => setChoiceMatch({ match: match, name: contributor.name })}
-                  >
+                  <div key={`fm-${idx}`} className="fm-row" onClick={() => setChoiceMatch({ match: match, name: contributor.name })}>
                     <div className="fm-row-top">
                       <span className="fm-date">{match.date}</span>
                       <span className="fm-location">📍 {match.location || "Unknown"}</span>
                     </div>
-
                     <div className="fm-row-main">
                       <div className="fm-left">
-                        {wlLetter && (
-                          <span className={`fm-wl fm-wl-${wlLetter.toLowerCase()}`}>{wlLetter}</span>
-                        )}
+                        {wlLetter && <span className={`fm-wl fm-wl-${wlLetter.toLowerCase()}`}>{wlLetter}</span>}
                         <span className="fm-score">{match.matchResult || "—"}</span>
                       </div>
                       <div className="fm-right">
                         {goals > 0 && (
                           <span className="fm-icons fm-goals" title={`${goals} goal(s)`}>
-                            {[...Array(goals)].map((_, i) => (
-                              <span key={`g-${i}`} className="fm-icon">⚽</span>
-                            ))}
+                            {[...Array(goals)].map((_, i) => <span key={`g-${i}`} className="fm-icon">⚽</span>)}
                           </span>
                         )}
                         {assists > 0 && (
                           <span className="fm-icons fm-assists" title={`${assists} assist(s)`}>
-                            {[...Array(assists)].map((_, i) => (
-                              <span key={`a-${i}`} className="fm-icon">👟</span>
-                            ))}
+                            {[...Array(assists)].map((_, i) => <span key={`a-${i}`} className="fm-icon">👟</span>)}
                           </span>
                         )}
                         {goals === 0 && assists === 0 && <span className="fm-ga fm-none">—</span>}
-
                         <span className={`fm-rating-box ${getFmRatingClass(match.rating, isMotm)}`}>
                           {match.rating || "—"}
                         </span>
@@ -839,7 +929,7 @@ function ModifyDashboard({ contributors, onSave }) {
 
       <MatchStatsModal open={statsModalOpen} match={selectedStats} onClose={() => setStatsModalOpen(false)} />
 
-      {/* CHOICE MODAL */}
+      {/* ══════ CHOICE MODAL ══════ */}
       {choiceMatch && !matchReport && (
         <div className="choice-overlay" onClick={() => setChoiceMatch(null)}>
           <div className="choice-modal" onClick={e => e.stopPropagation()}>
@@ -861,26 +951,22 @@ function ModifyDashboard({ contributors, onSave }) {
         </div>
       )}
 
-      {/* VIEW MATCH REPORT OVERLAY */}
+      {/* ══════ MATCH REPORT OVERLAY ══════ */}
       {matchReport && (
-        <div className="report-overlay" onClick={() => { setMatchReport(null); }}>
-          <div className="report-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '1000px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: '25px' }}>
-            <button className="report-close" onClick={() => { setMatchReport(null); }}>✕</button>
+        <div className="report-overlay" onClick={() => setMatchReport(null)}>
+          <div className="report-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: "1000px", width: "95%", maxHeight: "90vh", overflowY: "auto", padding: "25px" }}>
+            <button className="report-close" onClick={() => setMatchReport(null)}>✕</button>
             <h2 className="report-title">⚽ Match Report: {matchReport.date}</h2>
             {matchReport.location && <p className="report-meta">📍 {matchReport.location} {matchReport.time && `• 🕒 ${matchReport.time}`}</p>}
 
             {(() => {
-              const avgA = calcTeamAverage(matchReport.teamA);
-              const avgB = calcTeamAverage(matchReport.teamB);
-
-              let matchResult = matchReport.matchResult || '';
-              let winLoss = '';
+              let matchResult = matchReport.matchResult || "";
+              let winLoss = "";
 
               if (!matchResult) {
                 const playersA = Array.isArray(matchReport.teamA?.players) ? matchReport.teamA.players : Object.values(matchReport.teamA?.players || {});
                 const playersB = Array.isArray(matchReport.teamB?.players) ? matchReport.teamB.players : Object.values(matchReport.teamB?.players || {});
                 const allPlayers = [...playersA, ...playersB].filter(p => p != null);
-
                 for (const p of allPlayers) {
                   const stat = getPlayerMatchStats(p.Contributor, matchReport.date, matchReport.location, matchReport.time);
                   if (stat && stat["Match result"]) {
@@ -902,28 +988,25 @@ function ModifyDashboard({ contributors, onSave }) {
                       <div style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", textAlign: "center", marginBottom: "6px" }}>
                         ⚽ Match Result (Team A – Team B)
                       </div>
-                      <ScorelineInput
-                        value={editedResult}
-                        onChange={(val) => setEditedResult(val)}
-                      />
+                      <ScorelineInput value={editedResult} onChange={(val) => setEditedResult(val)} />
                     </div>
                   ) : (
-                    <div className="report-result-header" style={{ justifyContent: 'center', border: 'none', background: 'transparent', padding: '10px 0', marginBottom: '10px' }}>
+                    <div className="report-result-header" style={{ justifyContent: "center", border: "none", background: "transparent", padding: "10px 0", marginBottom: "10px" }}>
                       <div className="result-score-center">
-                        <span className="result-score">{matchResult || '—'}</span>
+                        <span className="result-score">{matchResult || "—"}</span>
                         {winLoss && <span className={`result-wl ${winLoss.toLowerCase()}`}>{winLoss}</span>}
                       </div>
                     </div>
                   )}
 
-                  <div style={{ marginTop: '10px' }}>
-                    <h3 style={{ textAlign: 'center', marginBottom: '15px', color: '#444' }}>
+                  <div style={{ marginTop: "10px" }}>
+                    <h3 style={{ textAlign: "center", marginBottom: "15px", color: "#444" }}>
                       {isEditingReport ? "✏️ Edit Tactical Lineup" : "Tactical Lineup"}
                     </h3>
 
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: "relative" }}>
                       <MatchLineup
-                        key={`lineup-${isEditingReport ? 'edit' : 'view'}-${lineupVersion}`}
+                        key={`lineup-${isEditingReport ? "edit" : "view"}-${lineupVersion}`}
                         matchData={{ Date: matchReport.date, Location: matchReport.location, Time: matchReport.time }}
                         initialLineup={enrichLineupWithMotm(isEditingReport ? editedLineup : matchReport)}
                         readOnly={!isEditingReport}
@@ -952,7 +1035,7 @@ function ModifyDashboard({ contributors, onSave }) {
                               head: player.head ?? (stat ? (parseInt(stat.Head) || 0) : 0),
                               other: player.other ?? (stat ? (parseInt(stat["Other body parts"]) || 0) : 0),
                               manOfTheMatch: player.manOfTheMatch ?? (stat ? stat["Man of the Match"] === true : false),
-                              assistToCount: player.assistToCount ?? (stat ? (parseInt(stat["Assist to count"]) || 0): 0),
+                              assistToCount: player.assistToCount ?? (stat ? (parseInt(stat["Assist to count"]) || 0) : 0),
                             });
                           } else {
                             setSlotStats(null);
@@ -962,18 +1045,18 @@ function ModifyDashboard({ contributors, onSave }) {
                     </div>
 
                     {isEditingReport && (
-                      <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                      <div style={{ marginTop: "20px", display: "flex", gap: "12px", justifyContent: "flex-end" }}>
                         <button
                           onClick={() => { setIsEditingReport(false); setEditedLineup(null); setLineupVersion(v => v + 1); }}
-                          style={{ padding: '10px 20px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                          style={{ padding: "10px 20px", background: "#e2e8f0", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: 600 }}
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleSaveReportLineup}
                           style={{
-                            padding: '10px 20px', background: '#10b981', color: '#fff', border: 'none',
-                            borderRadius: '6px', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(16,185,129,0.3)'
+                            padding: "10px 20px", background: "#10b981", color: "#fff", border: "none",
+                            borderRadius: "6px", cursor: "pointer", fontWeight: 600, boxShadow: "0 4px 12px rgba(16,185,129,0.3)"
                           }}
                         >
                           💾 Save Lineup
@@ -985,80 +1068,41 @@ function ModifyDashboard({ contributors, onSave }) {
               );
             })()}
 
-            {/* SLOT EDIT MODAL */}
+            {/* ══════ SLOT EDIT MODAL ══════ */}
             {slotToEdit && (
               <div className="slot-edit-overlay" onClick={() => setSlotToEdit(null)}>
                 <div className="slot-edit-modal" onClick={e => e.stopPropagation()}>
                   <button className="slot-edit-close" onClick={() => setSlotToEdit(null)}>✕</button>
                   <h3>{slotToEdit.player ? "Edit Player" : "Add Player"}</h3>
 
-                  <div style={{ marginBottom: '16px' }}>
-                    <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Select Player:</label>
-                    <select
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '15px' }}
+                  <div style={{ marginBottom: "16px" }}>
+                    <PlayerPicker
+                      availablePlayers={availablePlayers}
+                      pictureMap={pictureMap}
                       value={slotToEdit.player?.Contributor || ""}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (!val) {
-                          setSlotToEdit(prev => ({ ...prev, player: null }));
-                          setSlotStats(null);
-                        } else {
-                          const selected = availablePlayers.find(p => p.Contributor === val);
-                          setSlotToEdit(prev => ({
-                            ...prev,
-                            player: {
-                              Contributor: selected.Contributor,
-                              picture: selected.picture || `/${selected.Contributor}.jpeg`,
-                              rating: prev.player?.rating !== undefined ? prev.player.rating : ""
-                            }
-                          }));
-                          const stat = getPlayerMatchStats(selected.Contributor, matchReport.date, matchReport.location, matchReport.time);
-                          setSlotStats({
-                            rating: prevRatingOf(selected, stat),
-                            goal: parseInt(selected.goal) || (stat ? (parseInt(stat.Goal) || 0) : 0),
-                            assist: parseInt(selected.assist) || (stat ? (parseInt(stat.Assist) || 0) : 0),
-                            error: parseInt(selected.error) || (stat ? (parseInt(stat.Error) || 0) : 0),
-                            ownGoal: parseInt(selected.ownGoal) || (stat ? (parseInt(stat["Own Goal"]) || 0) : 0),
-                            assistToCount: selected.assistToCount ?? (stat ? (parseInt(stat["Assist to count"]) || 0) : 0),
-                            leftFoot: parseInt(selected.leftFoot) || (stat ? (parseInt(stat["Left Foot"]) || 0) : 0),
-                            rightFoot: parseInt(selected.rightFoot) || (stat ? (parseInt(stat["Right Foot"]) || 0) : 0),
-                            head: parseInt(selected.head) || (stat ? (parseInt(stat.Head) || 0) : 0),
-                            other: parseInt(selected.other) || (stat ? (parseInt(stat["Other body parts"]) || 0) : 0),
-                            manOfTheMatch: selected.manOfTheMatch === true || (stat ? stat["Man of the Match"] === true : false),
-                          });
-                        }
-                      }}
-                    >
-                      <option value="">-- Empty Slot --</option>
-                      {availablePlayers.map(p => (
-                        <option key={p.Contributor} value={p.Contributor}>{p.Contributor}</option>
-                      ))}
-                    </select>
+                      onSelect={handlePlayerSelect}
+                    />
                   </div>
 
                   {slotToEdit.player && (
-                    <div style={{ marginBottom: '16px' }}>
-                      <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Profile Picture</label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ marginBottom: "16px" }}>
+                      <label style={{ display: "block", fontWeight: 600, marginBottom: "6px", color: "#334155" }}>Profile Picture</label>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                         {slotStats?.picture && (
-                          <img
-                            src={slotStats.picture}
-                            alt="Preview"
-                            style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #cbd5e1' }}
-                          />
+                          <img src={slotStats.picture} alt="Preview"
+                            style={{ width: "56px", height: "56px", borderRadius: "50%", objectFit: "cover", border: "2px solid #cbd5e1" }} />
                         )}
                         <label style={{
-                          padding: '8px 16px', background: '#eff6ff', color: '#1d4ed8',
-                          borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '13px'
+                          padding: "8px 16px", background: "#eff6ff", color: "#1d4ed8",
+                          borderRadius: "8px", cursor: "pointer", fontWeight: 600, fontSize: "13px"
                         }}>
                           📷 Choose New Photo
-                          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleSlotPicture} />
+                          <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleSlotPicture} />
                         </label>
                       </div>
                     </div>
                   )}
 
-                  {/* ══ ⬅ CHANGED: Player detail cards — fills the freed bottom space ══ */}
                   {slotToEdit.player && (() => {
                     const pname = slotToEdit.player.Contributor;
                     const summary = getSeasonSummary(pname);
@@ -1067,7 +1111,6 @@ function ModifyDashboard({ contributors, onSave }) {
 
                     return (
                       <>
-                        {/* Season Summary */}
                         <div className="pd-section pd-summary">
                           <h4>📊 Season Summary</h4>
                           {summary.matchCount > 0 ? (
@@ -1096,7 +1139,6 @@ function ModifyDashboard({ contributors, onSave }) {
                           )}
                         </div>
 
-                        {/* Player Attributes */}
                         {attributes && attributes.length > 0 && (
                           <div className="pd-section pd-attributes">
                             <h4>🎯 Player Attributes</h4>
@@ -1111,24 +1153,18 @@ function ModifyDashboard({ contributors, onSave }) {
                           </div>
                         )}
 
-                        {/* Recent Form */}
                         {recentForm.length > 0 && (
                           <div className="pd-section pd-form">
                             <h4>📈 Recent Form</h4>
                             <div className="pd-form-row">
                               {recentForm.map((m, i) => {
                                 const r = parseFloat(m.Rating);
-                                const bg = !isNaN(r)
-                                  ? r >= 7 ? "#16a34a" : r >= 5 ? "#eab308" : "#ef4444"
-                                  : "#9ca3af";
+                                const bg = !isNaN(r) ? r >= 7 ? "#16a34a" : r >= 5 ? "#eab308" : "#ef4444" : "#9ca3af";
                                 const isMotm = m["Man of the Match"] === true;
                                 return (
-                                  <div
-                                    key={i}
-                                    className={`pd-form-chip ${isMotm ? "pd-form-motm" : ""}`}
+                                  <div key={i} className={`pd-form-chip ${isMotm ? "pd-form-motm" : ""}`}
                                     style={{ background: bg }}
-                                    title={`${m.Date} — ${m.Location || ""} | Rating: ${m.Rating || "—"}${isMotm ? " ⭐MOTM" : ""}`}
-                                  >
+                                    title={`${m.Date} — ${m.Location || ""} | Rating: ${m.Rating || "—"}${isMotm ? " ⭐MOTM" : ""}`}>
                                     <span className="pd-form-rating">{m.Rating || "—"}</span>
                                     <span className="pd-form-date">{m.Date}</span>
                                   </div>
@@ -1143,10 +1179,9 @@ function ModifyDashboard({ contributors, onSave }) {
 
                   {slotToEdit.player && slotStats && (
                     <>
-                      <div style={{ marginBottom: '10px' }}>
-                        <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', color: '#334155' }}>Match Rating (0-10.0):</label>
-                        <input
-                          type="number" min="0" max="10" step="0.1"
+                      <div style={{ marginBottom: "10px" }}>
+                        <label style={{ display: "block", fontWeight: 600, marginBottom: "6px", color: "#334155" }}>Match Rating (0-10.0):</label>
+                        <input type="number" min="0" max="10" step="0.1"
                           value={slotStats.rating !== "" && slotStats.rating !== undefined ? slotStats.rating : ""}
                           onChange={(e) => {
                             const val = e.target.value;
@@ -1160,45 +1195,7 @@ function ModifyDashboard({ contributors, onSave }) {
                           ⚽ Match Stats
                         </h4>
                         <StatStepper label="Goal" value={slotStats.goal} onChange={(v) => setSlotStats(s => ({ ...s, goal: v }))} />
-
-                        {getPartner(slotToEdit.player.Contributor) && (
-                          <>
-                            <StatStepper label="Left Foot" value={slotStats.leftFoot} max={slotStats.goal}
-                              onChange={(v) => setSlotStats(s => ({ ...s, leftFoot: v }))} />
-                            <StatStepper label="Right Foot" value={slotStats.rightFoot} max={slotStats.goal}
-                              onChange={(v) => setSlotStats(s => ({ ...s, rightFoot: v }))} />
-                            <StatStepper label="Head" value={slotStats.head} max={slotStats.goal}
-                              onChange={(v) => setSlotStats(s => ({ ...s, head: v }))} />
-                            <StatStepper label="Other Body Parts" value={slotStats.other} max={slotStats.goal}
-                              onChange={(v) => setSlotStats(s => ({ ...s, other: v }))} />
-
-                            {(() => {
-                              const bodyTotal = (slotStats.leftFoot || 0) + (slotStats.rightFoot || 0) + (slotStats.head || 0) + (slotStats.other || 0);
-                              const tallyOk = (slotStats.goal || 0) === bodyTotal;
-                              return tallyOk ? (
-                                <div style={{
-                                  display: "flex", alignItems: "center", gap: "8px",
-                                  background: "#dcfce7", border: "1px solid #86efac", color: "#166534",
-                                  borderRadius: "8px", padding: "8px 10px", fontSize: "12px", fontWeight: 600, marginTop: "6px"
-                                }}>
-                                  ✓ Goal ({slotStats.goal || 0}) = LF ({slotStats.leftFoot || 0}) + RF ({slotStats.rightFoot || 0}) + Head ({slotStats.head || 0}) + Other ({slotStats.other || 0})
-                                </div>
-                              ) : (
-                                <div style={{
-                                  display: "flex", alignItems: "center", gap: "8px",
-                                  background: "#fef2f2", border: "1px solid #fca5a5", color: "#b91c1c",
-                                  borderRadius: "8px", padding: "8px 10px", fontSize: "12px", fontWeight: 600, marginTop: "6px"
-                                }}>
-                                  ⚠ Mismatch: Goal ({slotStats.goal || 0}) ≠ breakdown total ({bodyTotal}) — off by {Math.abs((slotStats.goal || 0) - bodyTotal)}
-                                </div>
-                              );
-                            })()}
-                          </>
-                        )}
-
-                        <StatStepper label="Own Goal" value={slotStats.ownGoal} onChange={(v) => setSlotStats(s => ({ ...s, ownGoal: v }))} />
                         <StatStepper label="Assist" value={slotStats.assist} onChange={(v) => setSlotStats(s => ({ ...s, assist: v }))} />
-                        <StatStepper label="Error" value={slotStats.error} onChange={(v) => setSlotStats(s => ({ ...s, error: v }))} />
 
                         {getPartner(slotToEdit.player.Contributor) && slotStats.assist > 0 && (
                           <StatStepper
@@ -1209,6 +1206,40 @@ function ModifyDashboard({ contributors, onSave }) {
                           />
                         )}
 
+                        <StatStepper label="Left Foot" value={slotStats.leftFoot}
+                          onChange={(v) => setSlotStats(s => ({ ...s, leftFoot: v }))} />
+                        <StatStepper label="Right Foot" value={slotStats.rightFoot}
+                          onChange={(v) => setSlotStats(s => ({ ...s, rightFoot: v }))} />
+                        <StatStepper label="Head" value={slotStats.head}
+                          onChange={(v) => setSlotStats(s => ({ ...s, head: v }))} />
+                        <StatStepper label="Other Body Parts" value={slotStats.other}
+                          onChange={(v) => setSlotStats(s => ({ ...s, other: v }))} />
+
+                        {(() => {
+                          const bodyTotal = (slotStats.leftFoot || 0) + (slotStats.rightFoot || 0) + (slotStats.head || 0) + (slotStats.other || 0);
+                          const tallyOk = (slotStats.goal || 0) === bodyTotal;
+                          return tallyOk ? (
+                            <div style={{
+                              display: "flex", alignItems: "center", gap: "8px",
+                              background: "#dcfce7", border: "1px solid #86efac", color: "#166534",
+                              borderRadius: "8px", padding: "8px 10px", fontSize: "12px", fontWeight: 600, marginTop: "6px"
+                            }}>
+                              ✓ Goal ({slotStats.goal || 0}) = LF ({slotStats.leftFoot || 0}) + RF ({slotStats.rightFoot || 0}) + Head ({slotStats.head || 0}) + Other ({slotStats.other || 0})
+                            </div>
+                          ) : (
+                            <div style={{
+                              display: "flex", alignItems: "center", gap: "8px",
+                              background: "#fef2f2", border: "1px solid #fca5a5", color: "#b91c1c",
+                              borderRadius: "8px", padding: "8px 10px", fontSize: "12px", fontWeight: 600, marginTop: "6px"
+                            }}>
+                              ⚠ Mismatch: Goal ({slotStats.goal || 0}) ≠ breakdown total ({bodyTotal}) — off by {Math.abs((slotStats.goal || 0) - bodyTotal)}
+                            </div>
+                          );
+                        })()}
+
+                        <StatStepper label="Own Goal" value={slotStats.ownGoal} onChange={(v) => setSlotStats(s => ({ ...s, ownGoal: v }))} />
+                        <StatStepper label="Error" value={slotStats.error} onChange={(v) => setSlotStats(s => ({ ...s, error: v }))} />
+
                         <div style={{
                           display: "flex", alignItems: "center", gap: "10px",
                           padding: "12px 0", marginTop: "8px",
@@ -1216,12 +1247,9 @@ function ModifyDashboard({ contributors, onSave }) {
                         }}
                           onClick={() => setSlotStats(s => ({ ...s, manOfTheMatch: !s.manOfTheMatch }))}
                         >
-                          <input
-                            type="checkbox"
-                            checked={!!slotStats.manOfTheMatch}
+                          <input type="checkbox" checked={!!slotStats.manOfTheMatch}
                             onChange={(e) => setSlotStats(s => ({ ...s, manOfTheMatch: e.target.checked }))}
-                            style={{ width: "22px", height: "22px", cursor: "pointer", accentColor: "#f59e0b" }}
-                          />
+                            style={{ width: "22px", height: "22px", cursor: "pointer", accentColor: "#f59e0b" }} />
                           <label style={{
                             fontWeight: 700, fontSize: "15px",
                             color: slotStats.manOfTheMatch ? "#b45309" : "#475569",
@@ -1235,8 +1263,8 @@ function ModifyDashboard({ contributors, onSave }) {
                     </>
                   )}
 
-                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                    <button onClick={() => setSlotToEdit(null)} style={{ padding: '10px 16px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+                  <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                    <button onClick={() => setSlotToEdit(null)} style={{ padding: "10px 16px", background: "#e2e8f0", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: 600 }}>Cancel</button>
                     <button
                       onClick={async () => {
                         const { team, idx, player } = slotToEdit;
@@ -1255,17 +1283,14 @@ function ModifyDashboard({ contributors, onSave }) {
                               return;
                             }
                             picture = upResult.picture;
-                            setPictureMap(prev => ({
-                              ...prev,
-                              [player.Contributor.trim().toLowerCase()]: picture,
-                            }));
+                            setPictureMap(prev => ({ ...prev, [player.Contributor.trim().toLowerCase()]: picture }));
                           } catch (err) {
                             alert(`⚠️ Picture upload network error: ${err.message}`);
                             return;
                           }
                         }
 
-                        const teamKey = team === 'A' ? 'teamA' : 'teamB';
+                        const teamKey = team === "A" ? "teamA" : "teamB";
                         const mergedPlayer = player
                           ? {
                               ...player,
@@ -1281,18 +1306,15 @@ function ModifyDashboard({ contributors, onSave }) {
                               other: slotStats?.other ?? 0,
                               manOfTheMatch: slotStats?.manOfTheMatch === true,
                               assistTo: getPartner(player.Contributor) && (slotStats?.assistToCount ?? 0) > 0
-                                ? getPartner(player.Contributor)
-                                : "",
+                                ? getPartner(player.Contributor) : "",
                               assistToCount: getPartner(player.Contributor) ? (slotStats?.assistToCount ?? 0) : 0,
                             }
                           : null;
 
                         setEditedLineup(prev => {
                           const newLineup = JSON.parse(JSON.stringify(prev));
-
-                          if (typeof idx === 'string' && idx.startsWith('sub')) {
-                            const subIdx = parseInt(idx.replace('sub', ''));
-                            // ⬅ CHANGED: pad subs to 4 instead of 2
+                          if (typeof idx === "string" && idx.startsWith("sub")) {
+                            const subIdx = parseInt(idx.replace("sub", ""));
                             if (!Array.isArray(newLineup[teamKey].subs) || newLineup[teamKey].subs.length < 4) {
                               const old = Array.isArray(newLineup[teamKey].subs) ? newLineup[teamKey].subs : [];
                               newLineup[teamKey].subs = [...old, ...Array(Math.max(0, 4 - old.length)).fill(null)].slice(0, 4);
@@ -1309,7 +1331,7 @@ function ModifyDashboard({ contributors, onSave }) {
                         setLineupVersion(v => v + 1);
                         setSlotToEdit(null);
                       }}
-                      style={{ padding: '10px 16px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                      style={{ padding: "10px 16px", background: "#3b82f6", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: 600 }}
                     >
                       Save to Pitch
                     </button>
@@ -1322,11 +1344,6 @@ function ModifyDashboard({ contributors, onSave }) {
       )}
     </div>
   );
-}
-
-function prevRatingOf(player, stat) {
-  if (player && player.rating !== undefined && player.rating !== null && player.rating !== "") return player.rating;
-  return stat ? (parseFloat(stat.Rating) || "") : "";
 }
 
 export default ModifyDashboard;

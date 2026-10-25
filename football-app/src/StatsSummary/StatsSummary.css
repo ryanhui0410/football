@@ -6,13 +6,31 @@
 .stats-summary-wrap {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 40px 20px 140px;
   font-family: 'Barlow', sans-serif;
   background-color: #eef4fb;
   color: #1e293b;
   min-height: 100vh;
+  padding-bottom: 90px;
+}
+/* Wrap location table in a scrollable container */
+.location-section {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
+.location-table td,
+.location-table th {
+  white-space: normal;       /* ⬅ was nowrap — allow wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+}
+
+.location-table th:first-child,
+.location-table td:first-child {
+  max-width: 100px;
+}
 .stats-header {
   font-family: 'Oswald', sans-serif;
   font-size: 42px;
@@ -111,7 +129,7 @@
    ═══════════════════════════════════════════════ */
 .cards-grid {
   width: 100%;
-  max-width: 800px;
+  max-width: 600px;
   display: grid;
   grid-template-columns: 1fr;
   gap: 24px;
@@ -122,7 +140,7 @@
   border: 1px solid #e2e8f0;
   border-top: 4px solid #2563eb;
   border-radius: 16px;
-  padding: 24px;
+  padding: 24px 12px 24px 12px; 
   box-shadow: 0 8px 24px rgba(14, 165, 233, 0.06);
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   box-sizing: border-box;
@@ -412,6 +430,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  table-layout: fixed;       /* ⬅ forces columns to fit container */
 }
 
 .location-table th {
@@ -545,8 +564,8 @@
    ═══════════════════════════════════════════════ */
 @media (max-width: 768px) and (orientation: portrait) {
   .stats-summary-wrap {
-    padding: 24px 16px;
-  }
+  padding: 24px 16px 160px;   /* ⬅ shorthand WITH bottom padding, was two separate lines */
+}
   .stats-header {
     font-size: 28px;
     margin-bottom: 24px;
@@ -598,7 +617,8 @@
    ═══════════════════════════════════════════════ */
 @media (max-height: 600px) and (orientation: landscape) {
   .stats-summary-wrap {
-    padding: 16px 24px;
+    padding: 16px 24px 120px; 
+    padding-bottom: 70px;
     min-height: auto;
   }
 

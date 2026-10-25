@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import MatchLineup from "../EditStats/MatchLineup";
 import "./TacticalDashboard.css";
 
-// ✅ Inline stat stepper for the slot modal (same pattern as Add Stats)
+// ✅ Inline stat stepper for the slot modal
 function StatStepper({ label, value, onChange, max = 99 }) {
   const num = parseInt(value) || 0;
   return (
@@ -177,7 +177,6 @@ function deriveOutcome(matchResult, team) {
   return b > a ? "Win" : b < a ? "Loss" : "Draw";
 }
 
-// ⬅ CHANGED: MAX_SUBS = 4 (was 2)
 const MAX_SUBS = 4;
 
 function TacticalDashboard() {
@@ -196,6 +195,11 @@ function TacticalDashboard() {
   const [pictureMap, setPictureMap] = useState({});
   const [playerStats, setPlayerStats] = useState({});
   const [slotStats, setSlotStats] = useState(null);
+
+  // Player picker state
+  const [addPlayerMode, setAddPlayerMode] = useState("name"); // "name" | "photo"
+  const [playerSearchText, setPlayerSearchText] = useState("");
+  const [playerFilterGroup, setPlayerFilterGroup] = useState("All");
 
   const getPicture = (name) =>
     name ? pictureMap[name.trim().toLowerCase()] || null : null;
@@ -258,6 +262,60 @@ function TacticalDashboard() {
       .catch(err => console.error("Failed to fetch initial data", err));
   }, []);
 
+  // ═══════════════════════════════════════════════════
+  // ⬅ NEW: Dynamically extract filter groups from players
+  // ═══════════════════════════════════════════════════
+  const filterGroups = useMemo(() => {
+    const groups = new Set();
+    availablePlayers.forEach(p => {
+      const g = (p.filterGroup || "").trim();
+      if (g) groups.add(g);
+    });
+    // Return sorted array with preferred order
+    const preferredOrder = ["The Bros", "Barry", "馬哲", "梁哥"];
+    const sorted = [...groups];
+    sorted.sort((a, b) => {
+      const ia = preferredOrder.indexOf(a);
+      const ib = preferredOrder.indexOf(b);
+      if (ia !== -1 && ib !== -1) return ia - ib;
+      if (ia !== -1) return -1;
+      if (ib !== -1) return 1;
+      return a.localeCompare(b);
+    });
+    return sorted;
+  }, [availablePlayers]);
+
+  // Filtered players for picker
+  const filteredAvailablePlayers = useMemo(() => {
+    let list = [...availablePlayers];
+
+    // Filter by group
+    if (playerFilterGroup !== "All") {
+      list = list.filter(p => (p.filterGroup || "").trim() === playerFilterGroup);
+    }
+
+    // Filter by search text
+    if (playerSearchText.trim()) {
+      const search = playerSearchText.trim().toLowerCase();
+      list = list.filter(p => (p.Contributor || "").toLowerCase().includes(search));
+    }
+
+    // Sort: Ryan first, Darren second, then alphabetical
+    list.sort((a, b) => {
+      const rank = (n) => {
+        const l = (n || "").toLowerCase();
+        if (l === "ryan") return 0;
+        if (l === "darren") return 1;
+        return 2;
+      };
+      const ra = rank(a.Contributor), rb = rank(b.Contributor);
+      if (ra !== rb) return ra - rb;
+      return (a.Contributor || "").localeCompare(b.Contributor || "");
+    });
+
+    return list;
+  }, [availablePlayers, playerFilterGroup, playerSearchText]);
+
   useEffect(() => {
     if (!matchDetails.Date) {
       setLineupData(null);
@@ -283,7 +341,6 @@ function TacticalDashboard() {
         date: matchDetails.Date,
         location: matchDetails.Location,
         time: matchDetails.Time,
-        // ⬅ CHANGED: Array(4) instead of [null, null]
         teamA: { formation: "4-4-2", players: Array(11).fill(null), subs: Array(MAX_SUBS).fill(null) },
         teamB: { formation: "4-4-2", players: Array(11).fill(null), subs: Array(MAX_SUBS).fill(null) }
       };
@@ -292,6 +349,33 @@ function TacticalDashboard() {
 
   const handleChange = (e) => {
     setMatchDetails({ ...matchDetails, [e.target.name]: e.target.value });
+  };
+
+  // Shared player selection handler
+  const handleSelectPlayer = (selected) => {
+    if (!selected) {
+      setSlotToEdit(prev => ({ ...prev, player: null }));
+      if (slotToEdit?.player?.Contributor) {
+        setPlayerStats(prev => {
+          const next = { ...prev };
+          delete next[slotToEdit.player.Contributor];
+          return next;
+        });
+      }
+      setSlotStats(null);
+    } else {
+      setSlotToEdit(prev => ({
+        ...prev,
+        player: {
+          Contributor: selected.Contributor,
+          picture: getPicture(selected.Contributor) || `/${selected.Contributor}.jpeg`,
+          rating: prev.player?.rating !== undefined ? prev.player.rating : ""
+        }
+      }));
+      setSlotStats(playerStats[selected.Contributor] || {
+        Goal: 0, Assist: 0, LeftFoot: 0, RightFoot: 0, Head: 0, OtherBodyParts: 0, Error: 0, ManOfTheMatch: false, AssistTo: 0, OwnGoal: 0
+      });
+    }
   };
 
   const handleSaveLineup = async () => {
@@ -329,13 +413,11 @@ function TacticalDashboard() {
       };
 
       const cleanPlayers = (teamObj.players || []).map(cleanPlayer);
-      // ⬅ CHANGED: slice(0, MAX_SUBS) instead of slice(0, 2)
       const cleanSubs = (teamObj.subs || []).map(cleanPlayer);
 
       return {
         formation: teamObj.formation || "4-4-2",
         players: cleanPlayers.slice(0, 11),
-        // ⬅ CHANGED: slice(0, MAX_SUBS) instead of slice(0, 2)
         subs: cleanSubs.slice(0, MAX_SUBS)
       };
     };
@@ -433,7 +515,7 @@ function TacticalDashboard() {
       targetTeam = 'A';
       forcedMove = true;
       if (typeof idx === 'string' && idx.startsWith('sub')) {
-        const teamASubs = lineupData.teamA?.subs || Array(MAX_SUBS).fill(null); // ⬅ CHANGED
+        const teamASubs = lineupData.teamA?.subs || Array(MAX_SUBS).fill(null);
         const emptyIdx = teamASubs.findIndex(p => p === null);
         targetIdx = emptyIdx !== -1 ? `sub${emptyIdx}` : idx;
       } else {
@@ -450,7 +532,6 @@ function TacticalDashboard() {
 
       if (typeof targetIdx === 'string' && targetIdx.startsWith('sub')) {
         const subIdx = parseInt(targetIdx.replace('sub', ''));
-        // ⬅ CHANGED: Array(MAX_SUBS) instead of [null, null]
         if (!Array.isArray(newLineup[teamKey].subs) || newLineup[teamKey].subs.length < MAX_SUBS) {
           const old = Array.isArray(newLineup[teamKey].subs) ? newLineup[teamKey].subs : [];
           newLineup[teamKey].subs = [...old, ...Array(MAX_SUBS - old.length).fill(null)].slice(0, MAX_SUBS);
@@ -477,6 +558,9 @@ function TacticalDashboard() {
     }
 
     setSlotToEdit(null);
+    setAddPlayerMode("name");
+    setPlayerSearchText("");
+    setPlayerFilterGroup("All");
   };
 
   const renderDetailsCard = () => (
@@ -537,6 +621,9 @@ function TacticalDashboard() {
               }}
               onSlotClick={(team, idx, player) => {
                 setSlotToEdit({ team, idx, player });
+                setAddPlayerMode("name");
+                setPlayerSearchText("");
+                setPlayerFilterGroup("All");
                 if (player) {
                   setSlotStats(playerStats[player.Contributor] || {
                     Goal: 0, Assist: 0, LeftFoot: 0, RightFoot: 0, Head: 0, OtherBodyParts: 0, Error: 0, ManOfTheMatch: false, AssistTo: 0, OwnGoal: 0
@@ -560,51 +647,170 @@ function TacticalDashboard() {
         )}
       </div>
 
-      {/* SLOT EDIT MODAL */}
+      {/* ═══════════════════════════════════════════════════
+          SLOT EDIT MODAL — with dual-mode player picker
+          ═══════════════════════════════════════════════════ */}
       {slotToEdit && (
         <div className="td-slot-overlay" onClick={() => setSlotToEdit(null)}>
           <div className="td-slot-modal" onClick={e => e.stopPropagation()}>
-            <h3>{slotToEdit.player ? "Edit Player" : "Add Player"}</h3>
 
-            <div className="td-modal-field">
-              <label>Select Player:</label>
-              <select
-                value={slotToEdit.player?.Contributor || ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (!val) {
-                    setSlotToEdit(prev => ({ ...prev, player: null }));
-                    if (slotToEdit.player?.Contributor) {
-                      setPlayerStats(prev => {
-                        const next = { ...prev };
-                        delete next[slotToEdit.player.Contributor];
-                        return next;
-                      });
-                    }
-                    setSlotStats(null);
-                  } else {
-                    const selected = availablePlayers.find(p => p.Contributor === val);
-                    setSlotToEdit(prev => ({
-                      ...prev,
-                      player: {
-                        Contributor: selected.Contributor,
-                        picture: getPicture(selected.Contributor) || `/${selected.Contributor}.jpeg`,
-                        rating: prev.player?.rating !== undefined ? prev.player.rating : ""
-                      }
-                    }));
-                    setSlotStats(playerStats[selected.Contributor] || {
-                      Goal: 0, Assist: 0, LeftFoot: 0, RightFoot: 0, Head: 0, OtherBodyParts: 0, Error: 0, ManOfTheMatch: false, AssistTo: 0
-                    });
-                  }
-                }}
-              >
-                <option value="">-- Empty Slot --</option>
-                {availablePlayers.map(p => (
-                  <option key={p.Contributor} value={p.Contributor}>{p.Contributor}</option>
-                ))}
-              </select>
+            {/* ── Header ── */}
+            <div className="td-slot-header">
+              <h3>{slotToEdit.player ? "Edit Player" : "Add Player"}</h3>
+              <button className="td-slot-close" onClick={() => {
+                setSlotToEdit(null);
+                setAddPlayerMode("name");
+                setPlayerSearchText("");
+                setPlayerFilterGroup("All");
+              }}>✕</button>
             </div>
 
+            {/* ── Mode Toggle Tabs ── */}
+            <div className="td-picker-tabs">
+              <button
+                className={`td-picker-tab ${addPlayerMode === 'name' ? 'active' : ''}`}
+                onClick={() => setAddPlayerMode('name')}
+              >
+                📋 By Name
+              </button>
+              <button
+                className={`td-picker-tab ${addPlayerMode === 'photo' ? 'active' : ''}`}
+                onClick={() => setAddPlayerMode('photo')}
+              >
+                🖼️ By Photo
+              </button>
+            </div>
+
+            {/* ── Filter Pills: Dynamic from filterGroup field ── */}
+            <div className="td-picker-filters">
+              <button
+                className={`td-filter-pill ${playerFilterGroup === 'All' ? 'active' : ''}`}
+                onClick={() => setPlayerFilterGroup('All')}
+              >
+                All
+              </button>
+              {filterGroups.map(group => (
+                <button
+                  key={group}
+                  className={`td-filter-pill ${playerFilterGroup === group ? 'active' : ''}`}
+                  onClick={() => setPlayerFilterGroup(group)}
+                >
+                  {group}
+                </button>
+              ))}
+            </div>
+
+            {/* ── Search Input ── */}
+            <div className="td-picker-search">
+              <input
+                type="text"
+                placeholder="🔍 Search player name..."
+                value={playerSearchText}
+                onChange={(e) => setPlayerSearchText(e.target.value)}
+              />
+              {playerSearchText && (
+                <button className="td-search-clear" onClick={() => setPlayerSearchText("")}>✕</button>
+              )}
+            </div>
+
+            {/* ── Player Picker Body ── */}
+            {addPlayerMode === 'name' ? (
+              /* ══ NAME MODE: Dropdown ══ */
+              <div className="td-modal-field">
+                <label>Select Player:</label>
+                <select
+                  value={slotToEdit.player?.Contributor || ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (!val) {
+                      handleSelectPlayer(null);
+                    } else {
+                      const selected = filteredAvailablePlayers.find(p => p.Contributor === val)
+                        || availablePlayers.find(p => p.Contributor === val);
+                      if (selected) handleSelectPlayer(selected);
+                    }
+                  }}
+                >
+                  <option value="">-- Empty Slot --</option>
+                  {filteredAvailablePlayers.map(p => (
+                    <option key={p.Contributor} value={p.Contributor}>
+                      {p.Contributor}{p.filterGroup ? ` (${p.filterGroup})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              /* ══ PHOTO MODE: 3-column grid ══ */
+              <div className="td-photo-picker">
+                {slotToEdit.player && (
+                  <button
+                    className="td-photo-clear-btn"
+                    onClick={() => handleSelectPlayer(null)}
+                  >
+                    ✕ Clear Selection ({slotToEdit.player.Contributor})
+                  </button>
+                )}
+
+                <div className="td-photo-grid">
+                  {filteredAvailablePlayers.map(p => {
+                    const imgUrl = getPicture(p.Contributor);
+                    const isSelected = slotToEdit.player?.Contributor === p.Contributor;
+                    return (
+                      <div
+                        key={p.Contributor}
+                        className={`td-photo-card ${isSelected ? 'selected' : ''}`}
+                        onClick={() => handleSelectPlayer(p)}
+                      >
+                        {imgUrl ? (
+                          <img src={imgUrl} alt={p.Contributor} className="td-photo-avatar" />
+                        ) : (
+                          <div className="td-photo-avatar td-photo-fallback">
+                            {(p.Contributor || "?").charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <span className="td-photo-name">{p.Contributor}</span>
+                        {isSelected && <span className="td-photo-check">✓</span>}
+                      </div>
+                    );
+                  })}
+
+                  {filteredAvailablePlayers.length === 0 && (
+                    <div className="td-photo-empty-msg">
+                      No players match your filter.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── Profile Picture ── */}
+            {slotToEdit.player && (
+              <div className="td-modal-field">
+                <label>Profile Picture</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {getPicture(slotToEdit.player.Contributor) ? (
+                    <img
+                      src={getPicture(slotToEdit.player.Contributor)}
+                      alt="Current"
+                      style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #cbd5e1' }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '48px', height: '48px', borderRadius: '50%', background: '#e2e8f0',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '20px', fontWeight: 700, color: '#64748b', border: '2px solid #cbd5e1'
+                    }}>
+                      {(slotToEdit.player.Contributor || "?").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span style={{ fontSize: '13px', color: '#64748b' }}>
+                    Managed in Match Report editor
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* ── Match Rating ── */}
             {slotToEdit.player && (
               <div className="td-modal-field">
                 <label>Match Rating (0-10.0):</label>
@@ -625,6 +831,7 @@ function TacticalDashboard() {
               </div>
             )}
 
+            {/* ── Match Stats ── */}
             {slotToEdit.player && slotStats && (
               <div style={{ borderTop: "2px solid #e2e8f0", marginTop: "16px", paddingTop: "12px" }}>
                 <h4 style={{ margin: "0 0 8px", fontFamily: "'Oswald', sans-serif", color: "#1e3a8a", textTransform: "uppercase", fontSize: "13px", letterSpacing: "0.1em" }}>
@@ -666,8 +873,14 @@ function TacticalDashboard() {
               </div>
             )}
 
+            {/* ── Actions ── */}
             <div className="td-modal-actions">
-              <button className="td-modal-cancel" onClick={() => setSlotToEdit(null)}>Cancel</button>
+              <button className="td-modal-cancel" onClick={() => {
+                setSlotToEdit(null);
+                setAddPlayerMode("name");
+                setPlayerSearchText("");
+                setPlayerFilterGroup("All");
+              }}>Cancel</button>
               <button className="td-modal-save" onClick={handleSaveSlot}>
                 Save to Pitch
               </button>
