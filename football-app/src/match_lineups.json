@@ -4663,8 +4663,38 @@
     "teamA": {
       "formation": "4-4-2",
       "players": [
-        null,
-        null,
+        {
+          "Contributor": "Sky",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Sky.jpeg",
+          "rating": 6.2,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Jacky_Barry",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Jacky_Barry.jpeg",
+          "rating": 7.9,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         {
           "Contributor": "Nick",
           "rating": 6.6,
