@@ -416,21 +416,27 @@ function ModifyDashboard({ contributors, onSave }) {
     setEditedResult(seededResult);
   };
 
-    // ═══════════════ BUILD ALL CONTRIBUTORS ═══════════════
+      // ═══════════════ BUILD ALL CONTRIBUTORS ═══════════════
+  // Strategy: lineups first (primary), stats fills gaps
   const allContributors = useMemo(() => {
     const byName = new Map();
+    const lineupMatchKeys = new Set();
 
-    // ── Step 1: Seed from contributors prop ──
-    contributors.forEach(contributor => {
-      byName.set(normalizeName(contributor.name), {
-        name: contributor.name,
-        matches: [...contributor.matches],
-      });
-    });
+    const ensureEntry = (name) => {
+      const key = normalizeName(name);
+      if (!byName.has(key)) {
+        byName.set(key, { name, matches: [] });
+      }
+      return byName.get(key);
+    };
 
-    // ── Step 2: Process allLineups — ALWAYS overwrite existing matches ──
+    const matchKey = (date, location) =>
+      `${normalizeDate(date)}|${(location || "").trim().toLowerCase()}`;
+
+    // ═══ STEP 1: Process lineups (PRIMARY) ═══
     allLineups.forEach(lineup => {
-      const matchKey = `${normalizeDate(lineup.date)}|${(lineup.location || "").trim()}|${(lineup.time || "").trim()}`;
+      const lKey = matchKey(lineup.date, lineup.location);
+      lineupMatchKeys.add(lKey);
 
       let matchResult = lineup.matchResult || "";
       if (!matchResult) {
@@ -460,39 +466,77 @@ function ModifyDashboard({ contributors, onSave }) {
         ];
         allPlayers.forEach(p => {
           if (!p?.Contributor) return;
-          const name = normalizeName(p.Contributor);
+          const entry = ensureEntry(p.Contributor);
 
-          if (!byName.has(name)) {
-            byName.set(name, { name: p.Contributor, matches: [] });
+          // ── Get stats fallback from matchStatsData ──
+          const stat = getPlayerMatchStats(p.Contributor, lineup.date, lineup.location, lineup.time);
+
+          // ── Lineup values ──
+          const lpGoal = parseInt(p.goal) || 0;
+          const lpAssist = parseInt(p.assist) || 0;
+          const lpLeft = parseInt(p.leftFoot) || 0;
+          const lpRight = parseInt(p.rightFoot) || 0;
+          const lpHead = parseInt(p.head) || 0;
+          const lpOther = parseInt(p.other) || 0;
+          const lpError = parseInt(p.error) || 0;
+          const lpMotm = p.manOfTheMatch === true;
+
+          // ── Stats values (fallback) ──
+          const stGoal = stat ? (parseFloat(stat.Goal) || 0) : 0;
+          const stAssist = stat ? (parseFloat(stat.Assist) || 0) : 0;
+          const stLeft = stat ? (parseFloat(stat["Left Foot"]) || 0) : 0;
+          const stRight = stat ? (parseFloat(stat["Right Foot"]) || 0) : 0;
+          const stHead = stat ? (parseFloat(stat.Head) || 0) : 0;
+          const stOther = stat ? (parseFloat(stat["Other body parts"]) || 0) : 0;
+          const stError = stat ? (parseInt(stat.Error) || 0) : 0;
+          const stMotm = stat?.["Man of the Match"] === true;
+
+          // ── Use lineup if it has real data, else fall back to stats ──
+          const hasLpStats = lpGoal || lpAssist || lpLeft || lpRight || lpHead || lpOther || lpError || lpMotm;
+
+          const goal = hasLpStats ? lpGoal : stGoal;
+          const assist = hasLpStats ? lpAssist : stAssist;
+          const error = hasLpStats ? lpError : stError;
+          const manOfTheMatch = hasLpStats ? lpMotm : stMotm;
+          const rating = p.rating ?? (stat ? parseFloat(stat.Rating) : "");
+
+          // ── Win/Loss ──
+          let winLoss = deriveOutcome(matchResult, teamLetter);
+          if (!winLoss && stat) {
+            winLoss = stat["Win/Loss?"] || "";
           }
-          const entry = byName.get(name);
 
-          const winLoss = deriveOutcome(matchResult, teamLetter);
-
-          const newMatch = {
+          entry.matches.push({
             date: lineup.date,
             location: lineup.location,
             time: lineup.time,
-            rating: p.rating ?? "",
+            rating,
             matchResult,
             winLoss,
-            goalContribution: (parseInt(p.goal) || 0) + (parseInt(p.assist) || 0),
-            assist: parseInt(p.assist) || 0,
-            symbol: "⚽".repeat(parseInt(p.goal) || 0) + "👟".repeat(parseInt(p.assist) || 0),
-            manOfTheMatch: p.manOfTheMatch === true,
+            goalContribution: goal + assist,
+            assist,
+            symbol: "⚽".repeat(goal) + "👟".repeat(assist),
+            manOfTheMatch,
             isLineupOnly: true,
-          };
-
-          // ── KEY FIX: REPLACE existing match instead of skipping ──
-          const existingIdx = entry.matches.findIndex(m =>
-            `${normalizeDate(m.date)}|${(m.location || "").trim()}|${(m.time || "").trim()}` === matchKey
-          );
-          if (existingIdx !== -1) {
-            entry.matches[existingIdx] = newMatch;
-          } else {
-            entry.matches.push(newMatch);
-          }
+          });
         });
+      });
+    });
+
+    // ═══ STEP 2: Stats — only for matches NOT in lineups ═══
+    contributors.forEach(contributor => {
+      const entry = ensureEntry(contributor.name);
+
+      contributor.matches.forEach(m => {
+        const mKey = matchKey(m.date, m.location);
+        if (lineupMatchKeys.has(mKey)) return;
+
+        const alreadyHas = entry.matches.some(
+          existing => matchKey(existing.date, existing.location) === mKey
+        );
+        if (alreadyHas) return;
+
+        entry.matches.push({ ...m });
       });
     });
 
@@ -604,9 +648,7 @@ function ModifyDashboard({ contributors, onSave }) {
     return (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1);
   };
 
-  // ═══════════════ SAVE ═══════════════
-
-  const handleSaveReportLineup = async () => {
+    const handleSaveReportLineup = async () => {
     if (!editedLineup) return;
 
     const sanitizeTeam = (teamObj) => {
@@ -641,6 +683,7 @@ function ModifyDashboard({ contributors, onSave }) {
     };
 
     try {
+      // ── STEP 1: Save lineup ──
       const res = await fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -652,8 +695,60 @@ function ModifyDashboard({ contributors, onSave }) {
         alert(`⚠️ Saved locally, but GitHub failed: ${result.githubError || result.error}`);
         return;
       }
-      alert("✅ Match Report saved!");
 
+      // ── STEP 2: Sync player stats to football_stats_2025_2026.json ──
+      const statRecords = [];
+      ["teamA", "teamB"].forEach(teamKey => {
+        const team = payload[teamKey];
+        const teamLetter = teamKey === "teamA" ? "A" : "B";
+        const teamOutcome = deriveOutcome(payload.matchResult, teamLetter);
+        [...(team?.players || []), ...(team?.subs || [])].forEach(p => {
+          if (!p?.Contributor) return;
+          statRecords.push({
+            Date: payload.date,
+            Contributor: p.Contributor,
+            Rating: p.rating ?? 0,
+            Location: payload.location,
+            Time: payload.time,
+            MatchResult: payload.matchResult ?? "",
+            WinLoss: teamOutcome,
+            Goal: p.goal ?? 0,
+            Assist: p.assist ?? 0,
+            LeftFoot: p.leftFoot ?? 0,
+            RightFoot: p.rightFoot ?? 0,
+            Head: p.head ?? 0,
+            OtherBodyParts: p.other ?? 0,
+            OwnGoal: p.ownGoal ?? 0,
+            Error: p.error ?? 0,
+            ManOfTheMatch: p.manOfTheMatch === true,
+            AssistTo: getPartner(p.Contributor) && (p.assistToCount ?? 0) > 0 ? (p.assistToCount ?? 0) : 0,
+            source: "Edit Match Report",
+          });
+        });
+      });
+
+      let statsSynced = true;
+      try {
+        const statsRes = await fetch("https://football-stats-xbx6.onrender.com/add-stats-batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ stats: statRecords }),
+        });
+        if (!statsRes.ok) {
+          statsSynced = false;
+          const err = await statsRes.json();
+          alert(`⚠️ Lineup saved, but stats sync failed: ${err.message || "unknown"}`);
+        }
+      } catch (err) {
+        statsSynced = false;
+        alert(`⚠️ Lineup saved, but stats network error: ${err.message}`);
+      }
+
+      if (statsSynced) {
+        alert("✅ Match Report saved and stats synced!");
+      }
+
+      // ── STEP 3: Update local state ──
       setIsEditingReport(false);
       setMatchReport(JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB })));
       setLineupVersion(v => v + 1);
