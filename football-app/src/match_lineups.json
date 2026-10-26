@@ -4805,7 +4805,7 @@
           "Contributor": "Ryan",
           "rating": 9.8,
           "goal": 3,
-          "assist": 1,
+          "assist": 0,
           "leftFoot": 1,
           "rightFoot": 2,
           "head": 0,
@@ -4817,7 +4817,7 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 3,
-          "assists": 0,
+          "assists": 1,
           "picture": ""
         },
         {
