@@ -4805,7 +4805,7 @@
           "Contributor": "Ryan",
           "rating": 9.8,
           "goal": 3,
-          "assist": 0,
+          "assist": 1,
           "leftFoot": 1,
           "rightFoot": 2,
           "head": 0,
@@ -4814,7 +4814,11 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 3,
+          "assists": 0,
+          "picture": ""
         },
         {
           "Contributor": "Darren",
