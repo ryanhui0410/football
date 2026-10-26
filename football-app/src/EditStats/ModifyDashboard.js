@@ -98,7 +98,7 @@ function ModifyDashboard({ contributors, onSave }) {
 
   const [pictureMap, setPictureMap] = useState({});
   const [activeFilter, setActiveFilter] = useState("All");
-  const [expandedGroup, setExpandedGroup] = useState(null); // which group pill is expanded
+  const [expandedGroup, setExpandedGroup] = useState(null);
 
   const getPartner = (name) => {
     const n = (name || "").trim().toLowerCase();
@@ -416,7 +416,7 @@ function ModifyDashboard({ contributors, onSave }) {
     setEditedResult(seededResult);
   };
 
-      // ═══════════════ BUILD ALL CONTRIBUTORS ═══════════════
+  // ═══════════════ BUILD ALL CONTRIBUTORS ═══════════════
   // Strategy: lineups first (primary), stats fills gaps
   const allContributors = useMemo(() => {
     const byName = new Map();
@@ -575,24 +575,19 @@ function ModifyDashboard({ contributors, onSave }) {
 
   // ── What to display ──
   const displayContributors = useMemo(() => {
-    // All
     if (activeFilter === "All") return allContributors;
 
-    // Ryan / Darren
     if (activeFilter === "Ryan")
       return allContributors.filter(c => normalizeName(c.name) === "ryan");
     if (activeFilter === "Darren")
       return allContributors.filter(c => normalizeName(c.name) === "darren");
 
-    // Group filter (Barry, 馬哲, 梁哥)
     if (HOME_FILTER_GROUPS.includes(activeFilter)) {
-      // If a specific player is selected within the group, show only that player
       if (selectedGroupPlayer) {
         return allContributors.filter(
           c => normalizeName(c.name) === normalizeName(selectedGroupPlayer)
         );
       }
-      // Otherwise show all players in the group
       const groupMembers = availablePlayers
         .filter(p => (p.filterGroup || "").trim() === activeFilter)
         .map(p => normalizeName(p.Contributor));
@@ -648,7 +643,9 @@ function ModifyDashboard({ contributors, onSave }) {
     return (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1);
   };
 
-    const handleSaveReportLineup = async () => {
+  // ═══════════════ SAVE ═══════════════
+
+  const handleSaveReportLineup = async () => {
     if (!editedLineup) return;
 
     const sanitizeTeam = (teamObj) => {
@@ -825,7 +822,6 @@ function ModifyDashboard({ contributors, onSave }) {
       <div className="md-filter-bar">
         <span className="md-filter-label">Filter by Player:</span>
         <div className="md-filter-pills">
-          {/* All */}
           <button
             className={`md-pill ${activeFilter === "All" && !selectedGroupPlayer ? "active" : ""}`}
             onClick={() => {
@@ -837,7 +833,6 @@ function ModifyDashboard({ contributors, onSave }) {
             All
           </button>
 
-          {/* Ryan */}
           <button
             className={`md-pill ${activeFilter === "Ryan" ? "active" : ""}`}
             onClick={() => {
@@ -849,7 +844,6 @@ function ModifyDashboard({ contributors, onSave }) {
             Ryan
           </button>
 
-          {/* Darren */}
           <button
             className={`md-pill ${activeFilter === "Darren" ? "active" : ""}`}
             onClick={() => {
@@ -861,7 +855,6 @@ function ModifyDashboard({ contributors, onSave }) {
             Darren
           </button>
 
-          {/* Dynamic groups: Barry, 馬哲, 梁哥 */}
           {filterGroups.map(group => {
             const isExpanded = expandedGroup === group;
             const isGroupActive = activeFilter === group;
@@ -871,12 +864,10 @@ function ModifyDashboard({ contributors, onSave }) {
                 className={`md-pill ${isGroupActive || isExpanded ? "active" : ""}`}
                 onClick={() => {
                   if (isExpanded) {
-                    // Collapse
                     setExpandedGroup(null);
                     setActiveFilter("All");
                     setSelectedGroupPlayer(null);
                   } else {
-                    // Expand this group's player list
                     setExpandedGroup(group);
                     setActiveFilter(group);
                     setSelectedGroupPlayer(null);
@@ -889,15 +880,13 @@ function ModifyDashboard({ contributors, onSave }) {
           })}
         </div>
 
-        {/* ── Expanded player list for the selected group ── */}
-                {/* ── Expanded player list for the selected group ── */}
         {expandedGroup && groupPlayerNames.length > 0 && (
           <div className="md-others-list">
             <button
               className={`md-pill md-pill-sm ${!selectedGroupPlayer ? "active" : ""}`}
               onClick={() => {
                 setSelectedGroupPlayer(null);
-                setExpandedGroup(null);  // hide the list
+                setExpandedGroup(null);
               }}
             >
               All {expandedGroup}
@@ -908,7 +897,7 @@ function ModifyDashboard({ contributors, onSave }) {
                 className={`md-pill md-pill-sm ${selectedGroupPlayer === name ? "active" : ""}`}
                 onClick={() => {
                   setSelectedGroupPlayer(name);
-                  setExpandedGroup(null);  // ← hide the list after selecting a player
+                  setExpandedGroup(null);
                 }}
               >
                 {name}

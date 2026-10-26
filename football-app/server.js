@@ -1,4 +1,5 @@
 const express = require("express");
+const fs = require("express");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
@@ -51,6 +52,7 @@ async function uploadImageToGitHub(imageBuffer, githubFilePath, commitMessage) {
   const errText = await putRes.text();
   return { success: false, error: `GitHub rejected image push (${putRes.status}): ${errText}` };
 }
+
 // ===================== Normalize picture paths (run on demand) =====================
 app.post("/normalize-picture-paths", async (req, res) => {
   try {
@@ -59,7 +61,6 @@ app.post("/normalize-picture-paths", async (req, res) => {
     const owner = process.env.GITHUB_OWNER;
     const repo = process.env.GITHUB_REPO;
 
-    // List all files in football-app/public/images on GitHub
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/football-app/public/images`;
     const listRes = await fetch(apiUrl, {
       headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" }
@@ -80,7 +81,6 @@ app.post("/normalize-picture-paths", async (req, res) => {
       if (!player?.Contributor) continue;
       const name = player.Contributor.trim();
 
-      // Case-insensitive match for {name}.jpeg / {name}.jpg
       const match = imageFiles.find(img =>
         img.replace(/\.(jpe?g|png)$/i, "").toLowerCase() === name.toLowerCase()
       );
@@ -89,15 +89,13 @@ app.post("/normalize-picture-paths", async (req, res) => {
       const isHttp = player.picture && player.picture.startsWith("http");
       const needsFix = !player.picture || isBase64 || !isHttp;
 
-      if (!needsFix) continue; // already a raw GitHub URL
+      if (!needsFix) continue;
 
       if (match) {
-        // ✅ File exists on GitHub → point to the raw URL
         details.push(`${name}: ${isBase64 ? "base64" : (player.picture || "empty")} → raw URL`);
         player.picture = `${rawBase}/${match}`;
         updated++;
       } else if (isBase64) {
-        // ✅ No file on GitHub yet, but we hold the base64 → upload it as {name}.jpeg
         try {
           const base64Data = player.picture.replace(/^data:image\/\w+;base64,/, "");
           const imageBuffer = Buffer.from(base64Data, "base64");
@@ -142,6 +140,7 @@ app.post("/normalize-picture-paths", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 // ===================== Backfill picture paths =====================
 app.post("/backfill-picture-paths", async (req, res) => {
   try {
@@ -150,7 +149,6 @@ app.post("/backfill-picture-paths", async (req, res) => {
     const owner = process.env.GITHUB_OWNER;
     const repo = process.env.GITHUB_REPO;
 
-    // List all files currently in football-app/public/images on GitHub
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/football-app/public/images`;
     const listRes = await fetch(apiUrl, {
       headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" }
@@ -161,12 +159,12 @@ app.post("/backfill-picture-paths", async (req, res) => {
     }
 
     const imageFiles = (await listRes.json())
-      .map(f => f.name)                      // e.g. "Jack.jpeg"
+      .map(f => f.name)
       .filter(n => /\.(jpe?g|png)$/i.test(n));
 
     let updated = 0;
     for (const player of data) {
-      if (player.picture) continue; // already has a path
+      if (player.picture) continue;
       const match = imageFiles.find(img =>
         img.replace(/\.(jpe?g|png)$/i, "").toLowerCase() === (player.Contributor || "").trim().toLowerCase()
       );
@@ -201,9 +199,9 @@ app.post("/upload-player-picture", async (req, res) => {
     const imageBuffer = Buffer.from(base64Data, "base64");
 
     const processedBuffer = await sharp(imageBuffer)
-      .rotate()                                          // 📱 fixes sideways Android photos
+      .rotate()
       .resize({ width: 500, height: 500, fit: "cover", withoutEnlargement: true })
-      .jpeg({ quality: 80, mozjpeg: true })              // ✅ always outputs valid JPEG named {name}.jpeg
+      .jpeg({ quality: 80, mozjpeg: true })
       .toBuffer();
 
     const githubFilePath = `football-app/public/images/${name.trim()}.jpeg`;
@@ -226,20 +224,18 @@ app.post("/upload-player-picture", async (req, res) => {
 
 app.post("/process-image", async (req, res) => {
   try {
-    // Assuming frontend sends the raw base64 string
-    const base64String = req.body.image; 
+    const base64String = req.body.image;
     const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
     const imageBuffer = Buffer.from(base64Data, 'base64');
 
-    // Sharp automatically reads EXIF data, fixes rotation, and converts HEIC to JPEG
     const processedBuffer = await sharp(imageBuffer)
-      .rotate()                                  // 📱 Fixes smartphone sideways EXIF errors!
-      .resize({ width: 800, withoutEnlargement: true }) // 📏 Shrinks massive files
-      .jpeg({ quality: 70, mozjpeg: true })      // 🗜️ Compresses and ensures standard JPEG format
+      .rotate()
+      .resize({ width: 800, withoutEnlargement: true })
+      .jpeg({ quality: 70, mozjpeg: true })
       .toBuffer();
 
     const finalBase64 = `data:image/jpeg;base64,${processedBuffer.toString('base64')}`;
-    
+
     res.json({ success: true, image: finalBase64 });
   } catch (err) {
     console.error("Backend Image Decode Error:", err);
@@ -247,6 +243,7 @@ app.post("/process-image", async (req, res) => {
   }
 });
 
+// ===================== GitHub Sync Helper =====================
 async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
   try {
     const token = process.env.GITHUB_TOKEN;
@@ -257,20 +254,19 @@ async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
     if (!fs.existsSync(localFilePath)) return { success: false, error: "Local file not found" };
 
     let contentString = fs.readFileSync(localFilePath, 'utf8');
-    
+
     if (localFilePath.endsWith('.json')) {
       try {
         const parsed = JSON.parse(contentString);
         const recordCount = Array.isArray(parsed) ? parsed.length : Object.keys(parsed).length;
         console.log(`📦 [PUSH] Sending ${recordCount} records to GitHub: ${githubFilePath}`);
-        
-        // Log first and last record names if it's an array
+
         if (Array.isArray(parsed) && parsed.length > 0) {
           console.log(`   First: ${parsed[0].Contributor || 'unnamed'}`);
           console.log(`   Last: ${parsed[parsed.length - 1].Contributor || 'unnamed'}`);
         }
-        
-        contentString = JSON.stringify(parsed, null, 2); 
+
+        contentString = JSON.stringify(parsed, null, 2);
       } catch (e) {
         console.error("❌ Failed to parse/minify JSON:", e.message);
       }
@@ -278,20 +274,19 @@ async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
 
     const contentBuffer = Buffer.from(contentString, 'utf8');
 
-       // ✨ Minify ONLY the big stats file — match_lineups.json & player_attributes.json stay readable
-    const MINIFY_FILE = "football_stats_2025_2026.json";
+    // ✨ Minify ONLY the big stats files — match_lineups & player_attributes stay readable
+    const MINIFY_PATTERN = /^football_stats_\d{4}_\d{4}\.json$/;
     let finalString = contentString;
-    if (contentBuffer.length > 950000 && localFilePath.endsWith(MINIFY_FILE)) {
+    if (contentBuffer.length > 950000 && MINIFY_PATTERN.test(path.basename(localFilePath))) {
       try {
-        finalString = JSON.stringify(JSON.parse(contentString));   // no indent
+        finalString = JSON.stringify(JSON.parse(contentString));
         console.log(`🗜️ File over 950KB — minified: ${contentBuffer.length} → ${Buffer.byteLength(finalString, 'utf8')} bytes`);
       } catch (e) {
-        console.error('❌ Minify failed:', e.message);  // keep original, guard below still applies
+        console.error('❌ Minify failed:', e.message);
       }
     }
 
     const outBuffer = Buffer.from(finalString, 'utf8');
-    // ✨ Raised guard — GitHub contents API handles multi-MB PUTs fine
     if (outBuffer.length > 25000000) return { success: false, error: `File too large even after minify: ${outBuffer.length} bytes` };
 
     const contentBase64 = outBuffer.toString("base64");
@@ -348,23 +343,20 @@ async function pullLatestFromGitHub(githubFilePath, localFilePath) {
     if (!token || !owner || !repo) return;
 
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${githubFilePath}`;
-    
+
     const res = await fetch(apiUrl, {
-      headers: { 
-        Authorization: `token ${token}`, 
-        // ✨ Raw media type — works for files up to 100MB (base64 JSON breaks past 1MB)
+      headers: {
+        Authorization: `token ${token}`,
         Accept: "application/vnd.github.raw"
       }
     });
 
     if (res.ok) {
-      // ✨ Raw response is the file content directly — no base64 decoding
       const fileContent = await res.text();
-      
+
       const dir = path.dirname(localFilePath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      
-      // ✨ Validate it's parseable before overwriting the local copy
+
       if (localFilePath.endsWith('.json')) {
         try { JSON.parse(fileContent); }
         catch (e) {
@@ -372,7 +364,7 @@ async function pullLatestFromGitHub(githubFilePath, localFilePath) {
           return;
         }
       }
-      
+
       fs.writeFileSync(localFilePath, fileContent);
       console.log(`✅ Downloaded fresh data: ${githubFilePath}`);
     } else {
@@ -446,7 +438,7 @@ function formatStat(raw) {
     "Right Foot":      parseFloat(rightFoot) || 0,
     Head:              parseFloat(head) || 0,
     "Other body parts": parseFloat(other) || 0,
-    "Own Goal":        parseFloat(raw.OwnGoal ?? raw["Own Goal"] ?? 0) || 0,  
+    "Own Goal":        parseFloat(raw.OwnGoal ?? raw["Own Goal"] ?? 0) || 0,
     Season:            computeSeason(raw.Date),
     "Match result":    raw["Match result"] ?? raw.MatchResult ?? "",
     "Win/Loss?":       raw["Win/Loss?"]    ?? raw.WinLoss    ?? "",
@@ -456,21 +448,112 @@ function formatStat(raw) {
   };
 }
 
-// ===================== Stats file I/O =====================
+// ===================== Season Resolution =====================
 
-const STATS_PATH = path.join(__dirname, "src", "football_stats_2025_2026.json");
+function getSeasonKey(dateStr) {
+  if (!dateStr) return "2025_2026";
+  const parts = dateStr.split("/");
+  if (parts.length !== 3) return "2025_2026";
+  const month = parseInt(parts[0]);
+  const year = parseInt(parts[2]);
+  if (isNaN(month) || isNaN(year)) return "2025_2026";
 
-function readStats() {
-  if (!fs.existsSync(STATS_PATH)) return [];
-  const content = fs.readFileSync(STATS_PATH, "utf8");
+  // Football season starts in August
+  const startYear = month >= 8 ? year : year - 1;
+
+  // 2025-2026 AND 2026-2027 both use old files (covers Aug 2025 – Jul 2027)
+  if (startYear <= 2026) return "2025_2026";
+
+  // 2027-2028 onwards: separate files per season
+  return `${startYear}_${startYear + 1}`;
+}
+
+function getAllSeasonKeys() {
+  const keys = new Set(["2025_2026"]);
+  const srcDir = path.join(__dirname, "src");
+  if (fs.existsSync(srcDir)) {
+    for (const f of fs.readdirSync(srcDir)) {
+      const m = f.match(/^football_stats_(\d{4}_\d{4})\.json$/);
+      if (m) keys.add(m[1]);
+      const m2 = f.match(/^match_lineups_(\d{4}_\d{4})\.json$/);
+      if (m2) keys.add(m2[1]);
+    }
+  }
+  return [...keys].sort();
+}
+
+// ── Stats file paths ──
+function getStatsPath(seasonKey) {
+  return path.join(__dirname, "src", `football_stats_${seasonKey}.json`);
+}
+function getStatsGitHubPath(seasonKey) {
+  return `football-app/src/football_stats_${seasonKey}.json`;
+}
+
+// ── Lineup file paths (2025_2026 uses old name "match_lineups.json") ──
+function getLineupsPath(seasonKey) {
+  if (seasonKey === "2025_2026") return path.join(__dirname, "src", "match_lineups.json");
+  return path.join(__dirname, "src", `match_lineups_${seasonKey}.json`);
+}
+function getLineupsGitHubPath(seasonKey) {
+  if (seasonKey === "2025_2026") return "football-app/src/match_lineups.json";
+  return `football-app/src/match_lineups_${seasonKey}.json`;
+}
+
+// ===================== Stats file I/O (season-aware) =====================
+
+function readStatsForSeason(seasonKey) {
+  const p = getStatsPath(seasonKey);
+  if (!fs.existsSync(p)) return [];
+  const content = fs.readFileSync(p, "utf8");
   return content.trim() ? JSON.parse(content) : [];
 }
 
-function writeStats(data) {
-  const dir = path.dirname(STATS_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); 
-  fs.writeFileSync(STATS_PATH, JSON.stringify(data, null, 2));
+function writeStatsForSeason(seasonKey, data) {
+  const p = getStatsPath(seasonKey);
+  const dir = path.dirname(p);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(p, JSON.stringify(data, null, 2));
+  console.log(`💾 [STATS] Saved ${data.length} records to football_stats_${seasonKey}.json`);
 }
+
+function readAllStats() {
+  const all = [];
+  for (const key of getAllSeasonKeys()) {
+    all.push(...readStatsForSeason(key));
+  }
+  return all;
+}
+
+// Alias so old code that calls readStats() still works
+function readStats() { return readAllStats(); }
+
+// ===================== Lineups file I/O (season-aware) =====================
+
+function readLineupsForSeason(seasonKey) {
+  const p = getLineupsPath(seasonKey);
+  if (!fs.existsSync(p)) return [];
+  const content = fs.readFileSync(p, "utf8");
+  return content.trim() ? JSON.parse(content) : [];
+}
+
+function writeLineupsForSeason(seasonKey, data) {
+  const p = getLineupsPath(seasonKey);
+  const dir = path.dirname(p);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(p, JSON.stringify(data, null, 2));
+  console.log(`💾 [LINEUPS] Saved ${data.length} records to ${path.basename(p)}`);
+}
+
+function readAllLineups() {
+  const all = [];
+  for (const key of getAllSeasonKeys()) {
+    all.push(...readLineupsForSeason(key));
+  }
+  return all;
+}
+
+function readLineups() { return readAllLineups(); }
 
 // ===================== Profile management =====================
 
@@ -484,7 +567,7 @@ function readProfiles() {
 
 function writeProfiles(profiles) {
   const dir = path.dirname(PROFILES_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); 
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(PROFILES_PATH, JSON.stringify(profiles, null, 2));
 }
 
@@ -498,9 +581,9 @@ app.post("/contributor-profile", async (req, res) => {
   const profiles = readProfiles();
   profiles[name] = { ...profiles[name], ...profile };
   writeProfiles(profiles);
-  
+
   await syncFileToGitHub(PROFILES_PATH, "football-app/src/contributor_profiles.json", `Update profile for ${name}`);
-  
+
   res.json({ message: "Profile updated", updated: profiles[name] });
 });
 
@@ -533,6 +616,7 @@ function writeAttributes(data) {
 app.get("/player-attributes", (req, res) => {
   res.json(readAttributes());
 });
+
 app.get("/github-images", async (req, res) => {
   try {
     const apiUrl = `https://api.github.com/repos/${process.env.GITHUB_OWNER}/${process.env.GITHUB_REPO}/contents/football-app/public/images`;
@@ -548,11 +632,13 @@ app.get("/github-images", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.post("/player-attributes", async (req, res) => {
   console.log(`\n📥 [PLAYER-ATTRIBUTES] Request received! Contributor: ${req.body?.Contributor}`);
   try {
     const card = req.body;
-        // ✨ Auto-upload base64 pictures to GitHub — keeps the JSON free of blobs
+
+    // ✨ Auto-upload base64 pictures to GitHub — keeps the JSON free of blobs
     if (card.picture && card.picture.startsWith("data:")) {
       try {
         const base64Data = card.picture.replace(/^data:image\/\w+;base64,/, "");
@@ -574,15 +660,15 @@ app.post("/player-attributes", async (req, res) => {
         console.error("⚠️ Base64 picture auto-upload failed:", imgErr.message);
       }
     }
+
     if (!card || !card.Contributor) {
       return res.status(400).json({ error: "Missing Contributor" });
     }
 
-    // Read current data
     const data = readAttributes();
     console.log(`📊 [DEBUG] After reading, array has ${data.length} players`);
 
-    const index = data.findIndex(a => 
+    const index = data.findIndex(a =>
       (a.Contributor || "").trim().toLowerCase() === card.Contributor.trim().toLowerCase()
     );
 
@@ -594,22 +680,20 @@ app.post("/player-attributes", async (req, res) => {
       console.log(`🔄 [DEBUG] Updated existing player at index ${index}`);
     }
 
-    // Verify the player is in the array before writing
     const hasPlayer = data.some(p => p.Contributor === card.Contributor);
     console.log(`✓ [DEBUG] Player ${card.Contributor} is in array: ${hasPlayer}`);
 
     writeAttributes(data);
 
-    // Now push to GitHub
     console.log(`📤 [DEBUG] About to push ${data.length} players to GitHub`);
     const syncResult = await syncFileToGitHub(ATTR_PATH, "football-app/src/player_attributes.json", `Update player card: ${card.Contributor}`);
 
     if (syncResult.success) {
       res.json({ message: "✅ Player card saved and synced to GitHub!", totalPlayers: data.length });
     } else {
-      res.status(500).json({ 
-        error: "Saved locally, but GitHub rejected it.", 
-        githubError: syncResult.error 
+      res.status(500).json({
+        error: "Saved locally, but GitHub rejected it.",
+        githubError: syncResult.error
       });
     }
   } catch (error) {
@@ -623,7 +707,7 @@ app.delete("/player-attributes/:name", async (req, res) => {
   let data = readAttributes();
   const initialLength = data.length;
   data = data.filter((c) => c.Contributor !== name);
-  
+
   if (data.length === initialLength) {
     return res.status(404).json({ error: "Player not found" });
   }
@@ -634,20 +718,7 @@ app.delete("/player-attributes/:name", async (req, res) => {
   res.json({ message: "Player card deleted" });
 });
 
-// ===================== Match Lineups =====================
-const LINEUPS_PATH = path.join(__dirname, "src", "match_lineups.json");
-
-function readLineups() {
-  if (!fs.existsSync(LINEUPS_PATH)) return [];
-  const content = fs.readFileSync(LINEUPS_PATH, "utf8");
-  return content.trim() ? JSON.parse(content) : [];
-}
-
-function writeLineups(data) {
-  const dir = path.dirname(LINEUPS_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); 
-  fs.writeFileSync(LINEUPS_PATH, JSON.stringify(data, null, 2));
-}
+// ===================== Match Lineups (season-aware) =====================
 
 app.post("/match-lineups", async (req, res) => {
   try {
@@ -655,7 +726,9 @@ app.post("/match-lineups", async (req, res) => {
 
     if (!lineup.date) return res.status(400).json({ error: "Missing date" });
 
-    const data = readLineups();
+    // ── Auto-detect which season file to write to ──
+    const seasonKey = getSeasonKey(lineup.date);
+    const data = readLineupsForSeason(seasonKey);
 
     const normDate = (lineup.date || "").trim();
     const normLoc  = (lineup.location || "").trim();
@@ -667,7 +740,7 @@ app.post("/match-lineups", async (req, res) => {
       (l.time || "").trim() === normTime
     );
 
-        const normalizedLineup = {
+    const normalizedLineup = {
       date: normDate,
       location: normLoc,
       time: normTime,
@@ -675,36 +748,38 @@ app.post("/match-lineups", async (req, res) => {
       teamA: {
         formation: lineup.teamA?.formation || "4-4-2",
         players: lineup.teamA?.players || Array(11).fill(null),
-        // ⬅ CHANGED: Array(4) instead of [null, null]
         subs: lineup.teamA?.subs || Array(4).fill(null)
       },
       teamB: {
         formation: lineup.teamB?.formation || "4-4-2",
         players: lineup.teamB?.players || Array(11).fill(null),
-        // ⬅ CHANGED: Array(4) instead of [null, null]
         subs: lineup.teamB?.subs || Array(4).fill(null)
       }
     };
 
     if (index === -1) {
       data.push(normalizedLineup);
-      console.log(`➕ Created NEW lineup for ${normDate}`);
+      console.log(`➕ Created NEW lineup for ${normDate} [season: ${seasonKey}]`);
     } else {
       data[index] = normalizedLineup;
-      console.log(`🔄 UPDATED existing lineup at index ${index}`);
+      console.log(`🔄 UPDATED lineup for ${normDate} [season: ${seasonKey}]`);
     }
 
-    writeLineups(data);
+    writeLineupsForSeason(seasonKey, data);
 
-    // ✅ NOW CHECK THE RESULT
     const syncResult = await syncFileToGitHub(
-      LINEUPS_PATH,
-      "football-app/src/match_lineups.json",
-      `Update lineup for ${normDate}`
+      getLineupsPath(seasonKey),
+      getLineupsGitHubPath(seasonKey),
+      `Update lineup for ${normDate} [${seasonKey}]`
     );
 
     if (syncResult.success) {
-      res.json({ message: "✅ Lineup saved AND synced to GitHub", index, isNew: index === -1 });
+      res.json({
+        message: "✅ Lineup saved AND synced to GitHub",
+        index,
+        isNew: index === -1,
+        season: seasonKey
+      });
     } else {
       console.error(`❌ GitHub sync failed for lineups: ${syncResult.error}`);
       res.status(500).json({
@@ -721,11 +796,12 @@ app.post("/match-lineups", async (req, res) => {
 });
 
 app.get("/match-lineups", (req, res) => {
-  res.json(readLineups());
+  const { season } = req.query;
+  if (season) return res.json(readLineupsForSeason(season));
+  res.json(readAllLineups());
 });
 
-// ===================== POST /add-stats =====================
-// ===================== POST /add-stats-batch =====================
+// ===================== POST /add-stats-batch (season-aware) =====================
 
 app.post("/add-stats-batch", async (req, res) => {
   const arr = req.body?.stats;
@@ -733,32 +809,48 @@ app.post("/add-stats-batch", async (req, res) => {
     return res.status(400).json({ message: "❌ No stats provided" });
   }
 
-  const data = readStats();
   const formatted = arr.filter(s => s && s.Contributor).map(formatStat);
   if (formatted.length === 0) {
     return res.status(400).json({ message: "❌ No valid stats" });
   }
 
-  // ✨ Replace-or-append: remove existing records for the same match identity first
-  const first = formatted[0];
-  const normDate = (d) => (d || "").trim();
-  const remaining = data.filter(d =>
-    !formatted.some(f =>
-      normDate(d.Date) === normDate(f.Date) &&
-      (d.Contributor || "").trim().toLowerCase() === (f.Contributor || "").trim().toLowerCase() &&
-      (d.Location || "").trim() === (f.Location || "").trim() &&
-      (d.Time || "").trim() === (f.Time || "").trim()
-    )
-  );
+  // ── Group records by season ──
+  const bySeason = {};
+  for (const record of formatted) {
+    const key = getSeasonKey(record.Date);
+    if (!bySeason[key]) bySeason[key] = [];
+    bySeason[key].push(record);
+  }
 
-  remaining.push(...formatted);
-  writeStats(remaining);
+  // ── Write each season's records to its own file ──
+  const results = [];
+  for (const [seasonKey, seasonRecords] of Object.entries(bySeason)) {
+    const data = readStatsForSeason(seasonKey);
+    const normDate = (d) => (d || "").trim();
+    const remaining = data.filter(d =>
+      !seasonRecords.some(f =>
+        normDate(d.Date) === normDate(f.Date) &&
+        (d.Contributor || "").trim().toLowerCase() === (f.Contributor || "").trim().toLowerCase() &&
+        (d.Location || "").trim() === (f.Location || "").trim() &&
+        (d.Time || "").trim() === (f.Time || "").trim()
+      )
+    );
+    remaining.push(...seasonRecords);
+    writeStatsForSeason(seasonKey, remaining);
 
-  await syncFileToGitHub(STATS_PATH, "football-app/src/football_stats_2025_2026.json",
-    `Batch upsert stats for ${formatted.length} players (${first.Date})`);
+    const syncResult = await syncFileToGitHub(
+      getStatsPath(seasonKey),
+      getStatsGitHubPath(seasonKey),
+      `Batch upsert stats for ${seasonRecords.length} players [${seasonKey}]`
+    );
+    results.push({ season: seasonKey, count: seasonRecords.length, synced: syncResult.success });
+    console.log(`📊 [STATS] ${seasonKey}: ${seasonRecords.length} records written (${syncResult.success ? "synced" : "sync FAILED"})`);
+  }
 
-  res.json({ message: `✅ ${formatted.length} stat records saved (replaces existing)`, totalRecords: remaining.length });
+  res.json({ message: `✅ ${formatted.length} stat records saved`, seasons: results });
 });
+
+// ===================== POST /add-stats (season-aware) =====================
 
 app.post("/add-stats", async (req, res) => {
   const raw = req.body;
@@ -767,53 +859,77 @@ app.post("/add-stats", async (req, res) => {
     return res.status(400).json({ message: "❌ Missing contributor" });
   }
 
-  const data = readStats();
   const newStat = formatStat(raw);
-
+  const seasonKey = getSeasonKey(newStat.Date);
+  const data = readStatsForSeason(seasonKey);
   data.push(newStat);
-  writeStats(data);
+  writeStatsForSeason(seasonKey, data);
 
-  await syncFileToGitHub(STATS_PATH, "football-app/src/football_stats_2025_2026.json", `Add stats for ${newStat.Contributor}`);
+  await syncFileToGitHub(
+    getStatsPath(seasonKey),
+    getStatsGitHubPath(seasonKey),
+    `Add stats for ${newStat.Contributor} [${seasonKey}]`
+  );
 
   res.json({
     message: "✅ Stat added successfully",
     symbol: newStat.Symbol,
     season: newStat.Season,
+    fileSeason: seasonKey,
     totalRecords: data.length,
   });
 });
 
-// ===================== GET /stats =====================
+// ===================== GET /stats (season-aware) =====================
 
 app.get("/stats", (req, res) => {
-  res.json(readStats());
+  const { season } = req.query;
+  if (season) return res.json(readStatsForSeason(season));
+  res.json(readAllStats());
 });
 
-// ===================== PUT /modify-stats/:index =====================
+// ===================== PUT /modify-stats/:index (season-aware) =====================
 
 app.put("/modify-stats/:index", async (req, res) => {
-  const data = readStats();
+  const allStats = readAllStats();
   const index = parseInt(req.params.index);
 
-  if (index < 0 || index >= data.length) {
+  if (index < 0 || index >= allStats.length) {
     return res.status(400).json({ message: "Invalid index" });
   }
 
-  const merged = { ...data[index], ...req.body };
+  const target = allStats[index];
+  const seasonKey = getSeasonKey(target.Date);
+  const seasonData = readStatsForSeason(seasonKey);
+
+  const seasonIdx = seasonData.findIndex(d =>
+    d.Date === target.Date &&
+    (d.Contributor || "").trim().toLowerCase() === (target.Contributor || "").trim().toLowerCase() &&
+    (d.Location || "").trim() === (target.Location || "").trim()
+  );
+
+  if (seasonIdx === -1) {
+    return res.status(400).json({ message: "Record not found in season file" });
+  }
+
+  const merged = { ...seasonData[seasonIdx], ...req.body };
   const updatedRecord = formatStat(merged);
+  seasonData[seasonIdx] = updatedRecord;
+  writeStatsForSeason(seasonKey, seasonData);
 
-  data[index] = updatedRecord;
-  writeStats(data);
+  await syncFileToGitHub(
+    getStatsPath(seasonKey),
+    getStatsGitHubPath(seasonKey),
+    `Modify stats for ${updatedRecord.Contributor} [${seasonKey}]`
+  );
 
-  await syncFileToGitHub(STATS_PATH, "football-app/src/football_stats_2025_2026.json", `Modify stats for ${updatedRecord.Contributor}`);
-
-  res.json({ message: "✅ Stat modified successfully", updated: updatedRecord });
+  res.json({ message: "✅ Stat modified successfully", updated: updatedRecord, season: seasonKey });
 });
 
 // ===================== GET /stats-history =====================
 
 app.get("/stats-history", (req, res) => {
-  const data = readStats();
+  const data = readAllStats();
   res.json({
     contributors: [...new Set(data.map((d) => d.Contributor).filter(Boolean))],
     locations:    [...new Set(data.map((d) => d.Location).filter(Boolean))],
@@ -822,8 +938,21 @@ app.get("/stats-history", (req, res) => {
   });
 });
 
+// ===================== GET /seasons (discover available seasons) =====================
+
+app.get("/seasons", (req, res) => {
+  const keys = getAllSeasonKeys();
+  const seasons = keys.map(key => ({
+    key,
+    label: key.replace("_", "-"),
+    statsCount: readStatsForSeason(key).length,
+    lineupCount: readLineupsForSeason(key).length,
+  }));
+  res.json(seasons);
+});
+
 // ===================== Static serving =====================
-const buildPath = path.join(__dirname,"build");
+const buildPath = path.join(__dirname, "build");
 if (fs.existsSync(buildPath)) {
   app.use(express.static(buildPath));
   app.get("*", (req, res) => {
@@ -834,17 +963,23 @@ if (fs.existsSync(buildPath)) {
 }
 
 // ===================== STARTUP SYNC =====================
-// Every time Render wakes up from sleep, it will download the latest data from GitHub
 async function startupSync() {
   console.log("🔄 Server waking up... Pulling latest data from GitHub...");
-  
-  await pullLatestFromGitHub("football-app/src/football_stats_2025_2026.json", STATS_PATH);
-  await pullLatestFromGitHub("football-app/src/contributor_profiles.json", PROFILES_PATH);
-  await pullLatestFromGitHub("football-app/src/player_attributes.json", ATTR_PATH);
-  await pullLatestFromGitHub("football-app/src/match_lineups.json", LINEUPS_PATH);
 
-  console.log("✅ Data synced! Server is ready.");
-  
+  // Pull shared files
+  await pullLatestFromGitHub("football-app/src/player_attributes.json", ATTR_PATH);
+  await pullLatestFromGitHub("football-app/src/contributor_profiles.json", PROFILES_PATH);
+
+  // Pull all known season files
+  const seasonKeys = getAllSeasonKeys();
+  for (const key of seasonKeys) {
+    await pullLatestFromGitHub(getStatsGitHubPath(key), getStatsPath(key));
+    await pullLatestFromGitHub(getLineupsGitHubPath(key), getLineupsPath(key));
+    console.log(`   📂 Season ${key}: stats + lineups synced`);
+  }
+
+  console.log(`✅ Data synced for ${seasonKeys.length} season(s)! Server is ready.`);
+
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 }
