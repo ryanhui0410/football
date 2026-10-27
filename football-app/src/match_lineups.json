@@ -1247,7 +1247,20 @@
           "Contributor": "Darren",
           "rating": 9.6,
           "picture": "/Darren.jpeg",
-          "manOfTheMatch": false
+          "manOfTheMatch": true,
+          "isMotm": false,
+          "goals": 3,
+          "assists": 0,
+          "goal": 3,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 2,
+          "head": 1,
+          "other": 0,
+          "assistTo": "Ryan",
+          "assistToCount": 1
         }
       ],
       "subs": [
