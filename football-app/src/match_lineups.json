@@ -1954,7 +1954,7 @@
           "Contributor": "Darren",
           "rating": 10,
           "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Darren.jpeg",
-          "isMotm": true,
+          "isMotm": false,
           "goals": 5,
           "assists": 1,
           "goal": 5,
@@ -1962,7 +1962,12 @@
           "error": 1,
           "assistTo": "",
           "assistToCount": 0,
-          "manOfTheMatch": false
+          "manOfTheMatch": true,
+          "ownGoal": 0,
+          "leftFoot": 2,
+          "rightFoot": 3,
+          "head": 0,
+          "other": 0
         }
       ],
       "subs": [
