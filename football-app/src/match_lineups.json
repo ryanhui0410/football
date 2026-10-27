@@ -1510,14 +1510,20 @@
           "Contributor": "Ben",
           "rating": 10,
           "isMotm": false,
-          "goals": 0,
+          "goals": 7,
           "assists": 0,
           "goal": 7,
           "assist": 0,
           "error": 0,
           "assistTo": "",
           "assistToCount": 0,
-          "manOfTheMatch": false
+          "manOfTheMatch": true,
+          "picture": "",
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0
         },
         null,
         {
