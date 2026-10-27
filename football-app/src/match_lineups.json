@@ -616,7 +616,20 @@
           "Contributor": "Darren",
           "rating": 9.1,
           "picture": "/Darren.jpeg",
-          "manOfTheMatch": false
+          "manOfTheMatch": true,
+          "isMotm": false,
+          "goals": 2,
+          "assists": 1,
+          "goal": 2,
+          "assist": 1,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 2,
+          "head": 0,
+          "other": 0,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "局長",
