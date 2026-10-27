@@ -2361,6 +2361,7 @@
     "date": "9/27/2026",
     "location": "雲景道",
     "time": "4:00 PM",
+    "matchResult": "6-5",
     "teamA": {
       "formation": "4-4-2",
       "players": [
@@ -2380,7 +2381,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         null,
         {
@@ -2399,7 +2401,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "阿兜",
@@ -2417,7 +2420,8 @@
           "head": 0,
           "other": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         null,
         {
@@ -2436,7 +2440,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 1,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Miles",
@@ -2454,7 +2459,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 1,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Justin",
@@ -2471,7 +2477,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 1,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Wesley",
@@ -2487,7 +2494,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 1
+          "assists": 1,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ryan",
@@ -2505,7 +2513,8 @@
           "head": 0,
           "other": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Darren",
@@ -2523,10 +2532,13 @@
           "head": 0,
           "other": 0,
           "assistTo": "Ryan",
-          "assistToCount": 1
+          "assistToCount": 1,
+          "manOfTheMatch": true
         }
       ],
       "subs": [
+        null,
+        null,
         null,
         null
       ]
@@ -2550,7 +2562,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         null,
         {
@@ -2569,7 +2582,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         null,
         null,
@@ -2589,7 +2603,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 0,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Jeffrey",
@@ -2607,7 +2622,8 @@
           "head": 0,
           "other": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Jason",
@@ -2625,7 +2641,8 @@
           "head": 0,
           "other": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "良哥",
@@ -2643,7 +2660,8 @@
           "head": 0,
           "other": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Jet",
@@ -2660,7 +2678,8 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 1,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ping",
@@ -2677,10 +2696,13 @@
           "assistToCount": 0,
           "isMotm": false,
           "goals": 2,
-          "assists": 0
+          "assists": 0,
+          "manOfTheMatch": false
         }
       ],
       "subs": [
+        null,
+        null,
         null,
         null
       ]
