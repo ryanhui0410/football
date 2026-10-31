@@ -5508,7 +5508,22 @@
         }
       ],
       "subs": [
-        null,
+        {
+          "Contributor": "Eugene",
+          "picture": "/Eugene.jpeg",
+          "rating": 5.8,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         null,
         null,
         null
