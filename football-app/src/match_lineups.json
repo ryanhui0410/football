@@ -5369,7 +5369,7 @@
       "players": [
         {
           "Contributor": "Dave",
-          "rating": 4.6,
+          "rating": 4.2,
           "goal": 0,
           "assist": 0,
           "leftFoot": 0,
@@ -5380,7 +5380,11 @@
           "error": 1,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "picture": ""
         },
         {
           "Contributor": "Leung Gor",
