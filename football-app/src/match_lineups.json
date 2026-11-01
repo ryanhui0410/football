@@ -5581,5 +5581,195 @@
         null
       ]
     }
+  },
+  {
+    "date": "11/1/2026",
+    "location": "雲景道",
+    "time": "4:00 PM",
+    "matchResult": "5-5",
+    "teamA": {
+      "formation": "4-4-2",
+      "players": [
+        {
+          "Contributor": "Wilson",
+          "rating": 4.6,
+          "goal": 0,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 2,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        null,
+        null,
+        null,
+        null,
+        {
+          "Contributor": "Miles",
+          "rating": 7.1,
+          "goal": 0,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Justin",
+          "rating": 6.9,
+          "goal": 0,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        null,
+        {
+          "Contributor": "Steven",
+          "rating": 6.5,
+          "goal": 0,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Ryan",
+          "rating": 7.8,
+          "goal": 1,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        null
+      ],
+      "subs": [
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    "teamB": {
+      "formation": "4-4-2",
+      "players": [
+        {
+          "Contributor": "Jeff",
+          "rating": 6.2,
+          "goal": 0,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        null,
+        null,
+        {
+          "Contributor": "阿兜",
+          "rating": 6.9,
+          "goal": 0,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        null,
+        null,
+        {
+          "Contributor": "Jeffrey",
+          "rating": 7.9,
+          "goal": 1,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 1,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        {
+          "Contributor": "Jason",
+          "rating": 7.7,
+          "goal": 0,
+          "assist": 1,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
+        null,
+        null,
+        {
+          "Contributor": "Ping",
+          "rating": 8.3,
+          "goal": 2,
+          "assist": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "ownGoal": 0,
+          "error": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        }
+      ],
+      "subs": [
+        null,
+        null,
+        null,
+        null
+      ]
+    }
   }
 ]
