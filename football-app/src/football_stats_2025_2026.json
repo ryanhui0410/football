@@ -5619,16 +5619,16 @@
   {
     "Date": "11/1/2026",
     "Contributor": "Jason",
-    "Symbol": "👟",
-    "Goal": 0,
+    "Symbol": "⚽👟",
+    "Goal": 1,
     "Assist": 1,
-    "Rating": 7.7,
+    "Rating": 8.6,
     "Location": "雲景道",
     "Time": "4:00 PM",
-    "Goal Contribution": 1,
+    "Goal Contribution": 2,
     "source": "Edit Match Report",
     "Left Foot": 0,
-    "Right Foot": 0,
+    "Right Foot": 1,
     "Head": 0,
     "Other body parts": 0,
     "Own Goal": 0,
@@ -5637,7 +5637,7 @@
     "Win/Loss?": "Draw",
     "Assist to": "",
     "Assist to count": 0,
-    "Man of the Match": false
+    "Man of the Match": true
   },
   {
     "Date": "11/1/2026",
