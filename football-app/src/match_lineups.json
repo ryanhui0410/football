@@ -5412,7 +5412,22 @@
           "assistTo": "",
           "assistToCount": 0
         },
-        null,
+        {
+          "Contributor": "Dixon",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Dixon.jpeg",
+          "rating": 5.7,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         {
           "Contributor": "KK",
           "picture": "/KK.jpeg",
@@ -5459,7 +5474,22 @@
           "assistTo": "",
           "assistToCount": 0
         },
-        null,
+        {
+          "Contributor": "Chu",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Chu.jpeg",
+          "rating": 7.4,
+          "goal": 1,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         {
           "Contributor": "S Joe",
           "picture": "/images/S_Joe.jpeg",
