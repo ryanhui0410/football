@@ -3119,9 +3119,13 @@
           "assistTo": "",
           "assistToCount": 0,
           "isMotm": false,
-          "goals": 0,
+          "goals": 1,
           "assists": 1,
-          "manOfTheMatch": false
+          "manOfTheMatch": false,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 0,
+          "other": 0
         },
         {
           "Contributor": "Sam",
@@ -3224,9 +3228,13 @@
           "assistTo": "",
           "assistToCount": 0,
           "isMotm": false,
-          "goals": 0,
+          "goals": 1,
           "assists": 0,
-          "manOfTheMatch": false
+          "manOfTheMatch": false,
+          "leftFoot": 1,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0
         },
         null,
         null
