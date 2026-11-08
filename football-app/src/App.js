@@ -13,6 +13,27 @@ import MatchCalendar from "./CalendarMatch/MatchCalendar";
 import AddPlayerCard from "./PlayerCards/AddPlayerCard";
 import TacticalDashboard from "./Tactical/TacticalDashboard";
 
+const API_BASE = "https://football-stats-xbx6.onrender.com";
+
+// ── Fetch with retry + long timeout (handles Render sleep wake-up) ──
+const fetchWithRetry = async (url, retries = 3, delay = 15000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, {
+        signal: AbortSignal.timeout(60000),
+      });
+      if (res.ok) return res.json();
+    } catch (e) {
+      if (i < retries - 1) {
+        console.log(`⏳ Retry ${i + 1}/${retries} for ${url}...`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        throw new Error(`Failed after ${retries} retries: ${url}`);
+      }
+    }
+  }
+};
+
 class PlayerStats {
   constructor(fields) {
     Object.assign(this, fields);
@@ -76,12 +97,18 @@ function App() {
   });
   const [history, setHistory] = useState({ contributors: [], locations: [], times: [], sources: [] });
   const [contributors, setContributors] = useState([]);
-  const [activeContributor, setActiveContributor] = useState(null);
   const [activeView, setActiveView] = useState(null);
-  const [filterLocation, setFilterLocation] = useState("");
-  const [filterMonth, setFilterMonth] = useState("");
   const [summaryData, setSummaryData] = useState([]);
-  const [filterYear, setFilterYear] = useState("");
+
+  // ── Keep-alive: ping every 10 min to prevent Render sleep ──
+  useEffect(() => {
+    const ping = () => {
+      fetch(`${API_BASE}/stats-history?t=${Date.now()}`).catch(() => {});
+    };
+    ping(); // initial wake-up ping
+    const interval = setInterval(ping, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // ✨ Detect mobile vs desktop (also handles screen rotation)
   useEffect(() => {
@@ -103,8 +130,7 @@ function App() {
 
   const handleCalendarClick = async () => {
     setShowSplash(false);
-    const res = await fetch("https://football-stats-xbx6.onrender.com/stats");
-    const data = await res.json();
+    const data = await fetchWithRetry(`${API_BASE}/stats?t=${Date.now()}`);
     setSummaryData(data);
     setContributors([]);
     setShowForm(false);
@@ -132,8 +158,7 @@ function App() {
 
   const handleAddStatsClick = async () => {
     setShowSplash(false);
-    const res = await fetch("https://football-stats-xbx6.onrender.com/stats-history");
-    const data = await res.json();
+    const data = await fetchWithRetry(`${API_BASE}/stats-history?t=${Date.now()}`);
     setHistory(data);
     setContributors([]);
     setSummaryData([]);
@@ -151,7 +176,7 @@ function App() {
     e.preventDefault();
     const newStats = new PlayerStats(formData);
     console.log("📤 Sending:", JSON.stringify(newStats));
-    await fetch("https://football-stats-xbx6.onrender.com/add-stats", {
+    await fetch(`${API_BASE}/add-stats`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newStats),
@@ -171,8 +196,7 @@ function App() {
 
   const handleDisplayStatsClick = async () => {
     setShowSplash(false);
-    const res = await fetch("https://football-stats-xbx6.onrender.com/stats");
-    const data = await res.json();
+    const data = await fetchWithRetry(`${API_BASE}/stats?t=${Date.now()}`);
     const contributorMap = {};
     data.forEach((stat) => {
       const name = stat.Contributor?.trim();
@@ -189,8 +213,7 @@ function App() {
 
   const handleStatsSummaryClick = async () => {
     setShowSplash(false);
-    const res = await fetch("https://football-stats-xbx6.onrender.com/stats");
-    const data = await res.json();
+    const data = await fetchWithRetry(`${API_BASE}/stats?t=${Date.now()}`);
     setSummaryData(data);
     setContributors([]);
     setShowForm(false);
@@ -200,8 +223,7 @@ function App() {
 
   const handleModifyStatsClick = async () => {
     setShowSplash(false);
-    const res = await fetch("https://football-stats-xbx6.onrender.com/stats");
-    const data = await res.json();
+    const data = await fetchWithRetry(`${API_BASE}/stats?t=${Date.now()}`);
     setContributors([]);
     setSummaryData([]);
     setShowForm(false);
@@ -218,13 +240,6 @@ function App() {
       )
     );
     setMenuOpen(false);
-  };
-
-  const toggleContributor = (name) => {
-    setActiveContributor((prev) => (prev === name ? null : name));
-    setFilterLocation("");
-    setFilterMonth("");
-    setFilterYear("");
   };
 
   // ✨ Which bottom-nav button should glow?
