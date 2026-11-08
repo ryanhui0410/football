@@ -1358,6 +1358,12 @@ function ModifyDashboard({ contributors, onSave }) {
                     <button onClick={() => setSlotToEdit(null)} style={{ padding: "10px 16px", background: "#e2e8f0", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: 600 }}>Cancel</button>
                     <button
                       onClick={async () => {
+                        const bodyTotal = (slotStats?.leftFoot || 0) + (slotStats?.rightFoot || 0) + (slotStats?.head || 0) + (slotStats?.other || 0);
+                        const totalGoals = slotStats?.goal || 0;
+                        if (totalGoals !== bodyTotal) {
+                          alert(`⚠️ Cannot save to pitch!\n\nGoal (${totalGoals}) ≠ LF(${slotStats?.leftFoot||0}) + RF(${slotStats?.rightFoot||0}) + Head(${slotStats?.head||0}) + Other(${slotStats?.other||0}) = ${bodyTotal}\n\nPlease fix the breakdown to match total goals.`);
+                          return;
+                        }
                         const { team, idx, player } = slotToEdit;
                         let picture = player?.picture ?? "";
 

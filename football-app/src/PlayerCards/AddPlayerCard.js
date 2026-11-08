@@ -148,7 +148,11 @@ function AddPlayerCard() {
       alert("Please enter a player name.");
       return;
     }
-
+     // ── BLOCK SAVE if filterGroup is empty ──
+    if (!formData.filterGroup || !formData.filterGroup.trim()) {
+      alert("⚠️ Please select a Filter Group before saving.");
+      return;
+    }
     setSaving(true);
     setMessage("");
 

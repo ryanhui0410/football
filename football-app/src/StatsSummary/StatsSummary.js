@@ -329,40 +329,156 @@ if (existingKeys.has(key)) {
       return <span className="sort-arrow active">{sortDir === "desc" ? "▼" : "▲"}</span>;
     };
 
-    const getDetailedPlayerStats = (playerName) => {
-      const normalizedTarget = normalizeName(playerName);
-      const playerStats = filteredStats.filter((s) => normalizeName(s.Contributor) === normalizedTarget);
-      if (playerStats.length === 0) return null;
+        const getDetailedPlayerStats = (playerName) => {
+      const target = normalizeName(playerName);
+      const records = [];
+
+      if (isPair(target)) {
+        // ── Pair players (Ryan/Darren): use mergedStats (same as table) ──
+        filteredStats.forEach(s => {
+          if (normalizeName(s.Contributor) !== target) return;
+          const left = parseInt(s["Left Foot"] || 0);
+          const right = parseInt(s["Right Foot"] || 0);
+          const head = parseInt(s.Head || 0);
+          const other = parseInt(s["Other body parts"] || 0);
+          const breakdownTotal = left + right + head + other;
+          records.push({
+            date: s.Date,
+            rating: parseFloat(s.Rating) || 0,
+            left, right, head, other,
+            goals: breakdownTotal > 0 ? breakdownTotal : (parseInt(s.Goal) || 0),
+            assists: parseInt(s.Assist || 0) || 0,
+            errors: parseInt(s["Error?"] ?? s.Error ?? 0) || 0,
+            ownGoals: parseFloat(s["Own Goal"] ?? 0) || 0,
+            wl: s["Win/Loss?"] || "",
+            motm: s["Man of the Match"] === true,
+            location: s.Location || "",
+          });
+        });
+      } else {
+        // ── Non-pair: lineups first (same as table), stats fallback ──
+        let hasLineupData = false;
+
+        lineups.forEach(match => {
+          if (!match || !match.date) return;
+          const season = getSeasonFromDate(match.date);
+          if (filterSeason && season !== filterSeason) return;
+
+          const teams = [match.teamA, match.teamB].filter(Boolean);
+          teams.forEach((team, teamIdx) => {
+            const allPlayers = [
+              ...(Array.isArray(team.players) ? team.players : Object.values(team.players || {})),
+              ...(Array.isArray(team.subs) ? team.subs : []),
+            ];
+            allPlayers.forEach(p => {
+              if (!p || !p.Contributor) return;
+              if (normalizeName(p.Contributor) !== target) return;
+              hasLineupData = true;
+
+              // Direct values from lineup (same as table's lineup loop)
+              const goal = parseInt(p.goal) || 0;
+              const assist = parseInt(p.assist) || 0;
+              const error = parseInt(p.error) || 0;
+              const ownGoal = parseFloat(p.ownGoal) || 0;
+              const rating = parseFloat(p.rating) || 0;
+              const motm = p.manOfTheMatch === true;
+
+              // Breakdown from lineup
+              const lf = parseInt(p.leftFoot) || 0;
+              const rf = parseInt(p.rightFoot) || 0;
+              const hd = parseInt(p.head) || 0;
+              const ot = parseInt(p.other) || 0;
+              const breakdownTotal = lf + rf + hd + ot;
+
+              // Win/Loss from matchResult
+              let wl = "";
+              if (match.matchResult) {
+                const scores = match.matchResult.split("-").map(s => parseInt(s.trim()));
+                if (scores.length === 2 && !isNaN(scores[0]) && !isNaN(scores[1])) {
+                  const playerScore = teamIdx === 0 ? scores[0] : scores[1];
+                  const oppScore = teamIdx === 0 ? scores[1] : scores[0];
+                  wl = playerScore > oppScore ? "Win" : playerScore < oppScore ? "Loss" : "Draw";
+                }
+              }
+              if (!wl) {
+                const se = stats.find(s =>
+                  normalizeName(s.Contributor) === target && s.Date === match.date
+                );
+                if (se) wl = se["Win/Loss?"] || "";
+              }
+
+              records.push({
+                date: match.date,
+                rating,
+                left: breakdownTotal > 0 ? lf : goal,
+                right: breakdownTotal > 0 ? rf : 0,
+                head: breakdownTotal > 0 ? hd : 0,
+                other: breakdownTotal > 0 ? ot : 0,
+                goals: goal,
+                assists: assist,
+                errors: error,
+                ownGoals: ownGoal,
+                motm,
+                wl,
+                location: match.location || "",
+              });
+            });
+          });
+        });
+
+        // ── Stats fallback: only if player has NO lineup data (same as table) ──
+        if (!hasLineupData) {
+          stats.forEach(s => {
+            if (normalizeName(s.Contributor) !== target) return;
+            const season = getSeasonFromDate(s.Date);
+            if (filterSeason && season !== filterSeason) return;
+
+            const left = parseInt(s["Left Foot"] || 0);
+            const right = parseInt(s["Right Foot"] || 0);
+            const head = parseInt(s.Head || 0);
+            const other = parseInt(s["Other body parts"] || 0);
+            const breakdownTotal = left + right + head + other;
+
+            records.push({
+              date: s.Date,
+              rating: parseFloat(s.Rating) || 0,
+              left, right, head, other,
+              goals: breakdownTotal > 0 ? breakdownTotal : (parseInt(s.Goal) || 0),
+              assists: parseInt(s.Assist || 0) || 0,
+              errors: parseInt(s["Error?"] ?? s.Error ?? 0) || 0,
+              ownGoals: parseFloat(s["Own Goal"] ?? 0) || 0,
+              wl: s["Win/Loss?"] || "",
+              motm: s["Man of the Match"] === true,
+              location: s.Location || "",
+            });
+          });
+        }
+      }
+
+      if (records.length === 0) return null;
 
       const entry = {
         ratings: [], left: 0, right: 0, head: 0, other: 0, assists: 0, errors: 0, wins: 0,
         locationStats: {}, matches: [],
       };
 
-      playerStats.forEach((s) => {
-        const rating = parseFloat(s.Rating) || 0;
-        const left = parseInt(s["Left Foot"] || 0);
-        const right = parseInt(s["Right Foot"] || 0);
-        const head = parseInt(s.Head || 0);
-        const other = parseInt(s["Other body parts"] || 0);
-        const assists = parseInt(s.Assist || 0);
-        const errors = parseInt(s["Error?"] ?? s.Error ?? 0) || 0;
-        const wl = s["Win/Loss?"] || "";
+      records.forEach(r => {
+        entry.ratings.push(r.rating);
+        entry.left += r.left;
+        entry.right += r.right;
+        entry.head += r.head;
+        entry.other += r.other;
+        entry.assists += r.assists;
+        entry.errors += r.errors;
+        if (r.wl && r.wl.toLowerCase() === "win") entry.wins += 1;
+        entry.matches.push({ date: r.date, rating: r.rating, goals: r.goals, assists: r.assists });
 
-        entry.ratings.push(rating);
-        entry.left += left; entry.right += right; entry.head += head; entry.other += other;
-        entry.assists += assists; entry.errors += errors;
-        if (wl.toLowerCase() === "win") entry.wins += 1;
-
-        // ✅ CHANGED: goal fallback when breakdown is 0
-        const breakdownGoals = left + right + head + other;
-        const goals = breakdownGoals > 0 ? breakdownGoals : (parseInt(s.Goal) || 0);
-        entry.matches.push({ date: s.Date, rating, goals, assists });
-
-        const location = normalizeName(s.Location) || "Unknown";
+        const location = normalizeName(r.location) || "Unknown";
         if (!entry.locationStats[location]) entry.locationStats[location] = { count: 0, goals: 0, assists: 0 };
         const loc = entry.locationStats[location];
-        loc.count += 1; loc.goals += goals; loc.assists += assists;
+        loc.count += 1;
+        loc.goals += r.goals;
+        loc.assists += r.assists;
       });
 
       entry.matches.sort((a, b) => new Date(a.date) - new Date(b.date));

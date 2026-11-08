@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from "react";
 import MatchLineup from "../EditStats/MatchLineup";
 import "./TacticalDashboard.css";
 
-// ✅ Inline stat stepper for the slot modal
 function StatStepper({ label, value, onChange, max = 99 }) {
   const num = parseInt(value) || 0;
   return (
@@ -21,7 +20,6 @@ function StatStepper({ label, value, onChange, max = 99 }) {
   );
 }
 
-// ✅ Us–Them scoreline stepper
 function ScorelineInput({ value, onChange }) {
   const parts = (value || "").split("-");
   const us = parts[0] ?? "";
@@ -60,7 +58,6 @@ function ScorelineInput({ value, onChange }) {
   );
 }
 
-// ✅ Inline calendar picker
 function CalendarPicker({ value, onChange }) {
   const parts = (value || "").split("/").map(Number);
   const [open, setOpen] = useState(false);
@@ -168,7 +165,6 @@ function CalendarPicker({ value, onChange }) {
   );
 }
 
-// ✨ Derive outcome from score + team
 function deriveOutcome(matchResult, team) {
   const parts = (matchResult || "").split("-").map(s => parseInt(s.trim()));
   if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return "";
@@ -196,13 +192,9 @@ function TacticalDashboard() {
   const [playerStats, setPlayerStats] = useState({});
   const [slotStats, setSlotStats] = useState(null);
 
-  // Player picker state
-  const [addPlayerMode, setAddPlayerMode] = useState("name"); // "name" | "photo"
+  const [addPlayerMode, setAddPlayerMode] = useState("name");
   const [playerSearchText, setPlayerSearchText] = useState("");
   const [playerFilterGroup, setPlayerFilterGroup] = useState("All");
-
-  // Season tracking
-  const [seasonInfo, setSeasonInfo] = useState(null);
 
   const getPicture = (name) =>
     name ? pictureMap[name.trim().toLowerCase()] || null : null;
@@ -212,24 +204,6 @@ function TacticalDashboard() {
     if (n === "ryan") return "Darren";
     if (n === "darren") return "Ryan";
     return null;
-  };
-
-  // ── Season helper (mirrors backend logic) ──
-  const getSeasonKey = (dateStr) => {
-    if (!dateStr) return null;
-    const parts = dateStr.split("/");
-    if (parts.length !== 3) return null;
-    const month = parseInt(parts[0]);
-    const year = parseInt(parts[2]);
-    if (isNaN(month) || isNaN(year)) return null;
-    const startYear = month >= 8 ? year : year - 1;
-    if (startYear <= 2026) return "2025_2026";
-    return `${startYear}_${startYear + 1}`;
-  };
-
-  const getSeasonLabel = (dateStr) => {
-    const key = getSeasonKey(dateStr);
-    return key ? key.replace("_", "-") : "";
   };
 
   const getLayoutType = () => {
@@ -283,28 +257,6 @@ function TacticalDashboard() {
       .catch(err => console.error("Failed to fetch initial data", err));
   }, []);
 
-  // ── Update season info when date changes ──
-  useEffect(() => {
-    const key = getSeasonKey(matchDetails.Date);
-    if (key) {
-      const startYear = parseInt(key.split("_")[0]);
-      const endYear = parseInt(key.split("_")[1]);
-      const isNewSeason = startYear >= 2027;
-      setSeasonInfo({
-        key,
-        label: key.replace("_", "-"),
-        isNewSeason,
-        statsFile: isNewSeason ? `football_stats_${key}.json` : "football_stats_2025_2026.json",
-        lineupsFile: isNewSeason ? `match_lineups_${key}.json` : "match_lineups.json",
-      });
-    } else {
-      setSeasonInfo(null);
-    }
-  }, [matchDetails.Date]);
-
-  // ═══════════════════════════════════════════════════
-  // Dynamically extract filter groups from players
-  // ═══════════════════════════════════════════════════
   const filterGroups = useMemo(() => {
     const groups = new Set();
     availablePlayers.forEach(p => {
@@ -324,7 +276,6 @@ function TacticalDashboard() {
     return sorted;
   }, [availablePlayers]);
 
-  // Filtered players for picker
   const filteredAvailablePlayers = useMemo(() => {
     let list = [...availablePlayers];
 
@@ -387,7 +338,6 @@ function TacticalDashboard() {
     setMatchDetails({ ...matchDetails, [e.target.name]: e.target.value });
   };
 
-  // Shared player selection handler
   const handleSelectPlayer = (selected) => {
     if (!selected) {
       setSlotToEdit(prev => ({ ...prev, player: null }));
@@ -468,7 +418,6 @@ function TacticalDashboard() {
     };
 
     try {
-      // ── STEP 1: Save lineup (backend routes to correct season file) ──
       const res = await fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -482,10 +431,8 @@ function TacticalDashboard() {
         return;
       }
 
-      const seasonLabel = result.season || getSeasonLabel(matchDetails.Date);
-      setMessage(`✅ Lineup saved to season ${seasonLabel}! Syncing player stats...`);
+      setMessage("✅ Tactical Lineup saved! Syncing player stats...");
 
-      // ── STEP 2: Sync player stats (backend routes to correct season file) ──
       const statRecords = [];
       ["teamA", "teamB"].forEach(teamKey => {
         const team = lineupData[teamKey];
@@ -529,10 +476,7 @@ function TacticalDashboard() {
           setTimeout(() => setMessage(""), 6000);
           return;
         }
-
-        const statsResult = await statsRes.json();
-        const seasonDetails = (statsResult.seasons || []).map(s => `${s.season}: ${s.count} records`).join(", ");
-        setMessage(`✅ Lineup + stats saved! [${seasonDetails}]`);
+        setMessage("✅ Lineup + player stats saved AND synced to GitHub!");
         setPlayerStats({});
       } catch (err) {
         setMessage(`⚠️ Lineup saved, but stats network error: ${err.message}`);
@@ -547,6 +491,14 @@ function TacticalDashboard() {
   };
 
   const handleSaveSlot = () => {
+    // ── BLOCK SAVE if goal breakdown doesn't match ──
+  const bodyTotal = (slotStats?.LeftFoot || 0) + (slotStats?.RightFoot || 0) + (slotStats?.Head || 0) + (slotStats?.OtherBodyParts || 0);
+  const totalGoals = slotStats?.Goal || 0;
+  if (totalGoals !== bodyTotal) {
+    setMessage(`⚠️ Cannot save! Goal (${totalGoals}) ≠ breakdown (${bodyTotal}). Please fix LF + RF + Head + Other.`);
+    setTimeout(() => setMessage(""), 5000);
+    return;
+  }
     const { team, idx, player } = slotToEdit;
 
     let targetTeam = team;
@@ -633,34 +585,6 @@ function TacticalDashboard() {
           onChange={(val) => setMatchDetails(d => ({ ...d, MatchResult: val }))}
         />
       </div>
-
-      {/* ── Season Info Banner ── */}
-      {seasonInfo && (
-        <div style={{
-          marginTop: "12px",
-          padding: "10px 14px",
-          borderRadius: "8px",
-          fontSize: "13px",
-          fontWeight: 600,
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          background: seasonInfo.isNewSeason ? "#fef3c7" : "#eff6ff",
-          border: `1px solid ${seasonInfo.isNewSeason ? "#f59e0b" : "#3b82f6"}`,
-          color: seasonInfo.isNewSeason ? "#92400e" : "#1e40af",
-        }}>
-          <span>{seasonInfo.isNewSeason ? "🆕" : "📂"}</span>
-          <span>
-            Season <strong>{seasonInfo.label}</strong>
-            {seasonInfo.isNewSeason
-              ? " — New season files will be created automatically"
-              : " — Using existing 2025-2026 files"}
-          </span>
-          <span style={{ marginLeft: "auto", fontSize: "11px", opacity: 0.7 }}>
-            {seasonInfo.statsFile} | {seasonInfo.lineupsFile}
-          </span>
-        </div>
-      )}
     </div>
   );
 
@@ -717,14 +641,10 @@ function TacticalDashboard() {
         )}
       </div>
 
-      {/* ═══════════════════════════════════════════════════
-          SLOT EDIT MODAL — with dual-mode player picker
-          ═══════════════════════════════════════════════════ */}
       {slotToEdit && (
         <div className="td-slot-overlay" onClick={() => setSlotToEdit(null)}>
           <div className="td-slot-modal" onClick={e => e.stopPropagation()}>
 
-            {/* ── Header ── */}
             <div className="td-slot-header">
               <h3>{slotToEdit.player ? "Edit Player" : "Add Player"}</h3>
               <button className="td-slot-close" onClick={() => {
@@ -735,7 +655,6 @@ function TacticalDashboard() {
               }}>✕</button>
             </div>
 
-            {/* ── Mode Toggle Tabs ── */}
             <div className="td-picker-tabs">
               <button
                 className={`td-picker-tab ${addPlayerMode === 'name' ? 'active' : ''}`}
@@ -751,7 +670,6 @@ function TacticalDashboard() {
               </button>
             </div>
 
-            {/* ── Filter Pills: Dynamic from filterGroup field ── */}
             <div className="td-picker-filters">
               <button
                 className={`td-filter-pill ${playerFilterGroup === 'All' ? 'active' : ''}`}
@@ -770,7 +688,6 @@ function TacticalDashboard() {
               ))}
             </div>
 
-            {/* ── Search Input ── */}
             <div className="td-picker-search">
               <input
                 type="text"
@@ -783,9 +700,7 @@ function TacticalDashboard() {
               )}
             </div>
 
-            {/* ── Player Picker Body ── */}
             {addPlayerMode === 'name' ? (
-              /* ══ NAME MODE: Dropdown ══ */
               <div className="td-modal-field">
                 <label>Select Player:</label>
                 <select
@@ -810,7 +725,6 @@ function TacticalDashboard() {
                 </select>
               </div>
             ) : (
-              /* ══ PHOTO MODE: 3-column grid ══ */
               <div className="td-photo-picker">
                 {slotToEdit.player && (
                   <button
@@ -853,7 +767,6 @@ function TacticalDashboard() {
               </div>
             )}
 
-            {/* ── Profile Picture ── */}
             {slotToEdit.player && (
               <div className="td-modal-field">
                 <label>Profile Picture</label>
@@ -880,7 +793,6 @@ function TacticalDashboard() {
               </div>
             )}
 
-            {/* ── Match Rating ── */}
             {slotToEdit.player && (
               <div className="td-modal-field">
                 <label>Match Rating (0-10.0):</label>
@@ -901,7 +813,6 @@ function TacticalDashboard() {
               </div>
             )}
 
-            {/* ── Match Stats ── */}
             {slotToEdit.player && slotStats && (
               <div style={{ borderTop: "2px solid #e2e8f0", marginTop: "16px", paddingTop: "12px" }}>
                 <h4 style={{ margin: "0 0 8px", fontFamily: "'Oswald', sans-serif", color: "#1e3a8a", textTransform: "uppercase", fontSize: "13px", letterSpacing: "0.1em" }}>
@@ -943,7 +854,6 @@ function TacticalDashboard() {
               </div>
             )}
 
-            {/* ── Actions ── */}
             <div className="td-modal-actions">
               <button className="td-modal-cancel" onClick={() => {
                 setSlotToEdit(null);

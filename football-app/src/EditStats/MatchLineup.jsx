@@ -40,10 +40,8 @@ const FORMATIONS = {
   },
 };
 
-// ⬅ CHANGED: MAX_SUBS = 4
 const MAX_SUBS = 4;
 
-// ⬅ CHANGED: migrateLineupData now pads subs to 4 instead of 2
 function migrateLineupData(oldLineup) {
   if (!oldLineup) return { formation: "4-4-2", players: Array(11).fill(null), subs: Array(MAX_SUBS).fill(null) };
 
@@ -51,11 +49,10 @@ function migrateLineupData(oldLineup) {
     const players = [...oldLineup.players];
     while (players.length < 11) players.push(null);
     const subs = Array.isArray(oldLineup.subs) ? [...oldLineup.subs] : [];
-    while (subs.length < MAX_SUBS) subs.push(null);          // ⬅ CHANGED: < MAX_SUBS instead of < 2
+    while (subs.length < MAX_SUBS) subs.push(null);
     return { formation: oldLineup.formation || "4-4-2", players, subs };
   }
 
-  // Old format migration
   const players = Array(11).fill(null);
   const mapping = { "GK0": 0, "DEF0": 1, "DEF1": 2, "DEF2": 3, "DEF3": 4, "MID0": 5, "MID1": 6, "MID2": 7, "MID3": 8, "MID4": 6, "FWD0": 9, "FWD1": 10, "FWD2": 9, "AM0": 6 };
   Object.entries(oldLineup.players || {}).forEach(([key, player]) => {
@@ -63,7 +60,7 @@ function migrateLineupData(oldLineup) {
     if (player && player.Contributor) players[idx] = player;
   });
 
-  return { formation: oldLineup.formation || "4-4-2", players, subs: Array(MAX_SUBS).fill(null) }; // ⬅ CHANGED
+  return { formation: oldLineup.formation || "4-4-2", players, subs: Array(MAX_SUBS).fill(null) };
 }
 
 function MatchLineup({
@@ -79,13 +76,12 @@ function MatchLineup({
 }) {
   const isVertical = layout === "vertical";
 
-  // ALL STATE INSIDE THE COMPONENT
   const [teamAFormation, setTeamAFormation] = useState("4-4-2");
   const [teamBFormation, setTeamBFormation] = useState("4-4-2");
   const [teamAPlayers, setTeamAPlayers] = useState(Array(11).fill(null));
   const [teamBPlayers, setTeamBPlayers] = useState(Array(11).fill(null));
-  const [teamASubs, setTeamASubs] = useState(Array(MAX_SUBS).fill(null)); // ⬅ CHANGED
-  const [teamBSubs, setTeamBSubs] = useState(Array(MAX_SUBS).fill(null)); // ⬅ CHANGED
+  const [teamASubs, setTeamASubs] = useState(Array(MAX_SUBS).fill(null));
+  const [teamBSubs, setTeamBSubs] = useState(Array(MAX_SUBS).fill(null));
   const [ownPictureMap, setOwnPictureMap] = useState({});
 
   useEffect(() => {
@@ -111,7 +107,6 @@ function MatchLineup({
     ? pictureMapProp
     : ownPictureMap;
 
-  // SINGLE useEffect to load all initial data
   useEffect(() => {
     if (initialLineup) {
       const migratedA = migrateLineupData(initialLineup.teamA);
@@ -121,12 +116,11 @@ function MatchLineup({
       setTeamBFormation(migratedB.formation);
       setTeamAPlayers(migratedA.players);
       setTeamBPlayers(migratedB.players);
-      setTeamASubs(migratedA.subs || Array(MAX_SUBS).fill(null)); // ⬅ CHANGED
-      setTeamBSubs(migratedB.subs || Array(MAX_SUBS).fill(null)); // ⬅ CHANGED
+      setTeamASubs(migratedA.subs || Array(MAX_SUBS).fill(null));
+      setTeamBSubs(migratedB.subs || Array(MAX_SUBS).fill(null));
     }
   }, [initialLineup]);
 
-  // ── Team average rating (players + subs, null-safe) ──
   const calcTeamAvg = (players, subs) => {
     const all = [...(players || []), ...(subs || [])];
     const ratings = all
@@ -157,6 +151,17 @@ function MatchLineup({
     ownGoals: parseInt(player.ownGoals ?? player.ownGoal) || 0,
   });
 
+  // ── Check if goal breakdown matches total goals ──
+  const isGoalMismatch = (player) => {
+    const totalGoals = parseInt(player.goals ?? player.goal) || 0;
+    const bodyTotal =
+      (parseInt(player.leftFoot) || 0) +
+      (parseInt(player.rightFoot) || 0) +
+      (parseInt(player.head) || 0) +
+      (parseInt(player.other ?? player.otherBodyParts) || 0);
+    return totalGoals !== bodyTotal;
+  };
+
   const resolvePicture = (player) =>
     pictureMap?.[player.Contributor?.toLowerCase()]
     || player.picture
@@ -182,7 +187,6 @@ function MatchLineup({
     }
   };
 
-  // Unified right-side strip: Goals → Errors → Own Goals
   const renderRightStrip = (stats, keyPrefix) => {
     const { goals, errors, ownGoals } = stats;
     if (goals === 0 && errors === 0 && ownGoals === 0) return null;
@@ -201,6 +205,86 @@ function MatchLineup({
     );
   };
 
+  // ── Shared player card renderer ──
+  const renderPlayerCard = (player, keyPrefix) => {
+    const stats = resolveStats(player);
+    const { assists, isMotm } = stats;
+    const pic = resolvePicture(player);
+    const mismatch = isGoalMismatch(player);
+
+    return (
+      <div
+        className={`slot-card ${isMotm ? 'motm' : ''} ${mismatch ? 'goal-mismatch' : ''}`}
+        style={mismatch ? { boxShadow: '0 0 0 2px #ef4444, 0 0 8px rgba(239,68,68,0.4)' } : undefined}
+      >
+        {isMotm && <div className="motm-badge">MOTM</div>}
+
+        {mismatch && (
+          <div
+            className="mismatch-badge"
+            style={{
+              position: 'absolute',
+              top: '-4px',
+              right: '-4px',
+              background: '#ef4444',
+              color: '#fff',
+              borderRadius: '50%',
+              width: '18px',
+              height: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '11px',
+              fontWeight: 800,
+              zIndex: 10,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+            }}
+            title={`Goal mismatch: ${parseInt(player.goals ?? player.goal) || 0} goals ≠ ${
+              (parseInt(player.leftFoot) || 0) +
+              (parseInt(player.rightFoot) || 0) +
+              (parseInt(player.head) || 0) +
+              (parseInt(player.other ?? player.otherBodyParts) || 0)
+            } breakdown`}
+          >
+            ⚠
+          </div>
+        )}
+
+        <div
+          className="card-rating-badge"
+          style={{
+            backgroundColor: getRatingColor ? getRatingColor(player.rating) : '#9e9e9e',
+            ...(mismatch ? { border: '2px solid #ef4444' } : undefined),
+          }}
+        >
+          {player.rating != null ? parseFloat(player.rating).toFixed(1) : '—'}
+        </div>
+
+        <div className="player-icon-wrapper">
+          <img
+            src={pic}
+            alt={player.Contributor}
+            style={{ visibility: pic ? "visible" : "hidden" }}
+          />
+
+          {assists > 0 && (
+            <div className="stat-badge assists">
+              {[...Array(assists)].map((_, i) => (
+                <span key={`${keyPrefix}-assist-${i}`} className="icon">👟</span>
+              ))}
+            </div>
+          )}
+
+          {renderRightStrip(stats, keyPrefix)}
+        </div>
+
+        <div className="slot-info">
+          <span className="slot-name">{player.Contributor}</span>
+        </div>
+      </div>
+    );
+  };
+
   // Render Substitute Slots
   const renderSubSlot = (team, subIdx) => {
     const subsArr = team === "A" ? teamASubs : teamBSubs;
@@ -213,46 +297,7 @@ function MatchLineup({
         onClick={() => handleSlotClick(team, `sub${subIdx}`, player)}
       >
         {player ? (
-          (() => {
-            const stats = resolveStats(player);
-            const { assists, isMotm } = stats;
-            const pic = resolvePicture(player);
-            return (
-              <div className={`slot-card ${isMotm ? 'motm' : ''}`}>
-
-                {isMotm && <div className="motm-badge">MOTM</div>}
-
-                <div
-                  className="card-rating-badge"
-                  style={{ backgroundColor: getRatingColor ? getRatingColor(player.rating) : '#9e9e9e' }}
-                >
-                  {player.rating != null ? parseFloat(player.rating).toFixed(1) : '—'}
-                </div>
-
-                <div className="player-icon-wrapper">
-                  <img
-                    src={pic}
-                    alt={player.Contributor}
-                    style={{ visibility: pic ? "visible" : "hidden" }}
-                  />
-
-                  {assists > 0 && (
-                    <div className="stat-badge assists">
-                      {[...Array(assists)].map((_, i) => (
-                        <span key={`sub-${subIdx}-assist-${i}`} className="icon">👟</span>
-                      ))}
-                    </div>
-                  )}
-
-                  {renderRightStrip(stats, `sub-${subIdx}`)}
-                </div>
-
-                <div className="slot-info">
-                  <span className="slot-name">{player.Contributor}</span>
-                </div>
-              </div>
-            );
-          })()
+          renderPlayerCard(player, `sub-${subIdx}`)
         ) : (
           <div className="empty-sub-card">
             <span className="empty-sub-label">SUB {subIdx + 1}</span>
@@ -279,46 +324,7 @@ function MatchLineup({
           onClick={() => handleSlotClick(team, idx, player)}
         >
           {player ? (
-            (() => {
-              const stats = resolveStats(player);
-              const { assists, isMotm } = stats;
-              const pic = resolvePicture(player);
-              return (
-                <div className={`slot-card ${isMotm ? 'motm' : ''}`}>
-
-                  {isMotm && <div className="motm-badge">MOTM</div>}
-
-                  <div
-                    className="card-rating-badge"
-                    style={{ backgroundColor: getRatingColor ? getRatingColor(player.rating) : '#9e9e9e' }}
-                  >
-                    {player.rating != null ? parseFloat(player.rating).toFixed(1) : '—'}
-                  </div>
-
-                  <div className="player-icon-wrapper">
-                    <img
-                      src={pic}
-                      alt={player.Contributor}
-                      style={{ visibility: pic ? "visible" : "hidden" }}
-                    />
-
-                    {assists > 0 && (
-                      <div className="stat-badge assists">
-                        {[...Array(assists)].map((_, i) => (
-                          <span key={`pitch-assist-${i}`} className="icon">👟</span>
-                        ))}
-                      </div>
-                    )}
-
-                    {renderRightStrip(stats, "pitch")}
-                  </div>
-
-                  <div className="slot-info">
-                    <span className="slot-name">{player.Contributor}</span>
-                  </div>
-                </div>
-              );
-            })()
+            renderPlayerCard(player, `pitch-${team}-${idx}`)
           ) : (
             <div className="empty-slot-card">
               <div className="empty-slot-icon">
@@ -386,14 +392,12 @@ function MatchLineup({
             <div className="subs-team">
               <h4 className="subs-label">Team A Subs</h4>
               <div className="subs-row">
-                {/* ⬅ CHANGED: now renders 4 subs dynamically */}
                 {teamASubs.map((_, i) => renderSubSlot("A", i))}
               </div>
             </div>
             <div className="subs-team">
               <h4 className="subs-label">Team B Subs</h4>
               <div className="subs-row">
-                {/* ⬅ CHANGED: now renders 4 subs dynamically */}
                 {teamBSubs.map((_, i) => renderSubSlot("B", i))}
               </div>
             </div>
