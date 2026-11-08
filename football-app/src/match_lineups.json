@@ -4024,12 +4024,15 @@
           "error": 1,
           "ownGoal": 0,
           "leftFoot": 0,
-          "rightFoot": 0,
+          "rightFoot": 1,
           "head": 0,
           "other": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 1,
+          "assists": 2
         },
         {
           "Contributor": "Johnson",
