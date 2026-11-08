@@ -332,7 +332,6 @@ async function syncFileToGitHub(localFilePath, githubFilePath, commitMessage) {
   }
 }
 
-// ===================== GitHub API Pull Helper (Startup Sync) =====================
 async function pullLatestFromGitHub(githubFilePath, localFilePath) {
   try {
     const token = process.env.GITHUB_TOKEN;
@@ -347,31 +346,30 @@ async function pullLatestFromGitHub(githubFilePath, localFilePath) {
       headers: {
         Authorization: `token ${token}`,
         Accept: "application/vnd.github.raw"
-      }
+      },
+      signal: AbortSignal.timeout(30000)  // ← 30s timeout, won't hang forever
     });
 
     if (res.ok) {
       const fileContent = await res.text();
-
       const dir = path.dirname(localFilePath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
       if (localFilePath.endsWith('.json')) {
         try { JSON.parse(fileContent); }
         catch (e) {
-          console.error(`❌ ${githubFilePath} is not valid JSON — skipping local overwrite`);
+          console.error(`❌ ${githubFilePath} is not valid JSON — skipping`);
           return;
         }
       }
 
       fs.writeFileSync(localFilePath, fileContent);
-      console.log(`✅ Downloaded fresh data: ${githubFilePath}`);
+      console.log(`✅ Downloaded: ${githubFilePath}`);
     } else {
-      const errText = await res.text();
-      console.log(`⚠️ Could not fetch ${githubFilePath} from GitHub (${res.status}): ${errText}`);
+      console.log(`⚠️ Could not fetch ${githubFilePath} (${res.status})`);
     }
   } catch (err) {
-    console.error(`❌ Error pulling from GitHub:`, err);
+    console.error(`❌ Error pulling ${githubFilePath}:`, err.message);
   }
 }
 
@@ -961,26 +959,35 @@ if (fs.existsSync(buildPath)) {
   console.log("ℹ️  Running in API-only mode (no frontend build folder found)");
 }
 
-// ===================== STARTUP SYNC =====================
+// ===================== STARTUP =====================
+// Start server IMMEDIATELY so Render can respond to health checks
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  // Sync data in background AFTER server is listening
+  startupSync();
+});
+
 async function startupSync() {
-  console.log("🔄 Server waking up... Pulling latest data from GitHub...");
+  try {
+    console.log("🔄 Server waking up... Pulling latest data from GitHub...");
 
-  // Pull shared files
-  await pullLatestFromGitHub("football-app/src/player_attributes.json", ATTR_PATH);
-  await pullLatestFromGitHub("football-app/src/contributor_profiles.json", PROFILES_PATH);
+    // Pull shared files
+    await pullLatestFromGitHub("football-app/src/player_attributes.json", ATTR_PATH);
+    await pullLatestFromGitHub("football-app/src/contributor_profiles.json", PROFILES_PATH);
 
-  // Pull all known season files
-  const seasonKeys = getAllSeasonKeys();
-  for (const key of seasonKeys) {
-    await pullLatestFromGitHub(getStatsGitHubPath(key), getStatsPath(key));
-    await pullLatestFromGitHub(getLineupsGitHubPath(key), getLineupsPath(key));
-    console.log(`   📂 Season ${key}: stats + lineups synced`);
+    // Pull all known season files
+    const seasonKeys = getAllSeasonKeys();
+    for (const key of seasonKeys) {
+      await pullLatestFromGitHub(getStatsGitHubPath(key), getStatsPath(key));
+      await pullLatestFromGitHub(getLineupsGitHubPath(key), getLineupsPath(key));
+      console.log(`   📂 Season ${key}: stats + lineups synced`);
+    }
+
+    console.log(`✅ Data synced for ${seasonKeys.length} season(s)!`);
+  } catch (err) {
+    console.error("❌ Startup sync error (server still running):", err.message);
   }
-
-  console.log(`✅ Data synced for ${seasonKeys.length} season(s)! Server is ready.`);
-
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 }
 
 // Start the server with sync
