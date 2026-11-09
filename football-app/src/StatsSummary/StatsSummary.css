@@ -777,3 +777,58 @@
 .sort-arrow.active {
   color: #2563eb;
 }
+/* ═══════════════════════════════════════════════
+   FIX: Player Card — prevent right overflow
+   ═══════════════════════════════════════════════ */
+
+.player-card {
+  overflow-x: hidden !important;
+  overflow-y: visible;
+  box-sizing: border-box !important;
+}
+
+/* Charts and graphs must fit inside */
+.player-card .card-section {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.player-card .chart-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Canvas elements (Chart.js) — force to fit */
+.player-card canvas {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+/* Location table — scroll instead of overflow */
+.player-card .location-section {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.player-card .location-table {
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+/* FormTrendGraph / StreakTracker wrappers */
+.player-card .form-section,
+.player-card .streak-section {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Also fix the all-players card */
+.all-players-card {
+  overflow-x: auto !important;
+}

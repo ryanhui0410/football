@@ -1282,3 +1282,32 @@
   }
   .subs-label { font-size: 11px !important; margin-bottom: 3px !important; }
 }
+/* ═══════════════════════════════════════════════
+   24. REDUCE LEFT/RIGHT GAP — Pitch to modal edge
+   ═══════════════════════════════════════════════ */
+
+.report-modal .match-lineup-container {
+  padding-left: 1px !important;
+  padding-right: 1px !important;
+}
+
+.report-modal .pitch-wrapper {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Mobile: even tighter */
+@media (max-width: 768px) {
+  .report-modal {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+  .report-modal .match-lineup-container {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}

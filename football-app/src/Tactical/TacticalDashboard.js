@@ -494,15 +494,16 @@ function TacticalDashboard() {
     }
   };
 
-  const handleSaveSlot = () => {
+    const handleSaveSlot = () => {
     // ── BLOCK SAVE if goal breakdown doesn't match ──
-  const bodyTotal = (slotStats?.LeftFoot || 0) + (slotStats?.RightFoot || 0) + (slotStats?.Head || 0) + (slotStats?.OtherBodyParts || 0);
-  const totalGoals = slotStats?.Goal || 0;
-  if (totalGoals !== bodyTotal) {
-    setMessage(`⚠️ Cannot save! Goal (${totalGoals}) ≠ breakdown (${bodyTotal}). Please fix LF + RF + Head + Other.`);
-    setTimeout(() => setMessage(""), 5000);
-    return;
-  }
+    const bodyTotal = (slotStats?.LeftFoot || 0) + (slotStats?.RightFoot || 0) + (slotStats?.Head || 0) + (slotStats?.OtherBodyParts || 0);
+    const totalGoals = slotStats?.Goal || 0;
+    if (totalGoals !== bodyTotal) {
+      setMessage(`⚠️ Cannot save! Goal (${totalGoals}) ≠ breakdown (${bodyTotal}). Please fix LF + RF + Head + Other.`);
+      setTimeout(() => setMessage(""), 5000);
+      return;
+    }
+
     const { team, idx, player } = slotToEdit;
 
     let targetTeam = team;
@@ -523,6 +524,30 @@ function TacticalDashboard() {
       }
     }
 
+    // ── Merge stats INTO the player object so MatchLineup can show badges ──
+    const partner = player ? getPartner(player.Contributor) : null;
+    const assistToCount = partner ? (parseInt(slotStats?.AssistTo) || 0) : 0;
+
+    const mergedPlayer = player
+      ? {
+          Contributor: player.Contributor,
+          picture: player.picture,
+          rating: player.rating,
+          // ── Stats fields that MatchLineup reads for badges ──
+          goal: slotStats?.Goal ?? 0,
+          assist: slotStats?.Assist ?? 0,
+          leftFoot: slotStats?.LeftFoot ?? 0,
+          rightFoot: slotStats?.RightFoot ?? 0,
+          head: slotStats?.Head ?? 0,
+          other: slotStats?.OtherBodyParts ?? 0,
+          ownGoal: slotStats?.OwnGoal ?? 0,
+          error: slotStats?.Error ?? 0,
+          manOfTheMatch: !!slotStats?.ManOfTheMatch,
+          assistTo: partner && assistToCount > 0 ? partner : "",
+          assistToCount,
+        }
+      : null;
+
     const teamKey = targetTeam === 'A' ? 'teamA' : 'teamB';
 
     setLineupData(prev => {
@@ -534,11 +559,10 @@ function TacticalDashboard() {
           const old = Array.isArray(newLineup[teamKey].subs) ? newLineup[teamKey].subs : [];
           newLineup[teamKey].subs = [...old, ...Array(MAX_SUBS - old.length).fill(null)].slice(0, MAX_SUBS);
         }
-        newLineup[teamKey].subs[subIdx] = player;
-      }
-      else {
+        newLineup[teamKey].subs[subIdx] = mergedPlayer;
+      } else {
         if (!Array.isArray(newLineup[teamKey].players)) newLineup[teamKey].players = Array(11).fill(null);
-        newLineup[teamKey].players[targetIdx] = player;
+        newLineup[teamKey].players[targetIdx] = mergedPlayer;
       }
       return newLineup;
     });
