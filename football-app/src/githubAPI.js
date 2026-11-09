@@ -1,5 +1,5 @@
+import GITHUB_TOKEN from "./gitHubConfig";
 // ── GitHub API Direct Access (no server needed) ──
-const GITHUB_TOKEN = "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"; // ⚠️ Replace this
 const GITHUB_OWNER = "ryanhui0410";
 const GITHUB_REPO = "football";
 const API_BASE = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents`;
