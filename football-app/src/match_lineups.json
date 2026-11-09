@@ -3802,7 +3802,7 @@
           "goal": 1,
           "assist": 3,
           "leftFoot": 0,
-          "rightFoot": 0,
+          "rightFoot": 1,
           "head": 0,
           "other": 0,
           "ownGoal": 0,
@@ -4326,15 +4326,12 @@
           "error": 0,
           "ownGoal": 0,
           "leftFoot": 0,
-          "rightFoot": 1,
+          "rightFoot": 0,
           "head": 0,
           "other": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0,
-          "isMotm": false,
-          "goals": 1,
-          "assists": 0
+          "assistToCount": 0
         },
         {
           "Contributor": "Lu",
