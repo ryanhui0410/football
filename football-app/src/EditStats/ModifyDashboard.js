@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { App as CapacitorApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 import MatchStatsModal from "./MatchStatsModal";
 import PlayerPicker from "./PlayerPicker";
 import "./ModifyDashboard.css";
 import MatchLineup from "./MatchLineup";
+import { readFromGitHub, writeToGitHub, uploadImageToGitHub, formatStat, FILES } from "../githubAPI";
 
 // ═══════════════ TOP-LEVEL COMPONENTS ═══════════════
 
@@ -100,6 +103,53 @@ function ModifyDashboard({ contributors, onSave }) {
   const [activeFilter, setActiveFilter] = useState("All");
   const [expandedGroup, setExpandedGroup] = useState(null);
 
+  // ═══════════════ BACK GESTURE (Capacitor + Browser) ═══════════════
+  useEffect(() => {
+    const closeTopModal = () => {
+      if (slotToEdit) {
+        setSlotToEdit(null);
+        setSlotStats(null);
+      } else if (matchReport) {
+        setMatchReport(null);
+        setIsEditingReport(false);
+        setEditedLineup(null);
+      } else if (statsModalOpen) {
+        setStatsModalOpen(false);
+      } else if (choiceMatch) {
+        setChoiceMatch(null);
+      } else {
+        return false;
+      }
+      return true;
+    };
+
+    // ── Android / iOS (Capacitor) ──
+    let capacitorListener;
+    if (Capacitor.isNativePlatform()) {
+      capacitorListener = CapacitorApp.addListener("backButton", ({ canGoBack }) => {
+        const closed = closeTopModal();
+        if (!closed) {
+          if (canGoBack) {
+            window.history.back();
+          } else {
+            CapacitorApp.exitApp();
+          }
+        }
+      });
+    }
+
+    // ── Browser (npm start / web) ──
+    const handlePopState = () => {
+      closeTopModal();
+    };
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      if (capacitorListener) capacitorListener.then(l => l.remove());
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [slotToEdit, matchReport, statsModalOpen, choiceMatch]);
+
   const getPartner = (name) => {
     const n = (name || "").trim().toLowerCase();
     if (n === "ryan") return "Darren";
@@ -108,13 +158,14 @@ function ModifyDashboard({ contributors, onSave }) {
   };
 
   useEffect(() => {
-    Promise.all([
-      fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`).then(r => r.json()),
-      fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`).then(r => r.json()),
-      fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`).then(r => r.json()),
-      fetch(`${IMAGES_API_URL}?t=${Date.now()}`).then(r => r.ok ? r.json() : []),
-    ])
-      .then(([lineups, stats, players, imageFiles]) => {
+    const loadData = async () => {
+      try {
+        const [lineups, stats, players, imageFiles] = await Promise.all([
+          readFromGitHub(FILES.lineups),
+          readFromGitHub(FILES.stats),
+          readFromGitHub(FILES.playerAttributes),
+          fetch(`${IMAGES_API_URL}?t=${Date.now()}`).then(r => r.ok ? r.json() : []),
+        ]);
         setAllLineups(Array.isArray(lineups) ? lineups : []);
         setMatchStatsData(Array.isArray(stats) ? stats : []);
         setAvailablePlayers(Array.isArray(players) ? players : []);
@@ -128,8 +179,11 @@ function ModifyDashboard({ contributors, onSave }) {
             });
           setPictureMap(map);
         }
-      })
-      .catch(err => console.error("Failed to fetch lineups/stats:", err));
+      } catch (err) {
+        console.error("Failed to fetch data:", err);
+      }
+    };
+    loadData();
   }, []);
 
   const getPicture = (name) =>
@@ -399,6 +453,7 @@ function ModifyDashboard({ contributors, onSave }) {
     setIsEditingReport(isEditMode);
     setReportPerspective(choiceMatch.name);
     setLineupVersion(v => v + 1);
+    setChoiceMatch(null);
 
     let seededResult = "";
     const teamsSeed = [found.teamA, found.teamB].filter(Boolean);
@@ -417,7 +472,6 @@ function ModifyDashboard({ contributors, onSave }) {
   };
 
   // ═══════════════ BUILD ALL CONTRIBUTORS ═══════════════
-  // Strategy: lineups first (primary), stats fills gaps
   const allContributors = useMemo(() => {
     const byName = new Map();
     const lineupMatchKeys = new Set();
@@ -433,7 +487,6 @@ function ModifyDashboard({ contributors, onSave }) {
     const matchKey = (date, location) =>
       `${normalizeDate(date)}|${(location || "").trim().toLowerCase()}`;
 
-    // ═══ STEP 1: Process lineups (PRIMARY) ═══
     allLineups.forEach(lineup => {
       const lKey = matchKey(lineup.date, lineup.location);
       lineupMatchKeys.add(lKey);
@@ -468,10 +521,8 @@ function ModifyDashboard({ contributors, onSave }) {
           if (!p?.Contributor) return;
           const entry = ensureEntry(p.Contributor);
 
-          // ── Get stats fallback from matchStatsData ──
           const stat = getPlayerMatchStats(p.Contributor, lineup.date, lineup.location, lineup.time);
 
-          // ── Lineup values ──
           const lpGoal = parseInt(p.goal) || 0;
           const lpAssist = parseInt(p.assist) || 0;
           const lpLeft = parseInt(p.leftFoot) || 0;
@@ -481,17 +532,11 @@ function ModifyDashboard({ contributors, onSave }) {
           const lpError = parseInt(p.error) || 0;
           const lpMotm = p.manOfTheMatch === true;
 
-          // ── Stats values (fallback) ──
           const stGoal = stat ? (parseFloat(stat.Goal) || 0) : 0;
           const stAssist = stat ? (parseFloat(stat.Assist) || 0) : 0;
-          const stLeft = stat ? (parseFloat(stat["Left Foot"]) || 0) : 0;
-          const stRight = stat ? (parseFloat(stat["Right Foot"]) || 0) : 0;
-          const stHead = stat ? (parseFloat(stat.Head) || 0) : 0;
-          const stOther = stat ? (parseFloat(stat["Other body parts"]) || 0) : 0;
           const stError = stat ? (parseInt(stat.Error) || 0) : 0;
           const stMotm = stat?.["Man of the Match"] === true;
 
-          // ── Use lineup if it has real data, else fall back to stats ──
           const hasLpStats = lpGoal || lpAssist || lpLeft || lpRight || lpHead || lpOther || lpError || lpMotm;
 
           const goal = hasLpStats ? lpGoal : stGoal;
@@ -500,7 +545,6 @@ function ModifyDashboard({ contributors, onSave }) {
           const manOfTheMatch = hasLpStats ? lpMotm : stMotm;
           const rating = p.rating ?? (stat ? parseFloat(stat.Rating) : "");
 
-          // ── Win/Loss ──
           let winLoss = deriveOutcome(matchResult, teamLetter);
           if (!winLoss && stat) {
             winLoss = stat["Win/Loss?"] || "";
@@ -523,7 +567,6 @@ function ModifyDashboard({ contributors, onSave }) {
       });
     });
 
-    // ═══ STEP 2: Stats — only for matches NOT in lineups ═══
     contributors.forEach(contributor => {
       const entry = ensureEntry(contributor.name);
 
@@ -658,11 +701,9 @@ function ModifyDashboard({ contributors, onSave }) {
           manOfTheMatch: p.manOfTheMatch === true,
         };
       };
-
       const cleanPlayers = (teamObj.players || []).map(cleanPlayer);
       const cleanSubs = (teamObj.subs || []).map(cleanPlayer);
       while (cleanSubs.length < 4) cleanSubs.push(null);
-
       return {
         formation: teamObj.formation || "4-4-2",
         players: cleanPlayers.slice(0, 11),
@@ -680,20 +721,22 @@ function ModifyDashboard({ contributors, onSave }) {
     };
 
     try {
-      // ── STEP 1: Save lineup ──
-      const res = await fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const result = await res.json();
-
-      if (!res.ok) {
-        alert(`⚠️ Saved locally, but GitHub failed: ${result.githubError || result.error}`);
-        return;
+      // ── STEP 1: Save lineup to GitHub ──
+      const lineups = await readFromGitHub(FILES.lineups);
+      const arr = Array.isArray(lineups) ? lineups : [];
+      const idx = arr.findIndex(l =>
+        l.date === payload.date &&
+        l.location === payload.location &&
+        l.time === payload.time
+      );
+      if (idx === -1) {
+        arr.push(payload);
+      } else {
+        arr[idx] = payload;
       }
+      await writeToGitHub(FILES.lineups, arr, `Update lineup for ${payload.date}`);
 
-      // ── STEP 2: Sync player stats to football_stats_2025_2026.json ──
+      // ── STEP 2: Save stats to GitHub ──
       const statRecords = [];
       ["teamA", "teamB"].forEach(teamKey => {
         const team = payload[teamKey];
@@ -701,7 +744,7 @@ function ModifyDashboard({ contributors, onSave }) {
         const teamOutcome = deriveOutcome(payload.matchResult, teamLetter);
         [...(team?.players || []), ...(team?.subs || [])].forEach(p => {
           if (!p?.Contributor) return;
-          statRecords.push({
+          statRecords.push(formatStat({
             Date: payload.date,
             Contributor: p.Contributor,
             Rating: p.rating ?? 0,
@@ -720,49 +763,43 @@ function ModifyDashboard({ contributors, onSave }) {
             ManOfTheMatch: p.manOfTheMatch === true,
             AssistTo: getPartner(p.Contributor) && (p.assistToCount ?? 0) > 0 ? (p.assistToCount ?? 0) : 0,
             source: "Edit Match Report",
-          });
+          }));
         });
       });
 
-      let statsSynced = true;
-      try {
-        const statsRes = await fetch("https://football-stats-xbx6.onrender.com/add-stats-batch", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ stats: statRecords }),
-        });
-        if (!statsRes.ok) {
-          statsSynced = false;
-          const err = await statsRes.json();
-          alert(`⚠️ Lineup saved, but stats sync failed: ${err.message || "unknown"}`);
-        }
-      } catch (err) {
-        statsSynced = false;
-        alert(`⚠️ Lineup saved, but stats network error: ${err.message}`);
-      }
+      const stats = await readFromGitHub(FILES.stats);
+      const statsArr = Array.isArray(stats) ? stats : [];
+      const remaining = statsArr.filter(d =>
+        !statRecords.some(f =>
+          (d.Date || "").trim() === (f.Date || "").trim() &&
+          (d.Contributor || "").trim().toLowerCase() === (f.Contributor || "").trim().toLowerCase() &&
+          (d.Location || "").trim() === (f.Location || "").trim() &&
+          (d.Time || "").trim() === (f.Time || "").trim()
+        )
+      );
+      remaining.push(...statRecords);
+      await writeToGitHub(FILES.stats, remaining, `Update stats for ${payload.date}`);
 
-      if (statsSynced) {
-        alert("✅ Match Report saved and stats synced!");
-      }
+      alert("✅ Match Report saved and stats synced!");
 
       // ── STEP 3: Update local state ──
       setIsEditingReport(false);
       setMatchReport(JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB })));
       setLineupVersion(v => v + 1);
       setAllLineups(prev => {
-        const idx = prev.findIndex(l =>
+        const i = prev.findIndex(l =>
           normalizeDate(l.date) === normalizeDate(payload.date) &&
           (l.location || "").trim() === (payload.location || "").trim() &&
           (l.time || "").trim() === (payload.time || "").trim()
         );
-        if (idx === -1) return [...prev, JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB }))];
+        if (i === -1) return [...prev, JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB }))];
         const next = [...prev];
-        next[idx] = JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB }));
+        next[i] = JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB }));
         return next;
       });
     } catch (err) {
       console.error("Save failed:", err);
-      alert("❌ Failed to save match report");
+      alert(`❌ Failed to save: ${err.message}`);
     }
   };
 
@@ -1369,20 +1406,14 @@ function ModifyDashboard({ contributors, onSave }) {
 
                         if (slotStats?.picture && slotStats.picture.startsWith("data:")) {
                           try {
-                            const upRes = await fetch("https://football-stats-xbx6.onrender.com/upload-player-picture", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ name: player.Contributor, image: slotStats.picture }),
-                            });
-                            const upResult = await upRes.json();
-                            if (!upRes.ok) {
-                              alert(`⚠️ Picture upload failed: ${upResult.githubError || upResult.error || upRes.status}`);
-                              return;
-                            }
-                            picture = upResult.picture;
+                            picture = await uploadImageToGitHub(
+                              slotStats.picture,
+                              `${player.Contributor}.jpeg`,
+                              `Upload profile picture: ${player.Contributor}`
+                            );
                             setPictureMap(prev => ({ ...prev, [player.Contributor.trim().toLowerCase()]: picture }));
                           } catch (err) {
-                            alert(`⚠️ Picture upload network error: ${err.message}`);
+                            alert(`⚠️ Picture upload failed: ${err.message}`);
                             return;
                           }
                         }

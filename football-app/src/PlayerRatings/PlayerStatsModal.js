@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./PlayerStatsModal.css";
-
+import { readFromGitHub, writeToGitHub, uploadImageToGitHub, FILES } from "../githubAPI";
 // ---- 子属性分组 ----
 const subAttrGroups = {
   PAC: ['Acceleration', 'Sprint Speed'],
@@ -204,23 +204,36 @@ const PlayerStatsModal = ({ selectedPlayer, onClose, profiles, onUpdate }) => {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = async () => {
+    const handleSave = async () => {
     try {
-      const res = await fetch("https://football-stats-xbx6.onrender.com/player-attributes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editData),
-      });
-      if (res.ok) {
-        alert("✅ Player stats updated successfully!");
-        setIsEditing(false);
-        if (onUpdate) onUpdate(); // Tell parent to refetch profiles
-        else onClose();
-      } else {
-        alert("❌ Failed to save.");
+      // Upload picture if it's a new base64 image
+      if (editData.picture && editData.picture.startsWith("data:")) {
+        editData.picture = await uploadImageToGitHub(
+          editData.picture,
+          `${editData.Contributor}.jpeg`,
+          `Update picture: ${editData.Contributor}`
+        );
       }
+
+      // Read current players, merge, write back
+      const players = await readFromGitHub(FILES.playerAttributes);
+      const arr = Array.isArray(players) ? players : [];
+      const idx = arr.findIndex(
+        a => (a.Contributor || "").trim().toLowerCase() === (editData.Contributor || "").trim().toLowerCase()
+      );
+      if (idx === -1) {
+        arr.push(editData);
+      } else {
+        arr[idx] = { ...arr[idx], ...editData };
+      }
+      await writeToGitHub(FILES.playerAttributes, arr, `Update player card: ${editData.Contributor}`);
+
+      alert("✅ Player stats updated successfully!");
+      setIsEditing(false);
+      if (onUpdate) onUpdate();
+      else onClose();
     } catch (err) {
-      alert("❌ Error saving.");
+      alert(`❌ Failed to save: ${err.message}`);
     }
   };
 

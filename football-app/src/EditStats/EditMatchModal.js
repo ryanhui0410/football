@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import { readFromGitHub, writeToGitHub, formatStat, FILES } from "../githubAPI";
 function EditMatchModal({ match, onClose, onSave }) {
   // Destructure using the actual property names from the match object
   const {
@@ -48,35 +48,36 @@ function EditMatchModal({ match, onClose, onSave }) {
   const assistRecipient = contributorName === "Ryan" ? "Darren" : contributorName === "Darren" ? "Ryan" : "Teammate";
   const parsedAssistCount = parseInt(assistToCount) || 0;
 
-  const handleSave = async () => {
+    const handleSave = async () => {
     setIsSaving(true);
     setError(null);
 
     try {
-      const response = await fetch(`https://football-stats-xbx6.onrender.com/modify-stats/${index}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          Rating: rating,
-          "Left Foot": leftFoot,
-          "Right Foot": rightFoot,
-          Head: head,
-          Assist: assist,
-          "Match result": matchResult,
-          "Win/Loss?": calculateWinLoss(matchResult),
-          // The backend's formatStat function expects 'AssistTo' to be the COUNT.
-          // It will automatically set "Assist to" to the recipient's name if count > 0, 
-          // or empty if count is 0.
-          AssistTo: parsedAssistCount, 
-        }),
-      });
+      // Read current stats, find the record, merge changes
+      const stats = await readFromGitHub(FILES.stats);
+      const arr = Array.isArray(stats) ? stats : [];
 
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.message || "Failed to save");
+      if (index < 0 || index >= arr.length) {
+        throw new Error("Record not found");
       }
 
-      await onSave(); // refresh parent data
+      // Build updated record using formatStat (mirrors server logic)
+      const updated = formatStat({
+        ...arr[index],
+        Rating: rating,
+        "Left Foot": leftFoot,
+        "Right Foot": rightFoot,
+        Head: head,
+        Assist: assist,
+        "Match result": matchResult,
+        "Win/Loss?": calculateWinLoss(matchResult),
+        AssistTo: parsedAssistCount,
+      });
+
+      arr[index] = updated;
+      await writeToGitHub(FILES.stats, arr, `Modify stats for ${updated.Contributor}`);
+
+      await onSave();
       onClose();
     } catch (err) {
       setError(err.message);

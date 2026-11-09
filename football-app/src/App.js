@@ -12,27 +12,7 @@ import BottomNav from "./UI/BottomNav";
 import MatchCalendar from "./CalendarMatch/MatchCalendar";
 import AddPlayerCard from "./PlayerCards/AddPlayerCard";
 import TacticalDashboard from "./Tactical/TacticalDashboard";
-
-const API_BASE = "https://football-stats-xbx6.onrender.com";
-
-// ── Fetch with retry + long timeout (handles Render sleep wake-up) ──
-const fetchWithRetry = async (url, retries = 3, delay = 15000) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const res = await fetch(url, {
-        signal: AbortSignal.timeout(60000),
-      });
-      if (res.ok) return res.json();
-    } catch (e) {
-      if (i < retries - 1) {
-        console.log(`⏳ Retry ${i + 1}/${retries} for ${url}...`);
-        await new Promise(r => setTimeout(r, delay));
-      } else {
-        throw new Error(`Failed after ${retries} retries: ${url}`);
-      }
-    }
-  }
-};
+import { readFromGitHub, writeToGitHub, formatStat, FILES } from "./githubAPI";
 
 class PlayerStats {
   constructor(fields) {
@@ -99,18 +79,9 @@ function App() {
   const [contributors, setContributors] = useState([]);
   const [activeView, setActiveView] = useState(null);
   const [summaryData, setSummaryData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // ── Keep-alive: ping every 10 min to prevent Render sleep ──
-  useEffect(() => {
-    const ping = () => {
-      fetch(`${API_BASE}/stats-history?t=${Date.now()}`).catch(() => {});
-    };
-    ping(); // initial wake-up ping
-    const interval = setInterval(ping, 10 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // ✨ Detect mobile vs desktop (also handles screen rotation)
+  // ✨ Detect mobile vs desktop
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", onResize);
@@ -130,12 +101,18 @@ function App() {
 
   const handleCalendarClick = async () => {
     setShowSplash(false);
-    const data = await fetchWithRetry(`${API_BASE}/stats?t=${Date.now()}`);
-    setSummaryData(data);
+    setLoading(true);
+    try {
+      const data = await readFromGitHub(FILES.stats);
+      setSummaryData(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("Failed to load stats:", e);
+    }
     setContributors([]);
     setShowForm(false);
     setActiveView("calendar");
     setMenuOpen(false);
+    setLoading(false);
   };
 
   const handleTacticalClick = () => {
@@ -158,13 +135,25 @@ function App() {
 
   const handleAddStatsClick = async () => {
     setShowSplash(false);
-    const data = await fetchWithRetry(`${API_BASE}/stats-history?t=${Date.now()}`);
-    setHistory(data);
+    setLoading(true);
+    try {
+      const data = await readFromGitHub(FILES.stats);
+      const stats = Array.isArray(data) ? data : [];
+      setHistory({
+        contributors: [...new Set(stats.map(d => d.Contributor).filter(Boolean))],
+        locations: [...new Set(stats.map(d => d.Location).filter(Boolean))],
+        times: [...new Set(stats.map(d => d.Time).filter(Boolean))],
+        sources: [...new Set(stats.map(d => d.source).filter(Boolean))],
+      });
+    } catch (e) {
+      console.error("Failed to load history:", e);
+    }
     setContributors([]);
     setSummaryData([]);
     setShowForm(true);
     setActiveView("add");
     setMenuOpen(false);
+    setLoading(false);
   };
 
   const handleChange = (e) => {
@@ -174,15 +163,31 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newStats = new PlayerStats(formData);
-    console.log("📤 Sending:", JSON.stringify(newStats));
-    await fetch(`${API_BASE}/add-stats`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newStats),
-    });
-    alert("✅ Stat saved successfully!");
-    setShowForm(false);
+    setLoading(true);
+    try {
+      const newStat = formatStat({
+        ...formData,
+        "Left Foot": formData.LeftFoot || 0,
+        "Right Foot": formData.RightFoot || 0,
+        Head: formData.Head || 0,
+        "Other body parts": formData.OtherBodyParts || 0,
+        Assist: formData.Assist || 0,
+        Rating: formData.Rating || 0,
+        Goal: formData.Goal || 0,
+        "Own Goal": formData.OwnGoal || 0,
+        Error: formData.Error || 0,
+      });
+
+      const stats = await readFromGitHub(FILES.stats);
+      const arr = Array.isArray(stats) ? stats : [];
+      arr.push(newStat);
+      await writeToGitHub(FILES.stats, arr, `Add stats for ${newStat.Contributor}`);
+      alert("✅ Stat saved successfully!");
+      setShowForm(false);
+    } catch (err) {
+      alert(`❌ Failed to save: ${err.message}`);
+    }
+    setLoading(false);
   };
 
   const handleAddPlayerCardClick = () => {
@@ -196,53 +201,71 @@ function App() {
 
   const handleDisplayStatsClick = async () => {
     setShowSplash(false);
-    const data = await fetchWithRetry(`${API_BASE}/stats?t=${Date.now()}`);
-    const contributorMap = {};
-    data.forEach((stat) => {
-      const name = stat.Contributor?.trim();
-      if (!name) return;
-      if (!contributorMap[name]) contributorMap[name] = new Contributor(name);
-      contributorMap[name].addMatch(new Match(stat));
-    });
-    setContributors(Object.values(contributorMap));
+    setLoading(true);
+    try {
+      const data = await readFromGitHub(FILES.stats);
+      const stats = Array.isArray(data) ? data : [];
+      const contributorMap = {};
+      stats.forEach((stat) => {
+        const name = stat.Contributor?.trim();
+        if (!name) return;
+        if (!contributorMap[name]) contributorMap[name] = new Contributor(name);
+        contributorMap[name].addMatch(new Match(stat));
+      });
+      setContributors(Object.values(contributorMap));
+    } catch (e) {
+      console.error("Failed to load stats:", e);
+    }
     setSummaryData([]);
     setShowForm(false);
     setActiveView("display");
     setMenuOpen(false);
+    setLoading(false);
   };
 
   const handleStatsSummaryClick = async () => {
     setShowSplash(false);
-    const data = await fetchWithRetry(`${API_BASE}/stats?t=${Date.now()}`);
-    setSummaryData(data);
+    setLoading(true);
+    try {
+      const data = await readFromGitHub(FILES.stats);
+      setSummaryData(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("Failed to load stats:", e);
+    }
     setContributors([]);
     setShowForm(false);
     setActiveView("summary");
     setMenuOpen(false);
+    setLoading(false);
   };
 
   const handleModifyStatsClick = async () => {
     setShowSplash(false);
-    const data = await fetchWithRetry(`${API_BASE}/stats?t=${Date.now()}`);
-    setContributors([]);
-    setSummaryData([]);
-    setShowForm(false);
-    setActiveView("modify");
-    setContributors(
-      Object.values(
-        data.reduce((map, stat, idx) => {
-          const name = stat.Contributor?.trim();
-          if (!name) return map;
-          if (!map[name]) map[name] = new Contributor(name);
-          map[name].addMatch({ ...new Match(stat), index: idx });
-          return map;
-        }, {})
-      )
-    );
+    setLoading(true);
+    try {
+      const data = await readFromGitHub(FILES.stats);
+      const stats = Array.isArray(data) ? data : [];
+      setSummaryData([]);
+      setShowForm(false);
+      setActiveView("modify");
+      setContributors(
+        Object.values(
+          stats.reduce((map, stat, idx) => {
+            const name = stat.Contributor?.trim();
+            if (!name) return map;
+            if (!map[name]) map[name] = new Contributor(name);
+            map[name].addMatch({ ...new Match(stat), index: idx });
+            return map;
+          }, {})
+        )
+      );
+    } catch (e) {
+      console.error("Failed to load stats:", e);
+    }
     setMenuOpen(false);
+    setLoading(false);
   };
 
-  // ✨ Which bottom-nav button should glow?
   const currentView = showSplash ? "home" : activeView;
 
   return (
@@ -284,7 +307,18 @@ function App() {
         />
       )}
 
-      {/* ✨ Content container — padding now controlled by CSS classes */}
+      {/* ✨ Loading indicator */}
+      {loading && (
+        <div style={{
+          position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+          background: "rgba(15,23,42,0.9)", color: "#fff", padding: "20px 30px",
+          borderRadius: "12px", zIndex: 9999, fontSize: "16px", fontWeight: 600,
+        }}>
+          ⏳ Loading data from GitHub...
+        </div>
+      )}
+
+      {/* ✨ Content container */}
       <div className={`app-content ${!isMobile && menuOpen ? "menu-open" : ""}`}>
         <Routes>
           <Route

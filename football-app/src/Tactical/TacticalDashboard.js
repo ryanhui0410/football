@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import MatchLineup from "../EditStats/MatchLineup";
 import "./TacticalDashboard.css";
-
+import { readFromGitHub, writeToGitHub, formatStat, FILES } from "../githubAPI";
 function StatStepper({ label, value, onChange, max = 99 }) {
   const num = parseInt(value) || 0;
   return (
@@ -227,19 +227,23 @@ function TacticalDashboard() {
     };
   }, []);
 
-  useEffect(() => {
-    Promise.all([
-      fetch(`https://football-stats-xbx6.onrender.com/stats-history?t=${Date.now()}`).then(res => res.json()),
-      fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`).then(res => res.json()),
-      fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`).then(res => res.json()),
-      fetch(`${IMAGES_API_URL}?t=${Date.now()}`).then(res => res.ok ? res.json() : []),
-    ])
-      .then(([historyData, lineups, players, imageFiles]) => {
+    useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [statsData, lineups, players, imageFiles] = await Promise.all([
+          readFromGitHub(FILES.stats),
+          readFromGitHub(FILES.lineups),
+          readFromGitHub(FILES.playerAttributes),
+          fetch(`${IMAGES_API_URL}?t=${Date.now()}`).then(res => res.ok ? res.json() : []),
+        ]);
+
+        const stats = Array.isArray(statsData) ? statsData : [];
+
         setHistory({
-          contributors: historyData.contributors || [],
-          locations: historyData.locations || [],
-          times: historyData.times || [],
-          sources: historyData.sources || [],
+          contributors: [...new Set(stats.map(d => d.Contributor).filter(Boolean))],
+          locations: [...new Set(stats.map(d => d.Location).filter(Boolean))],
+          times: [...new Set(stats.map(d => d.Time).filter(Boolean))],
+          sources: [...new Set(stats.map(d => d.source).filter(Boolean))],
         });
         setAllLineups(Array.isArray(lineups) ? lineups : []);
         setAvailablePlayers(Array.isArray(players) ? players : []);
@@ -253,8 +257,11 @@ function TacticalDashboard() {
             });
           setPictureMap(map);
         }
-      })
-      .catch(err => console.error("Failed to fetch initial data", err));
+      } catch (err) {
+        console.error("Failed to fetch initial data", err);
+      }
+    };
+    loadData();
   }, []);
 
   const filterGroups = useMemo(() => {
@@ -364,7 +371,7 @@ function TacticalDashboard() {
     }
   };
 
-  const handleSaveLineup = async () => {
+    const handleSaveLineup = async () => {
     if (!matchDetails.Date || !matchDetails.Location || !matchDetails.Time) {
       setMessage("⚠️ Please fill in Date, Location, and Time before saving.");
       setTimeout(() => setMessage(""), 3000);
@@ -375,7 +382,6 @@ function TacticalDashboard() {
 
     const sanitizeTeam = (teamObj) => {
       if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: Array(MAX_SUBS).fill(null) };
-
       const cleanPlayer = (p) => {
         if (!p) return null;
         const s = playerStats[p.Contributor] || {};
@@ -397,14 +403,10 @@ function TacticalDashboard() {
           assistToCount,
         };
       };
-
-      const cleanPlayers = (teamObj.players || []).map(cleanPlayer);
-      const cleanSubs = (teamObj.subs || []).map(cleanPlayer);
-
       return {
         formation: teamObj.formation || "4-4-2",
-        players: cleanPlayers.slice(0, 11),
-        subs: cleanSubs.slice(0, MAX_SUBS)
+        players: (teamObj.players || []).map(cleanPlayer).slice(0, 11),
+        subs: (teamObj.subs || []).map(cleanPlayer).slice(0, MAX_SUBS),
       };
     };
 
@@ -418,21 +420,25 @@ function TacticalDashboard() {
     };
 
     try {
-      const res = await fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const result = await res.json();
-
-      if (!res.ok) {
-        setMessage(`⚠️ Saved locally, but GitHub failed: ${result.githubError || result.error}`);
-        setTimeout(() => setMessage(""), 6000);
-        return;
+      // ── STEP 1: Save lineup to GitHub ──
+      setMessage("💾 Saving lineup to GitHub...");
+      const lineups = await readFromGitHub(FILES.lineups);
+      const arr = Array.isArray(lineups) ? lineups : [];
+      const idx = arr.findIndex(l =>
+        l.date === payload.date &&
+        l.location === payload.location &&
+        l.time === payload.time
+      );
+      if (idx === -1) {
+        arr.push(payload);
+      } else {
+        arr[idx] = payload;
       }
+      await writeToGitHub(FILES.lineups, arr, `Update lineup for ${payload.date}`);
 
-      setMessage("✅ Tactical Lineup saved! Syncing player stats...");
+      setMessage("✅ Lineup saved! Syncing player stats...");
 
+      // ── STEP 2: Save stats to GitHub ──
       const statRecords = [];
       ["teamA", "teamB"].forEach(teamKey => {
         const team = lineupData[teamKey];
@@ -441,7 +447,7 @@ function TacticalDashboard() {
         [...(team?.players || []), ...(team?.subs || [])].forEach(p => {
           if (!p?.Contributor) return;
           const s = playerStats[p.Contributor] || {};
-          statRecords.push({
+          statRecords.push(formatStat({
             Date: matchDetails.Date,
             Contributor: p.Contributor,
             Rating: p.rating ?? 0,
@@ -460,31 +466,29 @@ function TacticalDashboard() {
             ManOfTheMatch: !!s.ManOfTheMatch,
             AssistTo: getPartner(p.Contributor) && s.Assist > 0 ? (parseInt(s.AssistTo) || 0) : 0,
             source: "Tactical Dashboard",
-          });
+          }));
         });
       });
 
-      try {
-        const statsRes = await fetch("https://football-stats-xbx6.onrender.com/add-stats-batch", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ stats: statRecords }),
-        });
-        if (!statsRes.ok) {
-          const err = await statsRes.json();
-          setMessage(`⚠️ Lineup saved, but stats failed: ${err.message || "unknown"}`);
-          setTimeout(() => setMessage(""), 6000);
-          return;
-        }
-        setMessage("✅ Lineup + player stats saved AND synced to GitHub!");
-        setPlayerStats({});
-      } catch (err) {
-        setMessage(`⚠️ Lineup saved, but stats network error: ${err.message}`);
-        setTimeout(() => setMessage(""), 6000);
-      }
+      // Read current stats, remove duplicates, add new
+      const stats = await readFromGitHub(FILES.stats);
+      const statsArr = Array.isArray(stats) ? stats : [];
+      const remaining = statsArr.filter(d =>
+        !statRecords.some(f =>
+          (d.Date || "").trim() === (f.Date || "").trim() &&
+          (d.Contributor || "").trim().toLowerCase() === (f.Contributor || "").trim().toLowerCase() &&
+          (d.Location || "").trim() === (f.Location || "").trim() &&
+          (d.Time || "").trim() === (f.Time || "").trim()
+        )
+      );
+      remaining.push(...statRecords);
+      await writeToGitHub(FILES.stats, remaining, `Batch upsert stats for ${statRecords.length} players`);
+
+      setMessage("✅ Lineup + player stats saved AND synced to GitHub!");
+      setPlayerStats({});
     } catch (err) {
-      setMessage(`❌ Network error: ${err.message}`);
-      setTimeout(() => setMessage(""), 5000);
+      setMessage(`❌ Save failed: ${err.message}`);
+      setTimeout(() => setMessage(""), 6000);
     } finally {
       setSaving(false);
     }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { readFromGitHub, writeToGitHub, uploadImageToGitHub, FILES } from "../githubAPI";
 import "./AddPlayerCard.css";
-
 // ── Outfield EA Fields & Detailed Stats ──
 const OUTFIELD_EA_FIELDS = ["PAC", "SHO", "PAS", "DRI", "DEF", "PHY"];
 
@@ -141,14 +141,14 @@ function AddPlayerCard() {
     setPositionRatings((prev) => prev.filter((p) => p.position !== pos));
   };
 
-  const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault();
     const playerName = formData.Contributor.trim();
     if (!playerName) {
       alert("Please enter a player name.");
       return;
     }
-     // ── BLOCK SAVE if filterGroup is empty ──
+    // ── BLOCK SAVE if filterGroup is empty ──
     if (!formData.filterGroup || !formData.filterGroup.trim()) {
       alert("⚠️ Please select a Filter Group before saving.");
       return;
@@ -159,18 +159,14 @@ function AddPlayerCard() {
     try {
       let picturePath = formData.picture;
 
+      // ── Upload picture directly to GitHub ──
       if (picturePath && picturePath.startsWith("data:")) {
         setMessage("📸 Uploading picture to GitHub...");
-        const imgRes = await fetch("https://football-stats-xbx6.onrender.com/upload-player-picture", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: playerName, image: picturePath }),
-        });
-        const imgResult = await imgRes.json();
-        if (!imgRes.ok) {
-          throw new Error(imgResult.githubError || imgResult.error || "Picture upload failed");
-        }
-        picturePath = imgResult.picture;
+        picturePath = await uploadImageToGitHub(
+          picturePath,
+          `${playerName}.jpeg`,
+          `Upload profile picture: ${playerName}`
+        );
       }
 
       const posRatingsObj = {};
@@ -192,18 +188,21 @@ function AddPlayerCard() {
         positionRatings: formData.position === "GK" ? {} : posRatingsObj,
       };
 
-      const res = await fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const result = await res.json();
-      if (!res.ok) {
-        throw new Error(result.githubError || result.error || "Save failed");
+      // ── Save player card directly to GitHub ──
+      setMessage("💾 Saving player card...");
+      const players = await readFromGitHub(FILES.playerAttributes);
+      const arr = Array.isArray(players) ? players : [];
+      const idx = arr.findIndex(
+        a => (a.Contributor || "").trim().toLowerCase() === playerName.toLowerCase()
+      );
+      if (idx === -1) {
+        arr.push(payload);
+      } else {
+        arr[idx] = { ...arr[idx], ...payload };
       }
+      await writeToGitHub(FILES.playerAttributes, arr, `Update player card: ${playerName}`);
 
-      setMessage(result.message || "✅ Player card saved successfully!");
-
+      setMessage("✅ Player card saved successfully!");
       clearDraft();
       setFormData(buildEmptyForm());
       setPositionRatings([]);

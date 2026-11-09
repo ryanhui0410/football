@@ -4,7 +4,7 @@
   import FormTrendGraph from "./FormTrendGraph";
   import StreakTracker from "./StreakTracker";
   import "./StatsSummary.css";
-
+  import { readFromGitHub, FILES } from "../githubAPI";
   ChartJS.register(ArcElement, Tooltip, Legend);
 
   function getSeasonFromDate(dateStr) {
@@ -44,19 +44,23 @@
     const [sortKey, setSortKey] = useState("avgRating");
     const [sortDir, setSortDir] = useState("desc");
 
-    useEffect(() => {
-      setDebugInfo("⏳ Loading lineups...");
-      Promise.all([
-        fetch(`https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}`).then((res) => res.json()),
-        fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`).then((res) => res.json()),
-      ])
-        .then(([lineupData, attrData]) => {
-          setLineups(Array.isArray(lineupData) ? lineupData : []);
-          setAttributes(Array.isArray(attrData) ? attrData : []);
-          setDebugInfo(`✅ Loaded ${Array.isArray(lineupData) ? lineupData.length : 0} match lineups`);
-        })
-        .catch(() => setDebugInfo("❌ Failed to load lineups"));
-    }, []);
+      useEffect(() => {
+    setDebugInfo("⏳ Loading data from GitHub...");
+    const loadData = async () => {
+      try {
+        const [lineupData, attrData] = await Promise.all([
+          readFromGitHub(FILES.lineups),
+          readFromGitHub(FILES.playerAttributes),
+        ]);
+        setLineups(Array.isArray(lineupData) ? lineupData : []);
+        setAttributes(Array.isArray(attrData) ? attrData : []);
+        setDebugInfo(`✅ Loaded ${Array.isArray(lineupData) ? lineupData.length : 0} match lineups`);
+      } catch (err) {
+        setDebugInfo("❌ Failed to load data from GitHub");
+      }
+    };
+    loadData();
+  }, []);
 
     const dropdownPlayers = useMemo(() => {
       return ["Ryan", "Darren"];

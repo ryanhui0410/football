@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./EditMatchPage.css";
 import MatchLineup from "./MatchLineup";
-
+import { readFromGitHub, writeToGitHub, FILES } from "../githubAPI";
 function EditMatchPage() {
   const { index } = useParams();
   const navigate = useNavigate();
@@ -12,12 +12,11 @@ function EditMatchPage() {
   const [availablePlayers, setAvailablePlayers] = useState([]);
   const [lineupData, setLineupData] = useState(null);
 
-  useEffect(() => {
+    useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}");
-        const data = await res.json();
-        setFormData(data[index]);
+        const data = await readFromGitHub(FILES.stats);
+        setFormData(Array.isArray(data) ? data[index] : null);
       } catch (err) {
         console.error("Failed to fetch stats:", err);
       }
@@ -25,23 +24,22 @@ function EditMatchPage() {
     fetchData();
   }, [index]);
 
-  useEffect(() => {
+    useEffect(() => {
     if (isEditingLineup && availablePlayers.length === 0) {
-      fetch("https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}")
-        .then(res => res.json())
+      readFromGitHub(FILES.playerAttributes)
         .then(data => setAvailablePlayers(Array.isArray(data) ? data : []))
         .catch(console.error);
     }
   }, [isEditingLineup, availablePlayers.length]);
 
-  useEffect(() => {
+    useEffect(() => {
     if (isEditingLineup && formData) {
-      fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}")
-        .then(res => res.json())
+      readFromGitHub(FILES.lineups)
         .then(lineups => {
-          const match = lineups.find(l => 
-            l.date === formData.Date && 
-            l.location === formData.Location && 
+          const arr = Array.isArray(lineups) ? lineups : [];
+          const match = arr.find(l =>
+            l.date === formData.Date &&
+            l.location === formData.Location &&
             l.time === formData.Time
           );
           if (match) setLineupData(match);
@@ -51,21 +49,25 @@ function EditMatchPage() {
     }
   }, [isEditingLineup, formData]);
 
-  const handleSaveStats = async () => {
+    const handleSaveStats = async () => {
     const resultStr = formData["Match result"] || "";
     const calculatedWL = calculateWinLoss(resultStr);
 
-    await fetch(`https://football-stats-xbx6.onrender.com/modify-stats/${index}?t=${Date.now()}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...formData, "Win/Loss?": calculatedWL }),
-    });
-    
-    alert("✅ Stat updated!");
-    navigate("/modify");
+    try {
+      const stats = await readFromGitHub(FILES.stats);
+      const arr = Array.isArray(stats) ? stats : [];
+      if (index >= 0 && index < arr.length) {
+        arr[index] = { ...arr[index], ...formData, "Win/Loss?": calculatedWL };
+        await writeToGitHub(FILES.stats, arr, `Modify stats for ${formData.Contributor}`);
+      }
+      alert("✅ Stat updated!");
+      navigate("/modify");
+    } catch (err) {
+      alert(`❌ Failed to save: ${err.message}`);
+    }
   };
 
-  const handleSaveLineup = async (lineupData) => {
+    const handleSaveLineup = async (lineupData) => {
     if (!formData) return;
 
     const payload = {
@@ -76,20 +78,24 @@ function EditMatchPage() {
       teamB: lineupData.teamB,
     };
 
-    console.log("📤 Sending lineup payload:", JSON.stringify(payload, null, 2));
-
     try {
-      const res = await fetch("https://football-stats-xbx6.onrender.com/match-lineups?t=${Date.now()}", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const result = await res.json();
-      console.log("📥 Server response:", result);
+      const lineups = await readFromGitHub(FILES.lineups);
+      const arr = Array.isArray(lineups) ? lineups : [];
+      const idx = arr.findIndex(l =>
+        l.date === payload.date &&
+        l.location === payload.location &&
+        l.time === payload.time
+      );
+      if (idx === -1) {
+        arr.push(payload);
+      } else {
+        arr[idx] = payload;
+      }
+      await writeToGitHub(FILES.lineups, arr, `Update lineup for ${payload.date}`);
       alert("✅ Match Report saved!");
     } catch (err) {
       console.error("Save failed:", err);
-      alert("❌ Failed to save match report");
+      alert(`❌ Failed to save: ${err.message}`);
     }
   };
 

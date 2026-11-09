@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PlayerStatsModal from "./PlayerStatsModal";
 import "./PlayerRatings.css";
-
+import { readFromGitHub, uploadImageToGitHub, FILES } from "../githubAPI";
 const FILTER_GROUPS = {
   Barry: ['Lu', 'Nick', 'Jacob', '普巴', 'Chris', '局長', 'Eugene', '大嚿', 'Barry', 'Chun', '子睿', 'Steve', 'Eugene', 'Alex', 'hong', 'R', 'Ken','Derek', 'Marco', 'Nin', 'Dave', 'S Joe', '大嚿', 'Po', 'QC', 'Raymond', 'Eugene'],
   'The Bros': ['Ryan', 'Darren'],
@@ -66,39 +66,36 @@ function PlayerRatings() {
     fetchData();
   }, []);
   const [pictureMap, setPictureMap] = useState({});
-  const fetchData = async () => {
-  try {
-    const [attrRes, statsRes, imgRes] = await Promise.all([
-      fetch(`https://football-stats-xbx6.onrender.com/player-attributes?t=${Date.now()}`),
-      fetch(`https://football-stats-xbx6.onrender.com/stats?t=${Date.now()}`),
-      fetch(`${IMAGES_API_URL}?t=${Date.now()}`), // GitHub contents API (public repo = no auth needed)
-    ]);
+    const fetchData = async () => {
+    try {
+      const [profilesData, statsData, imgRes] = await Promise.all([
+        readFromGitHub(FILES.playerAttributes),
+        readFromGitHub(FILES.stats),
+        fetch(`${IMAGES_API_URL}?t=${Date.now()}`),
+      ]);
 
-    const profilesData = await attrRes.json();
-    const statsData = await statsRes.json();
-    setProfiles(Array.isArray(profilesData) ? profilesData : []);
-    setStats(Array.isArray(statsData) ? statsData : []);
+      setProfiles(Array.isArray(profilesData) ? profilesData : []);
+      setStats(Array.isArray(statsData) ? statsData : []);
 
-    // Build map: lowercase player name → raw GitHub URL
-    if (imgRes.ok) {
-      const files = await imgRes.json();
-      if (Array.isArray(files)) {
-        const map = {};
-        files
-          .filter(f => /\.(jpe?g|png)$/i.test(f.name))
-          .forEach(f => {
-            const baseName = f.name.replace(/\.(jpe?g|png)$/i, "").toLowerCase();
-            map[baseName] = f.download_url; // GitHub gives you a ready-to-use raw URL
-          });
-        setPictureMap(map);
+      if (imgRes.ok) {
+        const files = await imgRes.json();
+        if (Array.isArray(files)) {
+          const map = {};
+          files
+            .filter(f => /\.(jpe?g|png)$/i.test(f.name))
+            .forEach(f => {
+              const baseName = f.name.replace(/\.(jpe?g|png)$/i, "").toLowerCase();
+              map[baseName] = f.download_url;
+            });
+          setPictureMap(map);
+        }
       }
+    } catch (err) {
+      console.error('Failed to load data:', err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error('Failed to load data:', err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const getProfile = (name) =>
     profiles.find(p => p.Contributor === name) || { Contributor: name };
@@ -122,36 +119,31 @@ const openPicModal = () => {
   setPicModalMsg(missing.length === 0 ? "✅ All players have pictures!" : "");
 };
 
-const handlePicUpload = (name, file) => {
-  if (!file) return;
+  const handlePicUpload = (name, file) => {
+    if (!file) return;
 
-  const reader = new FileReader();
-  reader.onloadend = async () => {
-    setUploadingName(name);
-    setPicModalMsg("");
-    try {
-      // STEP 1: upload & process the image → github public/images/{name}.jpeg
-      const res = await fetch("https://football-stats-xbx6.onrender.com/upload-player-picture", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, image: reader.result }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.githubError || result.error || "Upload failed");
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      setUploadingName(name);
+      setPicModalMsg("");
+      try {
+        // Upload image directly to GitHub
+        const rawUrl = await uploadImageToGitHub(
+          reader.result,
+          `${name}.jpeg`,
+          `Upload profile picture: ${name}`
+        );
 
-      // ✨ STEP 2 (NEW): update the in-memory map — card shows instantly
-      const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/football-app/public/images/${encodeURIComponent(name)}.jpeg`;
-      setPictureMap(prev => ({ ...prev, [name.toLowerCase()]: rawUrl }));
-
-      setUploadedNames((prev) => [...prev, name]);
-    } catch (err) {
-      setPicModalMsg(`❌ ${name}: ${err.message}`);
-    } finally {
-      setUploadingName(null);
-    }
+        setPictureMap(prev => ({ ...prev, [name.toLowerCase()]: rawUrl }));
+        setUploadedNames((prev) => [...prev, name]);
+      } catch (err) {
+        setPicModalMsg(`❌ ${name}: ${err.message}`);
+      } finally {
+        setUploadingName(null);
+      }
+    };
+    reader.readAsDataURL(file);
   };
-  reader.readAsDataURL(file);
-};
 
 const closePicModal = () => {
   setShowPicModal(false);
