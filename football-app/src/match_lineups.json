@@ -3100,7 +3100,7 @@
           "goal": 1,
           "assist": 0,
           "leftFoot": 0,
-          "rightFoot": 0,
+          "rightFoot": 1,
           "head": 0,
           "other": 0,
           "ownGoal": 0,
@@ -3109,7 +3109,7 @@
           "assistTo": "",
           "assistToCount": 0,
           "isMotm": false,
-          "goals": 0,
+          "goals": 1,
           "assists": 0
         },
         {
