@@ -504,20 +504,7 @@
           "Contributor": "Ryan",
           "rating": 8.8,
           "picture": "/Ryan.jpeg",
-          "manOfTheMatch": false,
-          "isMotm": false,
-          "goals": 1,
-          "assists": 1,
-          "goal": 1,
-          "assist": 1,
-          "error": 0,
-          "ownGoal": 0,
-          "leftFoot": 0,
-          "rightFoot": 1,
-          "head": 0,
-          "other": 0,
-          "assistTo": "",
-          "assistToCount": 0
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Chris",
@@ -530,14 +517,14 @@
           "rating": 7.5,
           "picture": "/Jacob.jpeg",
           "isMotm": false,
-          "goals": 1,
+          "goals": 0,
           "assists": 0,
           "goal": 1,
           "assist": 0,
           "error": 0,
           "ownGoal": 0,
           "leftFoot": 0,
-          "rightFoot": 1,
+          "rightFoot": 0,
           "head": 0,
           "other": 0,
           "assistTo": "",
@@ -593,14 +580,14 @@
           "rating": 7.6,
           "picture": "/Barry.jpeg",
           "isMotm": false,
-          "goals": 1,
+          "goals": 0,
           "assists": 0,
           "goal": 1,
           "assist": 0,
           "error": 0,
           "ownGoal": 0,
           "leftFoot": 0,
-          "rightFoot": 1,
+          "rightFoot": 0,
           "head": 0,
           "other": 0,
           "assistTo": "",
@@ -618,13 +605,13 @@
           "rating": 8.5,
           "picture": "/Daniel.jpeg",
           "isMotm": false,
-          "goals": 1,
+          "goals": 0,
           "assists": 0,
           "goal": 1,
           "assist": 0,
           "error": 0,
           "ownGoal": 0,
-          "leftFoot": 1,
+          "leftFoot": 0,
           "rightFoot": 0,
           "head": 0,
           "other": 0,
@@ -662,14 +649,14 @@
           "rating": 7.7,
           "picture": "/局長.jpeg",
           "isMotm": false,
-          "goals": 1,
+          "goals": 0,
           "assists": 0,
           "goal": 1,
           "assist": 0,
           "error": 0,
           "ownGoal": 0,
           "leftFoot": 0,
-          "rightFoot": 1,
+          "rightFoot": 0,
           "head": 0,
           "other": 0,
           "assistTo": "",
@@ -689,6 +676,7 @@
     "date": "8/22/2026",
     "location": "顯田",
     "time": "11:30 AM",
+    "matchResult": "3-3",
     "teamA": {
       "formation": "4-4-2",
       "players": [
@@ -703,65 +691,94 @@
           "assist": 0,
           "error": 1,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "QC1",
           "rating": 6.7,
-          "picture": "/images/QC1.jpeg"
+          "picture": "/images/QC1.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "普巴",
           "rating": 6.6,
-          "picture": "/普巴.jpeg"
+          "picture": "/普巴.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ken",
           "rating": 6.8,
-          "picture": "/images/Ken.jpeg"
+          "picture": "/images/Ken.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "QC",
           "rating": 6.8,
-          "picture": "/images/QC.jpeg"
+          "picture": "/images/QC.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Chris",
           "rating": 7.1,
-          "picture": "/Chris.jpeg"
+          "picture": "/Chris.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Chun",
           "rating": 7.1,
-          "picture": "/Chun.jpeg"
+          "picture": "/Chun.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Derek",
           "rating": 8.2,
           "picture": "/images/Derek.jpeg",
           "isMotm": false,
-          "goals": 0,
-          "assists": 0,
+          "goals": 1,
+          "assists": 1,
           "goal": 1,
           "assist": 1,
           "error": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Barry",
           "rating": 5.7,
-          "picture": "/Barry.jpeg"
+          "picture": "/Barry.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Ryan",
           "rating": 8,
-          "picture": "/Ryan.jpeg"
+          "picture": "/Ryan.jpeg",
+          "isMotm": false,
+          "goals": 1,
+          "assists": 0,
+          "goal": 1,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
         },
         {
           "Contributor": "Darren",
           "rating": 7.8,
-          "picture": "/Darren.jpeg"
+          "picture": "/Darren.jpeg",
+          "manOfTheMatch": false
         }
       ],
       "subs": [
@@ -769,8 +786,11 @@
         {
           "Contributor": "Leung Gor",
           "rating": 6.1,
-          "picture": "/Leung Gor.jpeg"
-        }
+          "picture": "/Leung Gor.jpeg",
+          "manOfTheMatch": false
+        },
+        null,
+        null
       ]
     },
     "teamB": {
@@ -779,12 +799,14 @@
         {
           "Contributor": "Pierre",
           "rating": 7.1,
-          "picture": "/Pierre.jpeg"
+          "picture": "/Pierre.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Steve",
           "rating": 7,
-          "picture": "/Steve.jpeg"
+          "picture": "/Steve.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Nick",
@@ -797,71 +819,95 @@
           "assist": 0,
           "error": 1,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "阿榮",
           "rating": 6.9,
-          "picture": "/images/阿榮.jpeg"
+          "picture": "/images/阿榮.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "S Joe",
           "rating": 6.7,
-          "picture": "/images/S_Joe.jpeg"
+          "picture": "/images/S_Joe.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "大嚿",
           "rating": 7.3,
           "picture": "/大嚿.jpeg",
           "isMotm": false,
-          "goals": 0,
+          "goals": 1,
           "assists": 0,
           "goal": 1,
           "assist": 0,
           "error": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "hong",
           "rating": 7.5,
-          "picture": "/hong.jpeg"
+          "picture": "/hong.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Lu",
           "rating": 7.1,
-          "picture": "/Lu.jpeg"
+          "picture": "/Lu.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Dave",
           "rating": 6.8,
-          "picture": "/images/Dave.jpeg"
+          "picture": "/images/Dave.jpeg",
+          "manOfTheMatch": false
         },
         {
           "Contributor": "Jacob",
           "rating": 7.3,
           "picture": "/Jacob.jpeg",
           "isMotm": false,
-          "goals": 0,
+          "goals": 1,
           "assists": 0,
           "goal": 1,
           "assist": 0,
           "error": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false
         },
         {
           "Contributor": "局長",
           "rating": 7.4,
           "picture": "/局長.jpeg",
           "isMotm": false,
-          "goals": 0,
+          "goals": 1,
           "assists": 0,
           "goal": 1,
           "assist": 0,
           "error": 0,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false
         }
       ],
       "subs": [
@@ -869,8 +915,11 @@
         {
           "Contributor": "Po",
           "rating": 6.9,
-          "picture": "/images/Po.jpeg"
-        }
+          "picture": "/images/Po.jpeg",
+          "manOfTheMatch": false
+        },
+        null,
+        null
       ]
     }
   },
