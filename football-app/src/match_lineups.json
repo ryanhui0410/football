@@ -6315,7 +6315,7 @@
         },
         {
           "Contributor": "Raymond",
-          "rating": 7.2,
+          "rating": 7.3,
           "goal": 0,
           "assist": 1,
           "leftFoot": 0,
@@ -6326,7 +6326,11 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 1,
+          "picture": ""
         },
         {
           "Contributor": "hong",
