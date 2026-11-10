@@ -6397,7 +6397,7 @@
         },
         {
           "Contributor": "S Joe",
-          "rating": 6,
+          "rating": 5.8,
           "goal": 0,
           "assist": 0,
           "leftFoot": 0,
@@ -6408,7 +6408,11 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "picture": ""
         },
         {
           "Contributor": "Ricky",
