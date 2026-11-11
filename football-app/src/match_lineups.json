@@ -6681,9 +6681,13 @@
           "other": 0,
           "ownGoal": 0,
           "error": 0,
-          "manOfTheMatch": false,
+          "manOfTheMatch": true,
           "assistTo": "Darren",
-          "assistToCount": 2
+          "assistToCount": 2,
+          "isMotm": false,
+          "goals": 1,
+          "assists": 3,
+          "picture": ""
         },
         {
           "Contributor": "Darren",
@@ -6716,9 +6720,9 @@
         {
           "Contributor": "Jack",
           "picture": "/images/Jack.jpeg",
-          "rating": 8.5,
+          "rating": 9.1,
           "goal": 2,
-          "assist": 0,
+          "assist": 1,
           "error": 0,
           "ownGoal": 0,
           "leftFoot": 0,
