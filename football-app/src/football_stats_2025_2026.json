@@ -10988,7 +10988,7 @@
     "Win/Loss?": "Loss",
     "Assist to": "Darren",
     "Assist to count": 2,
-    "Man of the Match": false
+    "Man of the Match": true
   },
   {
     "Date": "11/10/2026",
@@ -11016,13 +11016,13 @@
   {
     "Date": "11/10/2026",
     "Contributor": "Jack",
-    "Symbol": "⚽⚽",
+    "Symbol": "⚽⚽👟",
     "Goal": 2,
-    "Assist": 0,
-    "Rating": 8.5,
+    "Assist": 1,
+    "Rating": 9.1,
     "Location": "櫻桃街",
     "Time": "8:00 PM",
-    "Goal Contribution": 2,
+    "Goal Contribution": 3,
     "source": "Edit Match Report",
     "Left Foot": 0,
     "Right Foot": 2,
