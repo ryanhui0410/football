@@ -5243,13 +5243,13 @@
   {
     "Date": "9/6/2026",
     "Contributor": "Ryan",
-    "Symbol": "",
+    "Symbol": "👟",
     "Goal": 0,
-    "Assist": 0,
+    "Assist": 1,
     "Rating": 7.9,
     "Location": "傑志",
     "Time": "10:30 AM",
-    "Goal Contribution": 0,
+    "Goal Contribution": 1,
     "source": "Edit Match Report",
     "Left Foot": 0,
     "Right Foot": 0,
@@ -5259,8 +5259,8 @@
     "Season": "2026-2027",
     "Match result": "7-2",
     "Win/Loss?": "Win",
-    "Assist to": "",
-    "Assist to count": 0,
+    "Assist to": "Darren",
+    "Assist to count": 1,
     "Man of the Match": false
   },
   {
