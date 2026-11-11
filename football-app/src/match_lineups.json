@@ -6838,7 +6838,22 @@
           "assistTo": "",
           "assistToCount": 0
         },
-        null,
+        {
+          "Contributor": "Ben",
+          "picture": "/images/Ben.jpeg",
+          "rating": 9.3,
+          "goal": 2,
+          "assist": 1,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 2,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         {
           "Contributor": "Ronson",
           "picture": "/images/Ronson.jpeg",
