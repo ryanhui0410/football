@@ -7172,16 +7172,17 @@
           "assistToCount": 0
         },
         {
-          "Contributor": "Nick",
-          "rating": 6.5,
-          "goal": 0,
+          "Contributor": "Lu",
+          "picture": "/Lu.jpeg",
+          "rating": 7.4,
+          "goal": 1,
           "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
           "leftFoot": 0,
           "rightFoot": 0,
-          "head": 0,
+          "head": 1,
           "other": 0,
-          "ownGoal": 0,
-          "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
           "assistToCount": 0
@@ -7308,7 +7309,22 @@
           "assistTo": "",
           "assistToCount": 0
         },
-        null,
+        {
+          "Contributor": "Nick",
+          "picture": "/Nick.jpeg",
+          "rating": 6.5,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         null,
         null
       ]
