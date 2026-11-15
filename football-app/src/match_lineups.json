@@ -7055,9 +7055,13 @@
           "other": 0,
           "ownGoal": 0,
           "error": 0,
-          "manOfTheMatch": false,
+          "manOfTheMatch": true,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 2,
+          "assists": 2,
+          "picture": ""
         },
         {
           "Contributor": "Derek",
