@@ -7061,7 +7061,7 @@
         },
         {
           "Contributor": "子睿",
-          "rating": 10,
+          "rating": 9.9,
           "goal": 2,
           "assist": 2,
           "leftFoot": 0,
@@ -7073,7 +7073,7 @@
           "manOfTheMatch": true,
           "assistTo": "",
           "assistToCount": 0,
-          "isMotm": false,
+          "isMotm": true,
           "goals": 2,
           "assists": 2,
           "picture": ""
