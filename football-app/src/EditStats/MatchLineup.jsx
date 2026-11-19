@@ -4,9 +4,10 @@ const GITHUB_OWNER = "ryanhui0410";
 const GITHUB_REPO = "football";
 const IMAGES_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/football-app/public/images`;
 
-// Standardized 11-slot formations
+// Standardized formations — playersCount controls how many slots render
 const FORMATIONS = {
   "4-4-2": {
+    playersCount: 11,
     labels: ["GK", "LB", "CB", "CB", "RB", "LM", "CM", "CM", "RM", "ST", "ST"],
     coords: [
       { x: 3, y: 50 }, { x: 16, y: 15 }, { x: 16, y: 38 }, { x: 16, y: 62 }, { x: 16, y: 85 },
@@ -15,6 +16,7 @@ const FORMATIONS = {
     ]
   },
   "4-3-3": {
+    playersCount: 11,
     labels: ["GK", "LB", "CB", "CB", "RB", "CDM", "CM", "CM", "LW", "ST", "RW"],
     coords: [
       { x: 5, y: 50 }, { x: 16, y: 15 }, { x: 16, y: 38 }, { x: 16, y: 62 }, { x: 16, y: 85 },
@@ -23,6 +25,7 @@ const FORMATIONS = {
     ]
   },
   "3-5-2": {
+    playersCount: 11,
     labels: ["GK", "CB", "CB", "CB", "LWB", "CM", "CM", "CM", "RWB", "ST", "ST"],
     coords: [
       { x: 5, y: 50 }, { x: 16, y: 30 }, { x: 16, y: 50 }, { x: 16, y: 70 },
@@ -31,6 +34,7 @@ const FORMATIONS = {
     ]
   },
   "4-2-3-1": {
+    playersCount: 11,
     labels: ["GK", "LB", "CB", "CB", "RB", "CDM", "CDM", "LAM", "CAM", "RAM", "ST"],
     coords: [
       { x: 5, y: 50 }, { x: 16, y: 15 }, { x: 16, y: 38 }, { x: 16, y: 62 }, { x: 16, y: 85 },
@@ -38,29 +42,52 @@ const FORMATIONS = {
       { x: 36, y: 20 }, { x: 36, y: 50 }, { x: 36, y: 80 }, { x: 43, y: 50 }
     ]
   },
+  // ✅ NEW: 7v7 formation (3-2-1)
+  "3-2-1": {
+    playersCount: 7,
+    labels: ["GK", "LB", "CB", "RB", "LM", "RM", "ST"],
+    coords: [
+      { x: 5, y: 50 },
+      { x: 17, y: 20 }, { x: 17, y: 50 }, { x: 17, y: 80 },
+      { x: 31, y: 30 }, { x: 31, y: 70 },
+      { x: 43, y: 50 }
+    ]
+  },
 };
 
 const MAX_SUBS = 4;
+const DEFAULT_FORMATIONS = ["4-4-2", "4-3-3", "3-5-2", "4-2-3-1"];
+
+function getPlayersCount(formation) {
+  return FORMATIONS[formation]?.playersCount ?? 11;
+}
+
+function makePlayersArray(formation) {
+  return Array(getPlayersCount(formation)).fill(null);
+}
 
 function migrateLineupData(oldLineup) {
   if (!oldLineup) return { formation: "4-4-2", players: Array(11).fill(null), subs: Array(MAX_SUBS).fill(null) };
 
+  const formation = oldLineup.formation || "4-4-2";
+  const count = getPlayersCount(formation);
+
   if (Array.isArray(oldLineup.players)) {
     const players = [...oldLineup.players];
-    while (players.length < 11) players.push(null);
+    while (players.length < count) players.push(null);
     const subs = Array.isArray(oldLineup.subs) ? [...oldLineup.subs] : [];
     while (subs.length < MAX_SUBS) subs.push(null);
-    return { formation: oldLineup.formation || "4-4-2", players, subs };
+    return { formation, players: players.slice(0, count), subs };
   }
 
-  const players = Array(11).fill(null);
+  const players = Array(count).fill(null);
   const mapping = { "GK0": 0, "DEF0": 1, "DEF1": 2, "DEF2": 3, "DEF3": 4, "MID0": 5, "MID1": 6, "MID2": 7, "MID3": 8, "MID4": 6, "FWD0": 9, "FWD1": 10, "FWD2": 9, "AM0": 6 };
   Object.entries(oldLineup.players || {}).forEach(([key, player]) => {
     const idx = mapping[key] !== undefined ? mapping[key] : 0;
-    if (player && player.Contributor) players[idx] = player;
+    if (idx < count && player && player.Contributor) players[idx] = player;
   });
 
-  return { formation: oldLineup.formation || "4-4-2", players, subs: Array(MAX_SUBS).fill(null) };
+  return { formation, players, subs: Array(MAX_SUBS).fill(null) };
 }
 
 function MatchLineup({
@@ -73,6 +100,7 @@ function MatchLineup({
   onLineupChange,
   onSlotClick,
   pictureMap: pictureMapProp,
+  formationOptions = DEFAULT_FORMATIONS,
 }) {
   const isVertical = layout === "vertical";
 
@@ -151,7 +179,6 @@ function MatchLineup({
     ownGoals: parseInt(player.ownGoals ?? player.ownGoal) || 0,
   });
 
-  // ── Check if goal breakdown matches total goals ──
   const isGoalMismatch = (player) => {
     const totalGoals = parseInt(player.goals ?? player.goal) || 0;
     const bodyTotal =
@@ -205,7 +232,6 @@ function MatchLineup({
     );
   };
 
-  // ── Shared player card renderer ──
   const renderPlayerCard = (player, keyPrefix) => {
     const stats = resolveStats(player);
     const { assists, isMotm } = stats;
@@ -223,31 +249,15 @@ function MatchLineup({
           <div
             className="mismatch-badge"
             style={{
-              position: 'absolute',
-              top: '-4px',
-              right: '-4px',
-              background: '#ef4444',
-              color: '#fff',
-              borderRadius: '50%',
-              width: '18px',
-              height: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '11px',
-              fontWeight: 800,
-              zIndex: 10,
+              position: 'absolute', top: '-4px', right: '-4px',
+              background: '#ef4444', color: '#fff', borderRadius: '50%',
+              width: '18px', height: '18px', display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              fontSize: '11px', fontWeight: 800, zIndex: 10,
               boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
             }}
-            title={`Goal mismatch: ${parseInt(player.goals ?? player.goal) || 0} goals ≠ ${
-              (parseInt(player.leftFoot) || 0) +
-              (parseInt(player.rightFoot) || 0) +
-              (parseInt(player.head) || 0) +
-              (parseInt(player.other ?? player.otherBodyParts) || 0)
-            } breakdown`}
-          >
-            ⚠
-          </div>
+            title={`Goal mismatch: ${parseInt(player.goals ?? player.goal) || 0} goals ≠ breakdown`}
+          >⚠</div>
         )}
 
         <div
@@ -266,7 +276,6 @@ function MatchLineup({
             alt={player.Contributor}
             style={{ visibility: pic ? "visible" : "hidden" }}
           />
-
           {assists > 0 && (
             <div className="stat-badge assists">
               {[...Array(assists)].map((_, i) => (
@@ -274,7 +283,6 @@ function MatchLineup({
               ))}
             </div>
           )}
-
           {renderRightStrip(stats, keyPrefix)}
         </div>
 
@@ -285,7 +293,6 @@ function MatchLineup({
     );
   };
 
-  // Render Substitute Slots
   const renderSubSlot = (team, subIdx) => {
     const subsArr = team === "A" ? teamASubs : teamBSubs;
     const player = subsArr[subIdx];
@@ -307,11 +314,12 @@ function MatchLineup({
     );
   };
 
-  // Render Pitch Slots
+  // ✅ Renders only playersCount slots based on formation
   const renderSlots = (formation, team, playersArr) => {
     const formationDef = FORMATIONS[formation] || FORMATIONS["4-4-2"];
+    const count = formationDef.playersCount;
 
-    return formationDef.coords.map((pos, idx) => {
+    return formationDef.coords.slice(0, count).map((pos, idx) => {
       const player = playersArr[idx];
       const label = formationDef.labels[idx];
       const slotStyle = getSlotPosition(pos, team);
@@ -342,18 +350,27 @@ function MatchLineup({
     });
   };
 
+  // ✅ Resize player array when formation changes
   const handleFormationChange = (team, newFormation) => {
+    const newCount = getPlayersCount(newFormation);
+
     if (team === "A") {
+      const resized = [...teamAPlayers];
+      while (resized.length < newCount) resized.push(null);
       setTeamAFormation(newFormation);
+      setTeamAPlayers(resized.slice(0, newCount));
       onLineupChange && onLineupChange({
-        teamA: { formation: newFormation, players: teamAPlayers, subs: teamASubs },
+        teamA: { formation: newFormation, players: resized.slice(0, newCount), subs: teamASubs },
         teamB: { formation: teamBFormation, players: teamBPlayers, subs: teamBSubs }
       });
     } else {
+      const resized = [...teamBPlayers];
+      while (resized.length < newCount) resized.push(null);
       setTeamBFormation(newFormation);
+      setTeamBPlayers(resized.slice(0, newCount));
       onLineupChange && onLineupChange({
         teamA: { formation: teamAFormation, players: teamAPlayers, subs: teamASubs },
-        teamB: { formation: newFormation, players: teamBPlayers, subs: teamBSubs }
+        teamB: { formation: newFormation, players: resized.slice(0, newCount), subs: teamBSubs }
       });
     }
   };
@@ -363,9 +380,36 @@ function MatchLineup({
       <div className="lineup-content">
         <div className="pitch-and-controls">
 
+          {/* ✅ Formation selectors (edit mode only) */}
+          {editMode && (
+            <div className="formation-selectors">
+              <div className="formation-selector">
+                <label>Team A Formation:</label>
+                <select
+                  value={teamAFormation}
+                  onChange={(e) => handleFormationChange("A", e.target.value)}
+                >
+                  {formationOptions.map(f => (
+                    <option key={f} value={f}>{f} ({getPlayersCount(f)}v{getPlayersCount(f)})</option>
+                  ))}
+                </select>
+              </div>
+              <div className="formation-selector">
+                <label>Team B Formation:</label>
+                <select
+                  value={teamBFormation}
+                  onChange={(e) => handleFormationChange("B", e.target.value)}
+                >
+                  {formationOptions.map(f => (
+                    <option key={f} value={f}>{f} ({getPlayersCount(f)}v{getPlayersCount(f)})</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
           {/* THE PITCH */}
           <div className={`pitch-wrapper ${isVertical ? "vertical" : ""}`}>
-
             <div className="team-label team-b-label">
               Team B
               {avgB && <span className="team-avg" style={{ color: getAvgColor(avgB) }}>{avgB}</span>}

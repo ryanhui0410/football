@@ -783,7 +783,7 @@ function ModifyDashboard({ contributors, onSave }) {
       alert("✅ Match Report saved and stats synced!");
 
       // ── STEP 3: Update local state ──
-      setIsEditingReport(false);
+      setIsEditingReport(true);
       setMatchReport(JSON.parse(JSON.stringify({ ...editedLineup, teamA: payload.teamA, teamB: payload.teamB })));
       setLineupVersion(v => v + 1);
       setAllLineups(prev => {

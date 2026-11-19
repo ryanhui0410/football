@@ -80,7 +80,26 @@ function AddPlayerCard() {
   const [newPosRating, setNewPosRating] = useState(() => saved?.newPosRating ?? "");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+const [existingPlayers, setExistingPlayers] = useState([]); // ✅ NEW: existing cards for duplicate check
 
+// ✅ NEW: fetch player_attributes.json and return the array
+const fetchExistingPlayers = async () => {
+  const players = await readFromGitHub(FILES.playerAttributes);
+  return Array.isArray(players) ? players : [];
+};
+
+// ✅ NEW: load once on mount so we can warn while typing
+useEffect(() => {
+  fetchExistingPlayers()
+    .then(setExistingPlayers)
+    .catch(() => {}); // non-fatal — submit-time check still protects us
+}, []);
+
+// ✅ NEW: live duplicate match (case/whitespace-insensitive, same rule as the upsert)
+const typedName = formData.Contributor.trim().toLowerCase();
+const duplicatePlayer = typedName
+  ? existingPlayers.find(a => (a.Contributor || "").trim().toLowerCase() === typedName)
+  : null;
   useEffect(() => {
     saveDraft({ formData, positionRatings, newPos, newPosRating });
   }, [formData, positionRatings, newPos, newPosRating]);
@@ -153,6 +172,31 @@ function AddPlayerCard() {
       alert("⚠️ Please select a Filter Group before saving.");
       return;
     }
+    let players;
+try {
+  setMessage("🔍 Checking for existing player...");
+  players = await fetchExistingPlayers();
+  setExistingPlayers(players);
+} catch (err) {
+  setMessage(`❌ Could not verify existing players: ${err.message}`);
+  return;
+}
+
+const existingIdx = players.findIndex(
+  a => (a.Contributor || "").trim().toLowerCase() === playerName.toLowerCase()
+);
+
+if (existingIdx !== -1) {
+  const proceed = window.confirm(
+    `⚠️ Player "${playerName}" already exists in player_attributes.json` +
+    (players[existingIdx].filterGroup ? ` (Group: ${players[existingIdx].filterGroup})` : "") +
+    `.\n\nSaving will OVERWRITE their existing card.\n\nContinue?`
+  );
+  if (!proceed) {
+    setMessage(`⚠️ Save cancelled — "${playerName}" already exists.`);
+    return;
+  }
+}
     setSaving(true);
     setMessage("");
 
@@ -169,29 +213,43 @@ function AddPlayerCard() {
         );
       }
 
-      const posRatingsObj = {};
+            const posRatingsObj = {};
       positionRatings.forEach(({ position, rating }) => {
         posRatingsObj[position] = rating;
       });
 
-      const stringFields = ["Contributor", "picture", "position", "preferredFoot", "filterGroup"];
-
+      // ── Build payload with correct picture URL ──
       const payload = {
-        ...formData,
-        picture: picturePath,
-        ...Object.fromEntries(
-          Object.entries(formData).map(([k, v]) => [
-            k,
-            stringFields.includes(k) ? v : parseInt(v) || 0,
-          ])
-        ),
+        Contributor: formData.Contributor,
+        picture: picturePath, // ← URL from upload, NOT base64
+        position: formData.position,
+        preferredFoot: formData.preferredFoot,
+        filterGroup: formData.filterGroup,
+        overall: parseInt(formData.overall) || 0,
+        weakFoot: parseInt(formData.weakFoot) || 0,
+        PAC: parseInt(formData.PAC) || 0,
+        SHO: parseInt(formData.SHO) || 0,
+        PAS: parseInt(formData.PAS) || 0,
+        DRI: parseInt(formData.DRI) || 0,
+        DEF: parseInt(formData.DEF) || 0,
+        PHY: parseInt(formData.PHY) || 0,
+        DIV: parseInt(formData.DIV) || 0,
+        HAN: parseInt(formData.HAN) || 0,
+        KIC: parseInt(formData.KIC) || 0,
+        REF: parseInt(formData.REF) || 0,
+        SPD: parseInt(formData.SPD) || 0,
+        POS: parseInt(formData.POS) || 0,
         positionRatings: formData.position === "GK" ? {} : posRatingsObj,
       };
 
+      // Add all detailed sub-stats
+      UNIQUE_SUB_STATS.forEach((s) => {
+        payload[s] = parseInt(formData[s]) || 0;
+      });
+
       // ── Save player card directly to GitHub ──
       setMessage("💾 Saving player card...");
-      const players = await readFromGitHub(FILES.playerAttributes);
-      const arr = Array.isArray(players) ? players : [];
+      const arr = players;
       const idx = arr.findIndex(
         a => (a.Contributor || "").trim().toLowerCase() === playerName.toLowerCase()
       );
@@ -236,6 +294,18 @@ function AddPlayerCard() {
                 placeholder="e.g. Steve"
               />
             </div>
+            {/* ✅ ADD IT HERE — right after the Name field */}
+    {duplicatePlayer && (
+      <div className="apc-field" style={{ gridColumn: "1 / -1" }}>
+        <div style={{
+          background: "#fef3c7", border: "1px solid #f59e0b", borderRadius: "8px",
+          padding: "8px 12px", fontSize: "13px", fontWeight: 600, color: "#92400e",
+        }}>
+          ⚠️ "{formData.Contributor.trim()}" already exists
+          {duplicatePlayer.filterGroup ? ` (Group: ${duplicatePlayer.filterGroup})` : ""} — saving will overwrite their card.
+        </div>
+      </div>
+    )}
             <div className="apc-field">
               <label>Primary Position</label>
               <select

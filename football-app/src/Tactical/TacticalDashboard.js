@@ -2,6 +2,14 @@ import React, { useState, useEffect, useMemo } from "react";
 import MatchLineup from "../EditStats/MatchLineup";
 import "./TacticalDashboard.css";
 import { readFromGitHub, writeToGitHub, formatStat, FILES } from "../githubAPI";
+
+// ── Formation player counts ──
+const FORMATION_COUNTS = {
+  "4-4-2": 11, "4-3-3": 11, "3-5-2": 11, "4-2-3-1": 11,
+  "3-2-1": 7,
+};
+const getPlayersCount = (f) => FORMATION_COUNTS[f] ?? 11;
+
 function StatStepper({ label, value, onChange, max = 99 }) {
   const num = parseInt(value) || 0;
   return (
@@ -192,6 +200,9 @@ function TacticalDashboard() {
   const [playerStats, setPlayerStats] = useState({});
   const [slotStats, setSlotStats] = useState(null);
 
+  // ✅ NEW: Match type (11v11 or 7v7)
+  const [matchType, setMatchType] = useState("11v11");
+
   const [addPlayerMode, setAddPlayerMode] = useState("name");
   const [playerSearchText, setPlayerSearchText] = useState("");
   const [playerFilterGroup, setPlayerFilterGroup] = useState("All");
@@ -227,7 +238,7 @@ function TacticalDashboard() {
     };
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     const loadData = async () => {
       try {
         const [statsData, lineups, players, imageFiles] = await Promise.all([
@@ -331,18 +342,50 @@ function TacticalDashboard() {
       ) {
         return prev;
       }
+      const defaultFormation = matchType === "7v7" ? "3-2-1" : "4-4-2";
+      const count = matchType === "7v7" ? 7 : 11;
       return existing || {
         date: matchDetails.Date,
         location: matchDetails.Location,
         time: matchDetails.Time,
-        teamA: { formation: "4-4-2", players: Array(11).fill(null), subs: Array(MAX_SUBS).fill(null) },
-        teamB: { formation: "4-4-2", players: Array(11).fill(null), subs: Array(MAX_SUBS).fill(null) }
+        teamA: { formation: defaultFormation, players: Array(count).fill(null), subs: Array(MAX_SUBS).fill(null) },
+        teamB: { formation: defaultFormation, players: Array(count).fill(null), subs: Array(MAX_SUBS).fill(null) }
       };
     });
-  }, [matchDetails.Date, matchDetails.Location, matchDetails.Time, allLineups]);
+  }, [matchDetails.Date, matchDetails.Location, matchDetails.Time, allLineups, matchType]);
 
   const handleChange = (e) => {
     setMatchDetails({ ...matchDetails, [e.target.name]: e.target.value });
+  };
+
+  // ✅ Handle match type change — resize player arrays
+  const handleMatchTypeChange = (newType) => {
+    setMatchType(newType);
+    const defaultFormation = newType === "7v7" ? "3-2-1" : "4-4-2";
+    const count = newType === "7v7" ? 7 : 11;
+
+    setLineupData(prev => {
+      if (!prev) return prev;
+      const resizePlayers = (arr) => {
+        const current = Array.isArray(arr) ? arr : [];
+        const resized = current.slice(0, count);
+        while (resized.length < count) resized.push(null);
+        return resized;
+      };
+      return {
+        ...prev,
+        teamA: {
+          ...prev.teamA,
+          formation: defaultFormation,
+          players: resizePlayers(prev.teamA?.players),
+        },
+        teamB: {
+          ...prev.teamB,
+          formation: defaultFormation,
+          players: resizePlayers(prev.teamB?.players),
+        },
+      };
+    });
   };
 
   const handleSelectPlayer = (selected) => {
@@ -365,13 +408,23 @@ function TacticalDashboard() {
           rating: prev.player?.rating !== undefined ? prev.player.rating : ""
         }
       }));
-      setSlotStats(playerStats[selected.Contributor] || {
-        Goal: 0, Assist: 0, LeftFoot: 0, RightFoot: 0, Head: 0, OtherBodyParts: 0, Error: 0, ManOfTheMatch: false, AssistTo: 0, OwnGoal: 0
+      const saved = playerStats[selected.Contributor] || {};
+      setSlotStats({
+        Goal: saved.Goal ?? 0,
+        Assist: saved.Assist ?? 0,
+        LeftFoot: saved.LeftFoot ?? 0,
+        RightFoot: saved.RightFoot ?? 0,
+        Head: saved.Head ?? 0,
+        OtherBodyParts: saved.OtherBodyParts ?? 0,
+        Error: saved.Error ?? 0,
+        ManOfTheMatch: saved.ManOfTheMatch ?? false,
+        AssistTo: saved.AssistTo ?? 0,
+        OwnGoal: saved.OwnGoal ?? 0,
       });
     }
   };
 
-    const handleSaveLineup = async () => {
+  const handleSaveLineup = async () => {
     if (!matchDetails.Date || !matchDetails.Location || !matchDetails.Time) {
       setMessage("⚠️ Please fill in Date, Location, and Time before saving.");
       setTimeout(() => setMessage(""), 3000);
@@ -381,31 +434,33 @@ function TacticalDashboard() {
     setSaving(true);
 
     const sanitizeTeam = (teamObj) => {
-      if (!teamObj) return { formation: "4-4-2", players: Array(11).fill(null), subs: Array(MAX_SUBS).fill(null) };
+      const formation = teamObj?.formation || (matchType === "7v7" ? "3-2-1" : "4-4-2");
+      const count = getPlayersCount(formation);
+      if (!teamObj) return { formation, players: Array(count).fill(null), subs: Array(MAX_SUBS).fill(null) };
       const cleanPlayer = (p) => {
         if (!p) return null;
         const s = playerStats[p.Contributor] || {};
         const partner = getPartner(p.Contributor);
-        const assistToCount = partner ? (parseInt(s.AssistTo) || 0) : 0;
+        const assistToCount = partner ? (p.assistToCount ?? (parseInt(s.AssistTo) || 0)) : 0;
         return {
           Contributor: p.Contributor,
           rating: parseFloat(p.rating) || 0,
-          goal: s.Goal ?? 0,
-          assist: s.Assist ?? 0,
-          leftFoot: s.LeftFoot ?? 0,
-          rightFoot: s.RightFoot ?? 0,
-          head: s.Head ?? 0,
-          other: s.OtherBodyParts ?? 0,
-          ownGoal: s.OwnGoal ?? 0,
-          error: s.Error ?? 0,
-          manOfTheMatch: !!s.ManOfTheMatch,
+          goal: p.goal ?? s.Goal ?? 0,
+          assist: p.assist ?? s.Assist ?? 0,
+          leftFoot: p.leftFoot ?? s.LeftFoot ?? 0,
+          rightFoot: p.rightFoot ?? s.RightFoot ?? 0,
+          head: p.head ?? s.Head ?? 0,
+          other: p.other ?? s.OtherBodyParts ?? 0,
+          ownGoal: p.ownGoal ?? s.OwnGoal ?? 0,
+          error: p.error ?? s.Error ?? 0,
+          manOfTheMatch: p.manOfTheMatch ?? !!s.ManOfTheMatch,
           assistTo: partner && assistToCount > 0 ? partner : "",
           assistToCount,
         };
       };
       return {
-        formation: teamObj.formation || "4-4-2",
-        players: (teamObj.players || []).map(cleanPlayer).slice(0, 11),
+        formation,
+        players: (teamObj.players || []).map(cleanPlayer).slice(0, count),
         subs: (teamObj.subs || []).map(cleanPlayer).slice(0, MAX_SUBS),
       };
     };
@@ -415,6 +470,7 @@ function TacticalDashboard() {
       location: matchDetails.Location,
       time: matchDetails.Time,
       matchResult: matchDetails.MatchResult ?? "",
+      matchType: matchType,
       teamA: sanitizeTeam(lineupData.teamA),
       teamB: sanitizeTeam(lineupData.teamB),
     };
@@ -455,16 +511,17 @@ function TacticalDashboard() {
             Time: matchDetails.Time,
             MatchResult: matchDetails.MatchResult ?? "",
             WinLoss: teamOutcome,
-            Goal: s.Goal ?? 0,
-            Assist: s.Assist ?? 0,
-            LeftFoot: s.LeftFoot ?? 0,
-            RightFoot: s.RightFoot ?? 0,
-            Head: s.Head ?? 0,
-            OtherBodyParts: s.OtherBodyParts ?? 0,
-            OwnGoal: s.OwnGoal ?? 0,
-            Error: s.Error ?? 0,
-            ManOfTheMatch: !!s.ManOfTheMatch,
-            AssistTo: getPartner(p.Contributor) && s.Assist > 0 ? (parseInt(s.AssistTo) || 0) : 0,
+            Goal: s.Goal ?? p.goal ?? 0,
+            Assist: s.Assist ?? p.assist ?? 0,
+            LeftFoot: s.LeftFoot ?? p.leftFoot ?? 0,
+            RightFoot: s.RightFoot ?? p.rightFoot ?? 0,
+            Head: s.Head ?? p.head ?? 0,
+            OtherBodyParts: s.OtherBodyParts ?? p.other ?? 0,
+            OwnGoal: s.OwnGoal ?? p.ownGoal ?? 0,
+            Error: s.Error ?? p.error ?? 0,
+            ManOfTheMatch: !!(s.ManOfTheMatch ?? p.manOfTheMatch),
+            AssistTo: getPartner(p.Contributor) && (s.Assist ?? p.assist ?? 0) > 0
+  ? (p.assistToCount ?? (parseInt(s.AssistTo) || 0)) : 0,
             source: "Tactical Dashboard",
           }));
         });
@@ -494,7 +551,7 @@ function TacticalDashboard() {
     }
   };
 
-    const handleSaveSlot = () => {
+  const handleSaveSlot = () => {
     // ── BLOCK SAVE if goal breakdown doesn't match ──
     const bodyTotal = (slotStats?.LeftFoot || 0) + (slotStats?.RightFoot || 0) + (slotStats?.Head || 0) + (slotStats?.OtherBodyParts || 0);
     const totalGoals = slotStats?.Goal || 0;
@@ -561,7 +618,8 @@ function TacticalDashboard() {
         }
         newLineup[teamKey].subs[subIdx] = mergedPlayer;
       } else {
-        if (!Array.isArray(newLineup[teamKey].players)) newLineup[teamKey].players = Array(11).fill(null);
+        const count = getPlayersCount(newLineup[teamKey]?.formation);
+        if (!Array.isArray(newLineup[teamKey].players)) newLineup[teamKey].players = Array(count).fill(null);
         newLineup[teamKey].players[targetIdx] = mergedPlayer;
       }
       return newLineup;
@@ -631,6 +689,32 @@ function TacticalDashboard() {
               💡 <strong>Tactical Rule:</strong> Ryan is always assigned to <strong>Team A (Left Side)</strong>.
             </div>
 
+            {/* ✅ Match Type Selector */}
+            <div style={{
+              display: "flex", gap: "10px", marginBottom: "12px",
+              alignItems: "center", flexWrap: "wrap"
+            }}>
+              <label style={{
+                fontSize: "13px", fontWeight: 600, color: "#475569",
+                textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap"
+              }}>
+                Match Type:
+              </label>
+              <select
+                value={matchType}
+                onChange={(e) => handleMatchTypeChange(e.target.value)}
+                style={{
+                  padding: "8px 14px", borderRadius: "8px", border: "2px solid #cbd5e1",
+                  fontSize: "14px", fontWeight: 600, fontFamily: "'Barlow', sans-serif",
+                  color: "#1e3a8a", background: "#f8fafc", cursor: "pointer",
+                  minHeight: "40px", minWidth: "180px"
+                }}
+              >
+                <option value="11v11">⚽ 11v11 (4-4-2 etc.)</option>
+                <option value="7v7">⚽ 7v7 (3-2-1)</option>
+              </select>
+            </div>
+
             <MatchLineup
               matchData={matchDetails}
               initialLineup={lineupData}
@@ -638,6 +722,7 @@ function TacticalDashboard() {
               editMode={true}
               availablePlayers={availablePlayers}
               pictureMap={pictureMap}
+              formationOptions={matchType === "7v7" ? ["3-2-1"] : ["4-4-2", "4-3-3", "3-5-2", "4-2-3-1"]}
               onLineupChange={(newLineup) => {
                 setLineupData(prev => ({ ...prev, ...newLineup }));
               }}
@@ -647,8 +732,19 @@ function TacticalDashboard() {
                 setPlayerSearchText("");
                 setPlayerFilterGroup("All");
                 if (player) {
-                  setSlotStats(playerStats[player.Contributor] || {
-                    Goal: 0, Assist: 0, LeftFoot: 0, RightFoot: 0, Head: 0, OtherBodyParts: 0, Error: 0, ManOfTheMatch: false, AssistTo: 0, OwnGoal: 0
+                  // ✅ Merge: saved state first, then pitch player's stats
+                  const saved = playerStats[player.Contributor] || {};
+                  setSlotStats({
+                    Goal: saved.Goal ?? player.goal ?? 0,
+                    Assist: saved.Assist ?? player.assist ?? 0,
+                    LeftFoot: saved.LeftFoot ?? player.leftFoot ?? 0,
+                    RightFoot: saved.RightFoot ?? player.rightFoot ?? 0,
+                    Head: saved.Head ?? player.head ?? 0,
+                    OtherBodyParts: saved.OtherBodyParts ?? player.other ?? 0,
+                    Error: saved.Error ?? player.error ?? 0,
+                    ManOfTheMatch: saved.ManOfTheMatch ?? player.manOfTheMatch ?? false,
+                    AssistTo: saved.AssistTo ?? player.assistToCount ?? 0,
+                    OwnGoal: saved.OwnGoal ?? player.ownGoal ?? 0,
                   });
                 } else {
                   setSlotStats(null);

@@ -1311,3 +1311,77 @@
     margin-right: 0 !important;
   }
 }
+/* ═══════════════════════════════════════════════
+   FORMATION SELECTORS
+   ═══════════════════════════════════════════════ */
+
+.formation-selectors {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.formation-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.formation-selector label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.formation-selector select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid #cbd5e1;
+  border-radius: 8px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e3a8a;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 40px;
+}
+
+.formation-selector select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Mobile formation selectors */
+@media (max-width: 768px) {
+  .formation-selectors {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .formation-selector {
+    min-width: 100%;
+  }
+  .formation-selector label {
+    font-size: 11px;
+    min-width: 80px;
+  }
+  .formation-selector select {
+    font-size: 13px;
+    padding: 6px 10px;
+    min-height: 36px;
+  }
+}
+
+/* 3-2-1 pitch: slightly taller for better spacing */
+.pitch-wrapper.formation-3-2-1 {
+  min-height: 350px !important;
+}
