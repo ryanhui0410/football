@@ -6955,7 +6955,7 @@
       "players": [
         {
           "Contributor": "Pierre",
-          "rating": 4.4,
+          "rating": 5,
           "goal": 0,
           "assist": 0,
           "leftFoot": 0,
@@ -6963,10 +6963,14 @@
           "head": 0,
           "other": 0,
           "ownGoal": 0,
-          "error": 1,
+          "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "picture": ""
         },
         {
           "Contributor": "Barry",
