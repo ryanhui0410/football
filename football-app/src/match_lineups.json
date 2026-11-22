@@ -7557,12 +7557,12 @@
       ],
       "subs": [
         {
-          "Contributor": "R1",
-          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/R1.jpeg",
-          "rating": 5.2,
+          "Contributor": "Hin",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/Hin.jpeg",
+          "rating": 7.5,
           "goal": 1,
           "assist": 0,
-          "error": 2,
+          "error": 0,
           "ownGoal": 0,
           "leftFoot": 0,
           "rightFoot": 1,
