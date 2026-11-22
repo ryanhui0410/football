@@ -7556,7 +7556,22 @@
         }
       ],
       "subs": [
-        null,
+        {
+          "Contributor": "R1",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/R1.jpeg",
+          "rating": 5.2,
+          "goal": 1,
+          "assist": 0,
+          "error": 2,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         null,
         null,
         null
@@ -7581,7 +7596,22 @@
           "assistTo": "",
           "assistToCount": 0
         },
-        null,
+        {
+          "Contributor": "R1",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/R1.jpeg",
+          "rating": 5.2,
+          "goal": 1,
+          "assist": 0,
+          "error": 2,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         {
           "Contributor": "Ken",
           "rating": 5.9,
