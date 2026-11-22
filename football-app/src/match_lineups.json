@@ -7565,7 +7565,22 @@
     "teamB": {
       "formation": "4-4-2",
       "players": [
-        null,
+        {
+          "Contributor": "R",
+          "picture": "/R.jpeg",
+          "rating": 7.5,
+          "goal": 1,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 1,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         null,
         {
           "Contributor": "Ken",
@@ -7583,16 +7598,17 @@
           "assistToCount": 0
         },
         {
-          "Contributor": "R",
-          "rating": 7.5,
-          "goal": 1,
+          "Contributor": "大嚿",
+          "picture": "/大嚿.jpeg",
+          "rating": 6.1,
+          "goal": 0,
           "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
           "leftFoot": 0,
-          "rightFoot": 1,
+          "rightFoot": 0,
           "head": 0,
           "other": 0,
-          "ownGoal": 0,
-          "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
           "assistToCount": 0
@@ -7614,9 +7630,9 @@
         },
         {
           "Contributor": "Chris",
-          "rating": 6.9,
+          "rating": 7.4,
           "goal": 0,
-          "assist": 0,
+          "assist": 1,
           "leftFoot": 0,
           "rightFoot": 0,
           "head": 0,
@@ -7625,7 +7641,11 @@
           "error": 0,
           "manOfTheMatch": false,
           "assistTo": "",
-          "assistToCount": 0
+          "assistToCount": 0,
+          "isMotm": false,
+          "goals": 0,
+          "assists": 0,
+          "picture": ""
         },
         {
           "Contributor": "hong",
@@ -7642,7 +7662,22 @@
           "assistTo": "",
           "assistToCount": 0
         },
-        null,
+        {
+          "Contributor": "隻西",
+          "picture": "https://raw.githubusercontent.com/ryanhui0410/football/main/football-app/public/images/隻西.jpeg",
+          "rating": 7.3,
+          "goal": 0,
+          "assist": 1,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         {
           "Contributor": "Szeto",
           "rating": 6.7,
@@ -7658,7 +7693,22 @@
           "assistTo": "",
           "assistToCount": 0
         },
-        null,
+        {
+          "Contributor": "Derek",
+          "picture": "/images/Derek.jpeg",
+          "rating": 6.7,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         {
           "Contributor": "Jacob",
           "rating": 6.6,
@@ -7676,7 +7726,22 @@
         }
       ],
       "subs": [
-        null,
+        {
+          "Contributor": "普巴",
+          "picture": "/普巴.jpeg",
+          "rating": 6.3,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         null,
         null,
         null
