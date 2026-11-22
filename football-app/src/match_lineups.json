@@ -7385,7 +7385,6 @@
     "location": "跑馬地",
     "time": "11:30 AM",
     "matchResult": "7-5",
-    "matchType": "11v11",
     "teamA": {
       "formation": "4-4-2",
       "players": [
@@ -7509,7 +7508,22 @@
           "assistTo": "",
           "assistToCount": 0
         },
-        null,
+        {
+          "Contributor": "Daniel",
+          "picture": "/Daniel.jpeg",
+          "rating": 7,
+          "goal": 0,
+          "assist": 0,
+          "error": 0,
+          "ownGoal": 0,
+          "leftFoot": 0,
+          "rightFoot": 0,
+          "head": 0,
+          "other": 0,
+          "manOfTheMatch": false,
+          "assistTo": "",
+          "assistToCount": 0
+        },
         {
           "Contributor": "Darren",
           "rating": 10,
