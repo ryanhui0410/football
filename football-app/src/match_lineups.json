@@ -1986,7 +1986,7 @@
           "Contributor": "Darren",
           "rating": 10,
           "picture": "/Darren.jpeg",
-          "manOfTheMatch": false,
+          "manOfTheMatch": true,
           "isMotm": false,
           "goals": 3,
           "assists": 3,
