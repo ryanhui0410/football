@@ -6,7 +6,7 @@ import PlayerPicker from "./PlayerPicker";
 import "./ModifyDashboard.css";
 import MatchLineup from "./MatchLineup";
 import { readFromGitHub, writeToGitHub, uploadImageToGitHub, formatStat, FILES } from "../githubAPI";
-
+import MatchWinOdds from "./MatchWinOdds";
 // ═══════════════ TOP-LEVEL COMPONENTS ═══════════════
 
 function ScorelineInput({ value, onChange }) {
@@ -599,12 +599,14 @@ function ModifyDashboard({ contributors, onSave }) {
 
   // ── Dynamic filter groups for home page ──
   const filterGroups = useMemo(() => {
+    if (!availablePlayers.length) return HOME_FILTER_GROUPS;
     const groups = new Set();
     availablePlayers.forEach(p => {
       const g = (p.filterGroup || "").trim();
       if (g) groups.add(g);
     });
-    return HOME_FILTER_GROUPS.filter(g => groups.has(g));
+    const matched = HOME_FILTER_GROUPS.filter(g => groups.has(g));
+    return matched.length > 0 ? matched : HOME_FILTER_GROUPS;
   }, [availablePlayers]);
 
   // ── Players inside the currently expanded group ──
@@ -1110,8 +1112,7 @@ function ModifyDashboard({ contributors, onSave }) {
               }
 
               return (
-                <>
-                  {isEditingReport ? (
+                <>                  {isEditingReport ? (
                     <div style={{ background: "#f8fafc", borderRadius: "12px", padding: "14px", marginBottom: "10px" }}>
                       <div style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", textAlign: "center", marginBottom: "6px" }}>
                         ⚽ Match Result (Team A – Team B)
@@ -1119,14 +1120,19 @@ function ModifyDashboard({ contributors, onSave }) {
                       <ScorelineInput value={editedResult} onChange={(val) => setEditedResult(val)} />
                     </div>
                   ) : (
-                    <div className="report-result-header" style={{ justifyContent: "center", border: "none", background: "transparent", padding: "10px 0", marginBottom: "10px" }}>
+                    <div className="report-result-header" style={{ justifyContent: "center", border: "none", background: "transparent", padding: "10px 0", marginBottom: "6px" }}>
                       <div className="result-score-center">
                         <span className="result-score">{matchResult || "—"}</span>
                         {winLoss && <span className={`result-wl ${winLoss.toLowerCase()}`}>{winLoss}</span>}
                       </div>
                     </div>
                   )}
-
+                  <MatchWinOdds
+                    teamA={matchReport.teamA}
+                    teamB={matchReport.teamB}
+                    availablePlayers={availablePlayers}
+                    matchResult={matchReport.matchResult || editedResult || ""}
+                  />
                   <div style={{ marginTop: "10px" }}>
                     <h3 style={{ textAlign: "center", marginBottom: "15px", color: "#444" }}>
                       {isEditingReport ? "✏️ Edit Tactical Lineup" : "Tactical Lineup"}

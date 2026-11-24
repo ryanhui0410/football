@@ -1,4 +1,4 @@
-import GITHUB_TOKEN from "./gitHubConfig";
+import GITHUB_TOKEN from "./githubConfig";
 // ── GitHub API Direct Access (no server needed) ──
 const GITHUB_OWNER = "ryanhui0410";
 const GITHUB_REPO = "football";

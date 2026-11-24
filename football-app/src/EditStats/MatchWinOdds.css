@@ -1,0 +1,64 @@
+.match-odds-bar {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 auto 14px;
+  max-width: 640px;
+  width: 100%;
+}
+
+.match-odds-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.match-odds-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  text-align: center;
+}
+
+.match-odds-value {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.1;
+}
+
+.match-odds-item.is-winner {
+  background: #dcfce7;
+  border: 2px solid #16a34a;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);
+  transform: translateY(-1px);
+}
+
+.match-odds-item.is-winner .match-odds-label,
+.match-odds-item.is-winner .match-odds-value {
+  color: #14532d;
+}
+
+.match-odds-item.draw.is-winner {
+  background: #fef9c3;
+  border: 2px solid #ca8a04;
+  box-shadow: 0 4px 14px rgba(202, 138, 4, 0.22);
+}
+
+.match-odds-item.draw.is-winner .match-odds-label,
+.match-odds-item.draw.is-winner .match-odds-value {
+  color: #713f12;
+}
